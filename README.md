@@ -2,9 +2,12 @@
 Bookclub Manager
 
 ## Developers
+[Pipenv](https://docs.pipenv.org/en/latest/) required.
 ### Install Dependencies
-In your virtual environment,
-1. Install `pip-tools`
-2. Run `pip-sync requirements/dev.txt`
+```
+pipenv sync
+```
 ### Run Tests
-TODO
+```
+pipenv run pytest
+```
