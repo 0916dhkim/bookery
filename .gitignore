@@ -1,0 +1,9 @@
+# Python
+.venv
+venv
+**.egg-info
+**/__pycache__
+.pytest_cache
+
+# Visual Studio Code
+.vscode
