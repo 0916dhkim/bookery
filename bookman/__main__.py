@@ -18,4 +18,9 @@ def main():
     app = QApplication()
     win = MainWindow()
     win.show()
+    win.activateWindow()
     sys.exit(app.exec_())
+
+
+if __name__ == "__main__":
+    main()
