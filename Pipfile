@@ -13,4 +13,4 @@ ipython = "*"
 python_version = "3.7"
 
 [packages]
-backcall = {editable = true,path = "."}
+bookman = {editable = true,path = "."}
