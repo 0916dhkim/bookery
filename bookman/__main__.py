@@ -13,6 +13,13 @@ class MainWindow(QMainWindow):
         self.label = QLabel("Hello World")
         self.layout.addWidget(self.label)
 
+        "Initialize menu bar."
+        self.menuBar().addMenu(self.tr("File"))
+        self.menuBar().addMenu(self.tr("Edit"))
+
+        "Initialize status bar."
+        self.statusBar().showMessage(self.tr("Ready"))
+
 
 def main():
     app = QApplication()
