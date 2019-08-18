@@ -1,21 +1,26 @@
 import sys
-from PySide2.QtWidgets import (QApplication, QLabel, QMainWindow, QWidget,
-                               QVBoxLayout)
+from PySide2.QtWidgets import (QApplication, QMainWindow, QWidget, QTabWidget)
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
-        self.root = QWidget()
+
+        "Create central tab widget."
+        self.root = QTabWidget()
         self.setCentralWidget(self.root)
-        self.layout = QVBoxLayout()
-        self.root.setLayout(self.layout)
-        self.label = QLabel("Hello World")
-        self.layout.addWidget(self.label)
+
+        "Create students tab."
+        self.students_page = QWidget()
+        self.root.addTab(self.students_page, "Students")
+
+        "Create books tab."
+        self.books_page = QWidget()
+        self.root.addTab(self.books_page, "Books")
 
         "Initialize menu bar."
-        self.menuBar().addMenu(self.tr("File"))
-        self.menuBar().addMenu(self.tr("Edit"))
+        self.file_menu = self.menuBar().addMenu(self.tr("File"))
+        self.edit_menu = self.menuBar().addMenu(self.tr("Edit"))
 
         "Initialize status bar."
         self.statusBar().showMessage(self.tr("Ready"))
