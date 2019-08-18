@@ -8,6 +8,7 @@ flake8 = "*"
 yapf = "*"
 pytest = "*"
 ipython = "*"
+pdoc3 = "*"
 
 [requires]
 python_version = "3.7"

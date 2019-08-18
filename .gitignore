@@ -6,6 +6,7 @@ venv
 .pytest_cache
 build
 dist
+docs
 
 # Visual Studio Code
 .vscode
