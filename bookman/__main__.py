@@ -10,9 +10,9 @@ class MainWindow(QMainWindow):
         self.root = QTabWidget()
         self.setCentralWidget(self.root)
 
-        "Create students tab."
-        self.students_page = QWidget()
-        self.root.addTab(self.students_page, "Students")
+        "Create members tab."
+        self.members_page = QWidget()
+        self.root.addTab(self.members_page, "Members")
 
         "Create books tab."
         self.books_page = QWidget()

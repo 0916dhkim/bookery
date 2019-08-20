@@ -16,7 +16,7 @@ from pathlib import Path
 import sqlite3
 
 APPLICATION_ID = 0x22edc87d
-USER_VERSION = 1
+USER_VERSION = 2
 
 
 class DatabaseOperationException(Exception):
@@ -89,7 +89,7 @@ def new_database(path: Path) -> None:
 
                 # Create new empty tables.
                 cur.execute("""
-                CREATE TABLE Students
+                CREATE TABLE Members
                     (Id UNSIGNED BIG INT PRIMARY KEY,
                     Name TEXT,
                     Note TEXT)
@@ -106,9 +106,9 @@ def new_database(path: Path) -> None:
                 cur.execute("""
                 CREATE TABLE Views
                     (Id UNSIGNED BIG INT PRIMARY KEY,
-                    StudentId UNSIGNED BIG INT,
+                    MemberId UNSIGNED BIG INT,
                     Timestamp DATETIME,
-                    FOREIGN KEY (StudentId) REFERENCES Students(Id))
+                    FOREIGN KEY (MemberId) REFERENCES Members(Id))
                 """)
 
                 cur.execute("""
