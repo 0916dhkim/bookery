@@ -3,10 +3,13 @@
 venv
 **.egg-info
 **/__pycache__
-.pytest_cache
 build
 dist
 docs
+
+# pytest
+.pytest_cache
+pytest.log
 
 # Visual Studio Code
 .vscode
