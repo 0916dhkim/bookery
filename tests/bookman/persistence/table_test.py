@@ -1,12 +1,14 @@
 from bookman.persistence.table import (new_database, APPLICATION_ID,
                                        USER_VERSION)
-from logging import debug, error
+import logging
 from pathlib import Path
 import sqlite3
 
+logger = logging.getLogger(__name__)
+
 
 def test_new_database(tmp_path: Path):
-    debug("Using temporary directory: %s" % tmp_path)
+    logger.debug("Using temporary directory: %s" % tmp_path)
     file_name = "sample.sqlite3"
     file_path = tmp_path / file_name
     new_database(file_path)
@@ -22,17 +24,17 @@ def test_new_database(tmp_path: Path):
 
         cursor.execute("PRAGMA APPLICATION_ID")
         database_application_id = cursor.fetchone()["APPLICATION_ID"]
-        debug("database_application_id = %#x" % database_application_id)
+        logger.debug("database_application_id = %#x" % database_application_id)
         assert database_application_id == APPLICATION_ID
 
         cursor.execute("PRAGMA USER_VERSION")
         database_user_version = cursor.fetchone()["USER_VERSION"]
-        debug("database_user_version = %#x" % database_user_version)
+        logger.debug("database_user_version = %#x" % database_user_version)
         assert database_user_version == USER_VERSION
 
 
 def test_new_database_twice(tmp_path: Path):
-    debug("Using temporary directory: %s" % tmp_path)
+    logger.debug("Using temporary directory: %s" % tmp_path)
     file_name = "collision.sqlite3"
     file_path = tmp_path / file_name
 
@@ -47,5 +49,5 @@ def test_new_database_twice(tmp_path: Path):
         # Failed attempt should not erase the original file.
         assert file_path.exists()
     if not failed:
-        error("Existing file overwritten by new database.")
+        logger.error("Existing file overwritten by new database.")
         assert False
