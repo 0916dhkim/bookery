@@ -18,11 +18,17 @@ Run Tests
 ---------
 .. code-block::
 
-    pipenv run pytest
+    pipenv run test
 
 Generate Documentation
 ----------------------
 ::
 
-    cd docs
-    make html
+    pipenv run doc
+
+Start Documentation Web Server
+------------------------------
+::
+
+    pipenv run hostdoc
+

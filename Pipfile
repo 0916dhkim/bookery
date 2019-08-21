@@ -16,3 +16,8 @@ python_version = "3.7"
 
 [packages]
 bookman = {editable = true,path = "."}
+
+[scripts]
+test = "pytest"
+doc = "make -C docs html"
+hostdoc = "python -m http.server --directory docs/_build/html"
