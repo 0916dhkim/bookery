@@ -1,3 +1,1 @@
-"""
-.. include:: ../README.md
-"""
+"""Python package for Bookman application."""
