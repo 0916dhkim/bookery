@@ -22,13 +22,13 @@ Run Tests
 
 Generate Documentation
 ----------------------
-::
+From the project root::
 
     pipenv run doc
 
 Start Documentation Web Server
 ------------------------------
-::
+From the project root::
 
     pipenv run hostdoc
 
