@@ -1,29 +1,6 @@
 import sys
-from PySide2.QtWidgets import (QApplication, QMainWindow, QWidget, QTabWidget)
-
-
-class MainWindow(QMainWindow):
-    def __init__(self):
-        QMainWindow.__init__(self)
-
-        "Create central tab widget."
-        self.root = QTabWidget()
-        self.setCentralWidget(self.root)
-
-        "Create members tab."
-        self.members_page = QWidget()
-        self.root.addTab(self.members_page, "Members")
-
-        "Create books tab."
-        self.books_page = QWidget()
-        self.root.addTab(self.books_page, "Books")
-
-        "Initialize menu bar."
-        self.file_menu = self.menuBar().addMenu(self.tr("File"))
-        self.edit_menu = self.menuBar().addMenu(self.tr("Edit"))
-
-        "Initialize status bar."
-        self.statusBar().showMessage(self.tr("Ready"))
+from bookman.widgets.main_window import MainWindow
+from PySide2.QtWidgets import QApplication
 
 
 def main():
