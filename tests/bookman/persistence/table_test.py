@@ -1,5 +1,5 @@
 from bookman.persistence.table import (new_database, APPLICATION_ID,
-                                       USER_VERSION)
+                                       USER_VERSION, check_version)
 import logging
 from pathlib import Path
 import sqlite3
@@ -51,3 +51,28 @@ def test_new_database_twice(tmp_path: Path):
     if not failed:
         logger.error("Existing file overwritten by new database.")
         assert False
+
+
+def test_check_version(tmp_path: Path):
+    logger.debug("Using temporary directory: %s" % tmp_path)
+    file_name = "check_version.sqlite3"
+    file_path = tmp_path / file_name
+
+    # Create normal database.
+    new_database(file_path)
+    # Check version.
+    with sqlite3.connect(file_path) as con:
+        assert check_version(con)
+
+
+def test_check_version_empty_db(tmp_path: Path):
+    logger.debug("Using temporary directory %s" % tmp_path)
+    file_name = "check_version_empty.sqlite3"
+    file_path = tmp_path / file_name
+
+    # Create empty database.
+    with sqlite3.connect(file_path):
+        pass
+    # Check version.
+    with sqlite3.connect(file_path) as con:
+        assert not check_version(con)

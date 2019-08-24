@@ -15,6 +15,8 @@ import logging
 from pathlib import Path
 import sqlite3
 
+logger = logging.getLogger(__name__)
+
 APPLICATION_ID = 0x22edc87d
 USER_VERSION = 2
 
@@ -120,11 +122,38 @@ def new_database(path: Path) -> None:
             finally:
                 cur.close()
     except Exception as e:
-        logging.error(e)
+        logger.error(e)
         # If something goes wrong during database initialization,
         # clean up uninitialized file.
         if path.exists():
             path.unlink()
         raise DatabaseOperationException("Cannot initialize database.")
-    finally:
-        pass
+
+
+def check_version(con: sqlite3.Connection) -> bool:
+    """Check if the database has correct application ID and user version
+
+    Args:
+        con (sqlite3.Connection): Connection to SQLite3 database.
+
+    Returns:
+        True if database has correct application ID and user version.
+        False otherwise.
+    """
+    cur = con.cursor()
+    cur.row_factory = sqlite3.Row
+    try:
+        cur.execute("PRAGMA APPLICATION_ID")
+        if cur.fetchone()["APPLICATION_ID"] != APPLICATION_ID:
+            # Application ID mismatch.
+            return False
+
+        cur.execute("PRAGMA USER_VERSION")
+        if cur.fetchone()["USER_VERSION"] != USER_VERSION:
+            # User version mismatch.
+            return False
+    except Exception as e:
+        logger.error(e)
+        return False
+
+    return True
