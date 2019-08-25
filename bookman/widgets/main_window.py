@@ -1,6 +1,6 @@
 from PySide2.QtWidgets import (QMainWindow, QWidget, QHBoxLayout, QVBoxLayout,
-                               QPushButton, QStackedWidget)
-from PySide2.QtCore import Qt
+                               QPushButton, QStackedWidget, QAction, QMenu)
+from PySide2.QtCore import Qt, Slot
 from .books_page import BooksPage
 from .members_page import MembersPage
 from functools import partial
@@ -64,8 +64,42 @@ class MainWindow(QMainWindow):
             self._content.select_books_page)
 
         # Initialize menu bar.
-        self.file_menu = self.menuBar().addMenu(self.tr("File"))
-        self.edit_menu = self.menuBar().addMenu(self.tr("Edit"))
+        # File menu.
+        self.file_menu: QMenu = self.menuBar().addMenu(self.tr("File"))
+        self.new_action = QAction(self.tr("New"), self)
+        self.new_action.triggered.connect(self.new_file)
+        self.file_menu.addAction(self.new_action)
+        self.open_action = QAction(self.tr("Open"), self)
+        self.open_action.triggered.connect(self.open_file)
+        self.file_menu.addAction(self.open_action)
+        # Edit menu.
+        self.edit_menu: QMenu = self.menuBar().addMenu(self.tr("Edit"))
+        self.add_member_action = QAction(self.tr("Add Member"), self)
+        self.add_member_action.triggered.connect(self.add_member)
+        self.edit_menu.addAction(self.add_member_action)
+        self.add_book_action = QAction(self.tr("Add Book"), self)
+        self.add_book_action.triggered.connect(self.add_book)
+        self.edit_menu.addAction(self.add_book_action)
 
         # Initialize status bar.
         self.statusBar().showMessage(self.tr("Ready"))
+
+    @Slot()
+    def new_file(self):
+        """TODO"""
+        pass
+
+    @Slot()
+    def open_file(self):
+        """TODO"""
+        pass
+
+    @Slot()
+    def add_member(self):
+        """TODO"""
+        pass
+
+    @Slot()
+    def add_book(self):
+        """TODO"""
+        pass
