@@ -1,8 +1,7 @@
 from PySide2.QtWidgets import (QMainWindow, QWidget, QHBoxLayout, QVBoxLayout,
                                QPushButton, QStackedWidget, QAction, QMenu)
 from PySide2.QtCore import Qt, Slot
-from .books_page import BooksPage
-from .members_page import MembersPage
+from bookman.widgets import (BooksPage, MembersPage)
 from functools import partial
 
 

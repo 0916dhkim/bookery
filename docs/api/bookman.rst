@@ -2,7 +2,10 @@ bookman package
 ===============
 
 .. toctree::
+   :maxdepth: 4
 
+   bookman.delegates
+   bookman.models
    bookman.persistence
    bookman.widgets
 

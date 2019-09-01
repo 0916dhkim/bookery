@@ -2,7 +2,7 @@ bookman.persistence package
 ===========================
 .. toctree::
 
-   bookman.persistence.table
+    bookman.persistence.table
 
 .. automodule:: bookman.persistence
    :members:

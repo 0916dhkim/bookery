@@ -1,7 +1,13 @@
+from bookman.persistence import (Book, Member)
 from bookman.persistence.table import (new_database, APPLICATION_ID,
-                                       USER_VERSION, check_version)
+                                       USER_VERSION, check_version,
+                                       count_books, count_members, select_book,
+                                       select_member, query_books,
+                                       query_members, insert_book,
+                                       insert_member)
 import logging
 from pathlib import Path
+from typing import List
 import sqlite3
 
 logger = logging.getLogger(__name__)
@@ -76,3 +82,71 @@ def test_check_version_empty_db(tmp_path: Path):
     # Check version.
     with sqlite3.connect(file_path) as con:
         assert not check_version(con)
+
+
+def test_count_books_zero(empty_bookman_database: Path):
+    con = sqlite3.connect(empty_bookman_database)
+    assert 0 == count_books(con)
+
+
+def test_count_members_zero(empty_bookman_database: Path):
+    con = sqlite3.connect(empty_bookman_database)
+    assert 0 == count_members(con)
+
+
+def test_select_book_none(empty_bookman_database: Path):
+    con = sqlite3.connect(empty_bookman_database)
+    assert None is select_book(con, -1)
+
+
+def test_select_member_none(empty_bookman_database: Path):
+    con = sqlite3.connect(empty_bookman_database)
+    assert None is select_member(con, -1)
+
+
+def test_query_books_count(empty_bookman_database: Path,
+                           book_list: List[Book]):
+    con = sqlite3.connect(empty_bookman_database)
+    with con:
+        for b in book_list:
+            insert_book(con, b)
+    query_result = query_books(con)
+    assert sum(1 for b in query_result) == len(book_list)
+
+
+def test_query_members_count(empty_bookman_database: Path,
+                             member_list: List[Member]):
+    con = sqlite3.connect(empty_bookman_database)
+    with con:
+        for m in member_list:
+            insert_member(con, m)
+    query_result = query_members(con)
+    assert sum(1 for m in query_result) == len(member_list)
+
+
+def test_insert_book(empty_bookman_database: Path):
+    con = sqlite3.connect(empty_bookman_database)
+    nineteen_eighty_four = Book("Nineteen Eighty Four",
+                                "George Orwell",
+                                isbn="9780141036144")
+    with con:
+        nineteen_eighty_four_id = insert_book(con, nineteen_eighty_four)
+        logger.debug("ID of the inserted book is %d" % nineteen_eighty_four_id)
+    with con:
+        selected = select_book(con, nineteen_eighty_four_id)
+        assert selected.title == nineteen_eighty_four.title
+        assert selected.author == nineteen_eighty_four.author
+        assert selected.isbn == nineteen_eighty_four.isbn
+
+
+def test_insert_member(empty_bookman_database: Path):
+    con = sqlite3.connect(empty_bookman_database)
+    john = Member("John", "Doe")
+    with con:
+        john_id = insert_member(con, john)
+        logger.debug("ID of the inserted member is %d" % john_id)
+    with con:
+        selected = select_member(con, john_id)
+        assert selected.first_name == john.first_name
+        assert selected.last_name == john.last_name
+        assert selected.note == john.note
