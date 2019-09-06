@@ -2,7 +2,7 @@
 import pytest
 from pathlib import Path
 from bookman.persistence import (Book, Member)
-from bookman.persistence.table import new_database
+from bookman.persistence.table import SCHEMA
 import logging
 from typing import List
 
@@ -24,7 +24,7 @@ def empty_bookman_database(tmp_path: Path) -> Path:
     logger.debug("File name determined: %s" % file_path)
 
     logger.debug("Creating new database.")
-    new_database(file_path)
+    SCHEMA.create_new(file_path)
     logger.debug("New database created.")
 
     return file_path
