@@ -129,18 +129,17 @@ class Table():
 
         return ret
 
-    def insert(self, connection: sqlite3.Connection, obj: object) -> int:
+    def insert(self, connection: sqlite3.Connection, values: Dict[str, Any]) -> int:
         """Insert a Python object into table.
 
         Args:
             connection: Connection to SQLite3 database.
-            obj: Object to be inserted.
+            values: Values to be inserted.
 
         Returns:
             rowid
         """
-        d = self.obj_to_dict(obj)
-        ks, vs = list(d.keys()), list(d.values())
+        ks, vs = list(values.keys()), list(values.values())
         query = (f"INSERT INTO "
                  f"{escape_sql(self.name)}({', '.join(map(escape_sql, ks))}) "
                  f"VALUES ({', '.join(['?' for i in ks])})")
@@ -159,7 +158,10 @@ class Table():
 
         return ret
 
-    def select(self, connection: sqlite3.Connection) -> List[object]:
+    def insert_obj(self, connection: sqlite3.Connection, obj: object) -> int:
+        return self.insert(connection, self.obj_to_dict(obj))
+
+    def select(self, connection: sqlite3.Connection) -> List[sqlite3.Row]:
         field_names = [f.name for f in self.fields]
         query = (f"SELECT {', '.join(map(escape_sql, field_names))} "
                  f"FROM {escape_sql(self.name)}")
@@ -167,7 +169,7 @@ class Table():
         try:
             cur.row_factory = sqlite3.Row
             cur.execute(query)
-            ret = [self.row_to_obj(r) for r in cur.fetchall()]
+            ret = list(cur.fetchall())
         except Exception as e:
             logger.exception(e)
             raise DatabaseOperationException(("An exception occurred "
@@ -176,6 +178,9 @@ class Table():
             cur.close()
 
         return ret
+
+    def select_obj(self, connection: sqlite3.Connection) -> List[object]:
+        return [self.row_to_obj(r) for r in self.select(connection)]
 
 
 class BooksTable(Table):

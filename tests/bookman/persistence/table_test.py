@@ -64,10 +64,10 @@ class TestBookmanDatabase():
                                     "George Orwell",
                                     isbn="9780141036144")
         with con:
-            id = SCHEMA.books_table.insert(con, nineteen_eighty_four)
+            id = SCHEMA.books_table.insert_obj(con, nineteen_eighty_four)
             logger.debug("ID of the inserted book is %d" % id)
         with con:
-            select_result = SCHEMA.books_table.select(con)
+            select_result = SCHEMA.books_table.select_obj(con)
             assert len(select_result) == 1
             selected = select_result[0]
             assert selected.title == nineteen_eighty_four.title
@@ -78,10 +78,10 @@ class TestBookmanDatabase():
         con = sqlite3.connect(empty_bookman_database)
         john = Member("John", "Doe")
         with con:
-            id = SCHEMA.members_table.insert(con, john)
+            id = SCHEMA.members_table.insert_obj(con, john)
             logger.debug("ID of the inserted member is %d" % id)
         with con:
-            select_result = SCHEMA.members_table.select(con)
+            select_result = SCHEMA.members_table.select_obj(con)
             assert len(select_result) == 1
             selected = select_result[0]
             assert selected.first_name == john.first_name
@@ -93,7 +93,7 @@ class TestBookmanDatabase():
                          book_list: List[Book]):
         con = sqlite3.connect(empty_bookman_database)
         for b in book_list:
-            SCHEMA.books_table.insert(con, b)
+            SCHEMA.books_table.insert_obj(con, b)
         assert SCHEMA.books_table.count(con) == len(book_list)
 
     def test_count_books_zero(self, empty_bookman_database: Path):
@@ -105,7 +105,7 @@ class TestBookmanDatabase():
                            member_list: List[Member]):
         con = sqlite3.connect(empty_bookman_database)
         for m in member_list:
-            SCHEMA.members_table.insert(con, m)
+            SCHEMA.members_table.insert_obj(con, m)
         assert SCHEMA.members_table.count(con) == len(member_list)
 
     def test_count_members_zero(self, empty_bookman_database: Path):
@@ -118,8 +118,8 @@ class TestBookmanDatabase():
         con = sqlite3.connect(empty_bookman_database)
         book_dict = {b.title: b for b in book_list}
         for b in book_list:
-            SCHEMA.books_table.insert(con, b)
-        select_result = SCHEMA.books_table.select(con)
+            SCHEMA.books_table.insert_obj(con, b)
+        select_result = SCHEMA.books_table.select_obj(con)
         for b in select_result:
             assert isinstance(b, Book)
             assert b.title in book_dict
