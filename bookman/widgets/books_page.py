@@ -1,5 +1,4 @@
-from PySide2.QtWidgets import (QWidget, QVBoxLayout, QLabel, QTableView,
-                               QHeaderView)
+from PySide2.QtWidgets import QWidget, QVBoxLayout, QLabel, QTableView, QHeaderView
 from bookman.models import TableModel
 
 
@@ -9,8 +8,7 @@ class BooksPage(QWidget):
         self._layout = QVBoxLayout(self)
         self._layout.addWidget(QLabel("Books Page"))
         self._view = QTableView()
-        self._view.horizontalHeader().setSectionResizeMode(
-            QHeaderView.Stretch)
+        self._view.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self._view.verticalHeader().setSectionResizeMode(QHeaderView.Fixed)
         self._layout.addWidget(self._view)
 

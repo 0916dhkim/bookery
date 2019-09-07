@@ -7,9 +7,4 @@ from .member import Member
 from .view import View
 from . import table
 
-__all__ = [
-    'Book',
-    'Member',
-    'View',
-    'table',
-]
+__all__ = ["Book", "Member", "View", "table"]

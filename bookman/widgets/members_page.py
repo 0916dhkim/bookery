@@ -1,5 +1,4 @@
-from PySide2.QtWidgets import (QWidget, QVBoxLayout, QLabel, QTableView,
-                               QHeaderView)
+from PySide2.QtWidgets import QWidget, QVBoxLayout, QLabel, QTableView, QHeaderView
 from bookman.models import TableModel
 
 

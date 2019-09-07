@@ -6,9 +6,9 @@ This module provides utility functions to interface with SQLite3 database.
 import logging
 from pathlib import Path
 import sqlite3
-from bookman.persistence import (Book, Member, View)
+from bookman.persistence import Book, Member, View
 from bookman.common import overrides
-from typing import (Any, List, Tuple, Dict)
+from typing import Any, List, Tuple, Dict
 import enum
 
 logger = logging.getLogger(__name__)
@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 class SqlType(enum.Enum):
     """Data types in SQL."""
+
     INTEGER = 1
     TEXT = 2
     DATETIME = 3
@@ -30,17 +31,20 @@ def escape_sql(x: str) -> str:
     Returns:
         Escaped string.
     """
-    return "\"%s\"" % x.replace("\"", "\"\"")
+    return '"%s"' % x.replace('"', '""')
 
 
-class Field():
+class Field:
     """Class representing a field of SQL table."""
-    def __init__(self,
-                 name: str,
-                 field_type: SqlType,
-                 not_null: bool = False,
-                 primary_key: bool = False,
-                 references: Tuple[str, str] = None):
+
+    def __init__(
+        self,
+        name: str,
+        field_type: SqlType,
+        not_null: bool = False,
+        primary_key: bool = False,
+        references: Tuple[str, str] = None,
+    ):
         self.name = name
         """Name of the field."""
 
@@ -60,6 +64,7 @@ class Field():
         references[0] is table name.
         references[1] is field name.
         """
+
     def schema_str(self) -> str:
         ret: str = f"{escape_sql(self.name)} {self.field_type.name}"
         if self.not_null:
@@ -69,8 +74,9 @@ class Field():
         return ret
 
 
-class Table():
+class Table:
     """Class representing a SQL table schema."""
+
     def __init__(self, name: str, fields: List[Field] = None):
         self.name = name
         """Name of the table."""
@@ -87,10 +93,14 @@ class Table():
         table_constraints: List[str] = []
         for f in self.fields:
             if f.references is not None:
-                table_constraints.append((f"FOREIGN KEY "
-                                          f"({escape_sql(f.name)}) REFERENCES "
-                                          f"{escape_sql(f.references[0])}"
-                                          f"({escape_sql(f.references[1])})"))
+                table_constraints.append(
+                    (
+                        f"FOREIGN KEY "
+                        f"({escape_sql(f.name)}) REFERENCES "
+                        f"{escape_sql(f.references[0])}"
+                        f"({escape_sql(f.references[1])})"
+                    )
+                )
         ret += ", ".join(column_defs + table_constraints)
         ret += ")"
         return ret
@@ -116,14 +126,14 @@ class Table():
         try:
             cur.row_factory = sqlite3.Row
             col_name = "A"
-            query = (f"SELECT COUNT(*) as {col_name} "
-                     f"FROM {escape_sql(self.name)}")
+            query = f"SELECT COUNT(*) as {col_name} " f"FROM {escape_sql(self.name)}"
             cur.execute(query)
             ret = cur.fetchone()[col_name]
         except Exception as e:
             logger.exception(e)
-            raise DatabaseOperationException(("An exception occurred "
-                                              "while counting rows."))
+            raise DatabaseOperationException(
+                ("An exception occurred " "while counting rows.")
+            )
         finally:
             cur.close()
 
@@ -140,9 +150,11 @@ class Table():
             rowid
         """
         ks, vs = list(values.keys()), list(values.values())
-        query = (f"INSERT INTO "
-                 f"{escape_sql(self.name)}({', '.join(map(escape_sql, ks))}) "
-                 f"VALUES ({', '.join(['?' for i in ks])})")
+        query = (
+            f"INSERT INTO "
+            f"{escape_sql(self.name)}({', '.join(map(escape_sql, ks))}) "
+            f"VALUES ({', '.join(['?' for i in ks])})"
+        )
 
         cur = connection.cursor()
         try:
@@ -151,8 +163,9 @@ class Table():
             ret = cur.lastrowid
         except Exception as e:
             logger.exception(e)
-            raise DatabaseOperationException(("An exception occurred "
-                                              "while inserting a book."))
+            raise DatabaseOperationException(
+                ("An exception occurred " "while inserting a book.")
+            )
         finally:
             cur.close()
 
@@ -163,8 +176,10 @@ class Table():
 
     def select(self, connection: sqlite3.Connection) -> List[sqlite3.Row]:
         field_names = [f.name for f in self.fields]
-        query = (f"SELECT {', '.join(map(escape_sql, field_names))} "
-                 f"FROM {escape_sql(self.name)}")
+        query = (
+            f"SELECT {', '.join(map(escape_sql, field_names))} "
+            f"FROM {escape_sql(self.name)}"
+        )
         cur = connection.cursor()
         try:
             cur.row_factory = sqlite3.Row
@@ -172,8 +187,9 @@ class Table():
             ret = list(cur.fetchall())
         except Exception as e:
             logger.exception(e)
-            raise DatabaseOperationException(("An exception occurred "
-                                              "during selection query."))
+            raise DatabaseOperationException(
+                ("An exception occurred " "during selection query.")
+            )
         finally:
             cur.close()
 
@@ -190,13 +206,18 @@ class BooksTable(Table):
     * Title TEXT NOT NULL
     * Author TEXT
     """
+
     def __init__(self):
-        Table.__init__(self, "Books", [
-            Field("Id", SqlType.INTEGER, primary_key=True),
-            Field("Isbn", SqlType.TEXT),
-            Field("Title", SqlType.TEXT, not_null=True),
-            Field("Author", SqlType.TEXT),
-        ])
+        Table.__init__(
+            self,
+            "Books",
+            [
+                Field("Id", SqlType.INTEGER, primary_key=True),
+                Field("Isbn", SqlType.TEXT),
+                Field("Title", SqlType.TEXT, not_null=True),
+                Field("Author", SqlType.TEXT),
+            ],
+        )
 
     @overrides(Table)
     def row_to_obj(self, row: sqlite3.Row) -> Book:
@@ -204,11 +225,7 @@ class BooksTable(Table):
 
     @overrides(Table)
     def obj_to_dict(self, obj: Book) -> Dict[str, Any]:
-        return {
-            "Title": obj.title,
-            "Author": obj.author,
-            "Isbn": obj.isbn,
-        }
+        return {"Title": obj.title, "Author": obj.author, "Isbn": obj.isbn}
 
 
 class MembersTable(Table):
@@ -218,13 +235,18 @@ class MembersTable(Table):
     * LastName TEXT NOT NULL
     * Note TEXT
     """
+
     def __init__(self):
-        Table.__init__(self, "Members", [
-            Field("Id", SqlType.INTEGER, primary_key=True),
-            Field("FirstName", SqlType.TEXT, not_null=True),
-            Field("LastName", SqlType.TEXT, not_null=True),
-            Field("Note", SqlType.TEXT),
-        ])
+        Table.__init__(
+            self,
+            "Members",
+            [
+                Field("Id", SqlType.INTEGER, primary_key=True),
+                Field("FirstName", SqlType.TEXT, not_null=True),
+                Field("LastName", SqlType.TEXT, not_null=True),
+                Field("Note", SqlType.TEXT),
+            ],
+        )
 
     @overrides(Table)
     def row_to_obj(self, row: sqlite3.Row) -> Member:
@@ -235,7 +257,7 @@ class MembersTable(Table):
         return {
             "FirstName": obj.first_name,
             "LastName": obj.last_name,
-            "Note": obj.note
+            "Note": obj.note,
         }
 
 
@@ -246,15 +268,22 @@ class ViewsTable(Table):
     * Timestamp DATETIME
     * FOREIGN KEY (MemberId) REFERENCES Members(Id)
     """
+
     def __init__(self):
-        Table.__init__(self, "Views", [
-            Field("Id", SqlType.INTEGER, primary_key=True),
-            Field("MemberId",
-                  SqlType.INTEGER,
-                  not_null=True,
-                  references=("Members", "Id")),
-            Field("Timestamp", SqlType.DATETIME),
-        ])
+        Table.__init__(
+            self,
+            "Views",
+            [
+                Field("Id", SqlType.INTEGER, primary_key=True),
+                Field(
+                    "MemberId",
+                    SqlType.INTEGER,
+                    not_null=True,
+                    references=("Members", "Id"),
+                ),
+                Field("Timestamp", SqlType.DATETIME),
+            ],
+        )
 
     @overrides(Table)
     def row_to_obj(self, row: sqlite3.Row) -> View:
@@ -262,18 +291,15 @@ class ViewsTable(Table):
 
     @overrides(Table)
     def obj_to_dict(self, obj: View) -> Dict[str, Any]:
-        return {
-            "MemberId": obj.member_id,
-            "Timestamp": obj.timestamp
-        }
+        return {"MemberId": obj.member_id, "Timestamp": obj.timestamp}
 
 
-class Database():
+class Database:
     """Class representing a SQL database schema."""
-    def __init__(self,
-                 application_id: int,
-                 user_version: int,
-                 tables: List[Table] = None):
+
+    def __init__(
+        self, application_id: int, user_version: int, tables: List[Table] = None
+    ):
         self.application_id = application_id
         """PRAGMA application_id of SQLite3 database.
         This is the application ID of Bookman.
@@ -364,15 +390,17 @@ class Database():
 
 class BookmanDatabase(Database):
     """Database for Bookman."""
+
     def __init__(self):
         self.books_table = BooksTable()
         self.members_table = MembersTable()
         self.views_table = ViewsTable()
-        Database.__init__(self, 0x22edc87d, 3, [
-            self.books_table,
-            self.members_table,
-            self.views_table
-        ])
+        Database.__init__(
+            self,
+            0x22EDC87D,
+            3,
+            [self.books_table, self.members_table, self.views_table],
+        )
 
 
 SCHEMA = BookmanDatabase()
@@ -382,6 +410,7 @@ class DatabaseOperationException(Exception):
     """Error while manipulating database file.
         message(str): Error message.
     """
+
     def __init__(self, message):
         self.message = message
 

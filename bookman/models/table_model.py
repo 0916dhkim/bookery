@@ -1,6 +1,6 @@
 from bookman.persistence.table import SCHEMA
 from bookman.common import overrides
-from PySide2.QtCore import (QAbstractProxyModel, QModelIndex)
+from PySide2.QtCore import QAbstractProxyModel, QModelIndex
 
 
 class TableModel(QAbstractProxyModel):
@@ -10,6 +10,7 @@ class TableModel(QAbstractProxyModel):
     In order to access individual tables, this proxy model provides
     2-dimensional model to represent a table.
     """
+
     def __init__(self, table_index: int):
         QAbstractProxyModel.__init__(self)
         self._table_index = table_index
@@ -37,9 +38,9 @@ class TableModel(QAbstractProxyModel):
         if not proxyIndex.isValid():
             return source_table_index
         else:
-            return self.sourceModel().index(proxyIndex.row(),
-                                            proxyIndex.column(),
-                                            source_table_index)
+            return self.sourceModel().index(
+                proxyIndex.row(), proxyIndex.column(), source_table_index
+            )
 
     @overrides(QAbstractProxyModel)
     def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
@@ -54,21 +55,27 @@ class TableModel(QAbstractProxyModel):
     @overrides(QAbstractProxyModel)
     def parent(self, child: QModelIndex) -> QModelIndex:
         # Trivial implementation of parent.
-        return self.mapFromSource(self.sourceModel().parent(
-            self.mapToSource(child)))
+        return self.mapFromSource(self.sourceModel().parent(self.mapToSource(child)))
 
     @overrides(QAbstractProxyModel)
-    def index(self, row: int, column: int,
-              parent: QModelIndex = QModelIndex()) -> QModelIndex:
-        if all([
-                not parent.isValid(), row < self.sourceModel().rowCount(
-                    self.sourceModel().index(self._table_index, 0)),
-                column < self.sourceModel().columnCount(
-                    self.sourceModel().index(self._table_index, 0))
-        ]):
+    def index(
+        self, row: int, column: int, parent: QModelIndex = QModelIndex()
+    ) -> QModelIndex:
+        if all(
+            [
+                not parent.isValid(),
+                row
+                < self.sourceModel().rowCount(
+                    self.sourceModel().index(self._table_index, 0)
+                ),
+                column
+                < self.sourceModel().columnCount(
+                    self.sourceModel().index(self._table_index, 0)
+                ),
+            ]
+        ):
             # Field node.
             # Internal pointer points to a table object.
-            return self.createIndex(row, column,
-                                    SCHEMA.tables[self._table_index])
+            return self.createIndex(row, column, SCHEMA.tables[self._table_index])
         else:
             return QModelIndex()

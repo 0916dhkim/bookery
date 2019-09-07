@@ -11,6 +11,7 @@ ipython = "*"
 sphinx = ">=1.3"
 sphinx-rtd-theme = "*"
 rope = "*"
+black = "==19.3b0"
 
 [requires]
 python_version = "3.7"

@@ -1,9 +1,17 @@
-from PySide2.QtWidgets import (QMainWindow, QWidget, QHBoxLayout, QVBoxLayout,
-                               QPushButton, QStackedWidget, QAction, QMenu,
-                               QFileDialog)
+from PySide2.QtWidgets import (
+    QMainWindow,
+    QWidget,
+    QHBoxLayout,
+    QVBoxLayout,
+    QPushButton,
+    QStackedWidget,
+    QAction,
+    QMenu,
+    QFileDialog,
+)
 from PySide2.QtCore import Qt, Slot
-from bookman.widgets import (BooksPage, MembersPage)
-from bookman.models import (BaseModel, TableModel)
+from bookman.widgets import BooksPage, MembersPage
+from bookman.models import BaseModel, TableModel
 from functools import partial
 import sqlite3
 import pathlib
@@ -36,18 +44,18 @@ class ContentWidget(QStackedWidget):
         # Members page.
         self._members_page = MembersPage()
         self._members_page_index = self.addWidget(self._members_page)
-        self.select_members_page = partial(self.setCurrentIndex,
-                                           self._members_page_index)
+        self.select_members_page = partial(
+            self.setCurrentIndex, self._members_page_index
+        )
 
         # Books page.
         self._books_page = BooksPage()
         self._books_page_index = self.addWidget(self._books_page)
-        self.select_books_page = partial(self.setCurrentIndex,
-                                         self._books_page_index)
+        self.select_books_page = partial(self.setCurrentIndex, self._books_page_index)
 
-    def set_models(self,
-                   books_table_model: TableModel,
-                   members_table_model: TableModel):
+    def set_models(
+        self, books_table_model: TableModel, members_table_model: TableModel
+    ):
         self._books_page.set_model(books_table_model)
         self._members_page.set_model(members_table_model)
 
@@ -74,10 +82,8 @@ class MainWindow(QMainWindow):
         self._mainlayout.addWidget(self._content)
 
         # Connect sidebar and contents pane.
-        self._sidebar.members_button_clicked.connect(
-            self._content.select_members_page)
-        self._sidebar.books_button_clicked.connect(
-            self._content.select_books_page)
+        self._sidebar.members_button_clicked.connect(self._content.select_members_page)
+        self._sidebar.books_button_clicked.connect(self._content.select_books_page)
 
         # Initialize menu bar.
         # File menu.

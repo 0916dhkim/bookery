@@ -6,9 +6,9 @@ from .members_page import MembersPage
 from .main_window import MainWindow
 
 __all__ = [
-    'BookDetailsPage',
-    'BooksPage',
-    'MemberDetailsPage',
-    'MembersPage',
-    'MainWindow',
+    "BookDetailsPage",
+    "BooksPage",
+    "MemberDetailsPage",
+    "MembersPage",
+    "MainWindow",
 ]

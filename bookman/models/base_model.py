@@ -1,5 +1,5 @@
-from PySide2.QtCore import (QAbstractItemModel, QModelIndex, Qt)
-from bookman.persistence.table import (Database, Table, SCHEMA)
+from PySide2.QtCore import QAbstractItemModel, QModelIndex, Qt
+from bookman.persistence.table import Database, Table, SCHEMA
 from bookman.common import overrides
 from typing import Any
 import sqlite3
@@ -32,15 +32,16 @@ class BaseModel(QAbstractItemModel):
             ├──────┼──────┼──────┤
             └──────┴──────┴──────┘
     """
+
     def __init__(self, connection: sqlite3.Connection):
         QAbstractItemModel.__init__(self)
         self._connection = connection
-        self._data = {t.name: t.select(self._connection)
-                      for t in SCHEMA.tables}
+        self._data = {t.name: t.select(self._connection) for t in SCHEMA.tables}
 
     @overrides(QAbstractItemModel)
-    def index(self, row: int, column: int,
-              parent: QModelIndex = QModelIndex()) -> QModelIndex:
+    def index(
+        self, row: int, column: int, parent: QModelIndex = QModelIndex()
+    ) -> QModelIndex:
         """Internal pointer of each level is as follows::
 
         * root : None
@@ -60,8 +61,7 @@ class BaseModel(QAbstractItemModel):
             # Therefore, the parent is a table and
             #  the index points to a field node.
             table = ip.tables[parent.row()]
-            if all([row < len(self._data[table.name]),
-                    column < len(table.fields)]):
+            if all([row < len(self._data[table.name]), column < len(table.fields)]):
                 return self.createIndex(row, column, table)
             else:
                 return QModelIndex()
@@ -82,9 +82,7 @@ class BaseModel(QAbstractItemModel):
                 # Internal pointer is table object.
                 # Therefore, the parent node is a table.
                 # Find the index of the parent table.
-                return self.createIndex(SCHEMA.tables.index(ip),
-                                        0,
-                                        SCHEMA)
+                return self.createIndex(SCHEMA.tables.index(ip), 0, SCHEMA)
             else:
                 return QModelIndex()
 
@@ -118,8 +116,7 @@ class BaseModel(QAbstractItemModel):
             return 0
 
     @overrides(QAbstractItemModel)
-    def data(self, index: QModelIndex,
-             role: int = Qt.ItemDataRole.DisplayRole) -> Any:
+    def data(self, index: QModelIndex, role: int = Qt.ItemDataRole.DisplayRole) -> Any:
         ip = index.internalPointer()
         if not index.isValid():
             return None
@@ -135,6 +132,4 @@ class BaseModel(QAbstractItemModel):
             # Internal pointer of the index is Table object.
             # Therefore, the index points to a field.
             if role == Qt.ItemDataRole.DisplayRole:
-                return self._data[ip.name][index.row()][
-                    ip.fields[index.column()].name
-                ]
+                return self._data[ip.name][index.row()][ip.fields[index.column()].name]
