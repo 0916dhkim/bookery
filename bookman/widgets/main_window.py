@@ -1,8 +1,15 @@
 from PySide2.QtWidgets import (QMainWindow, QWidget, QHBoxLayout, QVBoxLayout,
-                               QPushButton, QStackedWidget, QAction, QMenu)
+                               QPushButton, QStackedWidget, QAction, QMenu,
+                               QFileDialog)
 from PySide2.QtCore import Qt, Slot
 from bookman.widgets import (BooksPage, MembersPage)
+from bookman.models import (BaseModel, TableModel)
 from functools import partial
+import sqlite3
+import pathlib
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class SideBar(QWidget):
@@ -38,6 +45,12 @@ class ContentWidget(QStackedWidget):
         self.select_books_page = partial(self.setCurrentIndex,
                                          self._books_page_index)
 
+    def set_models(self,
+                   books_table_model: TableModel,
+                   members_table_model: TableModel):
+        self._books_page.set_model(books_table_model)
+        self._members_page.set_model(members_table_model)
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -47,6 +60,10 @@ class MainWindow(QMainWindow):
         self._root = QWidget()
         self.setCentralWidget(self._root)
         self._mainlayout = QHBoxLayout(self._root)
+
+        # Model
+        self._connection: sqlite3.Connection = None
+        self._base_model: BaseModel = None
 
         # Sidebar.
         self._sidebar = SideBar()
@@ -90,8 +107,16 @@ class MainWindow(QMainWindow):
 
     @Slot()
     def open_file(self):
-        """TODO"""
-        pass
+        """Open file dialog.
+
+        If the user cancels the dialog, no further action is taken.
+        If the user selects a file, open SQLite connection
+        to the selected file.
+        """
+        file_name, _ = QFileDialog.getOpenFileName(self, self.tr("Open File"))
+        if file_name != "":
+            # Dialog is not cancelled.
+            self.use_database(pathlib.Path(file_name))
 
     @Slot()
     def add_member(self):
@@ -102,3 +127,17 @@ class MainWindow(QMainWindow):
     def add_book(self):
         """TODO"""
         pass
+
+    def use_database(self, path: pathlib.Path):
+        """Open database file and update model."""
+        try:
+            self._connection = sqlite3.connect(path)
+            self._base_model = BaseModel(self._connection)
+            books_table_model = TableModel(0)
+            books_table_model.setSourceModel(self._base_model)
+            members_table_model = TableModel(1)
+            members_table_model.setSourceModel(self._base_model)
+            self._content.set_models(books_table_model, members_table_model)
+        except Exception as e:
+            logger.exception(e)
+            raise e
