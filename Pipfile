@@ -10,6 +10,7 @@ pytest = "*"
 ipython = "*"
 sphinx = ">=1.3"
 sphinx-rtd-theme = "*"
+rope = "*"
 
 [requires]
 python_version = "3.7"
