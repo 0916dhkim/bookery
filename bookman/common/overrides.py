@@ -1,7 +1,7 @@
 from typing import Type, Callable
 
 
-def overrides(parent_class: Type) -> Callable:
+def overrides(parent_class: Type) -> Callable[[Callable], Callable]:
     """Decorator to check if a method is overriding parent class."""
 
     def checked(method: Callable) -> Callable:
