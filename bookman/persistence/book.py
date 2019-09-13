@@ -1,7 +1,11 @@
-class Book:
-    """Simple object representing a book"""
+from bookman.persistence import Base
+from sqlalchemy import Column, Integer, Text
 
-    def __init__(self, title: str, author: str = None, isbn: str = None):
-        self.title = title
-        self.author = author
-        self.isbn = isbn
+
+class Book(Base):
+    __tablename__ = "Books"
+
+    id = Column("Id", Integer, primary_key=True)
+    title = Column("Title", Text, nullable=False)
+    author = Column("Author", Text)
+    isbn = Column("Isbn", Text)

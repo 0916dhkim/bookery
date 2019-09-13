@@ -1,7 +1,11 @@
-class Member:
-    """Simple object representing a member"""
+from bookman.persistence import Base
+from sqlalchemy import Column, Integer, Text
 
-    def __init__(self, first_name: str, last_name: str, note: str = None):
-        self.first_name = first_name
-        self.last_name = last_name
-        self.note = note
+
+class Member(Base):
+    __tablename__ = "Members"
+
+    id = Column("Id", Integer, primary_key=True)
+    first_name = Column("FirstName", Text, nullable=False)
+    last_name = Column("LastName", Text, nullable=False)
+    note = Column("Note", Text)

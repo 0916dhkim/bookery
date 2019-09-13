@@ -1,42 +1,16 @@
 from PySide2.QtCore import QAbstractItemModel, QModelIndex, Qt
-from bookman.persistence.table import Database, Table, SCHEMA
+from bookman.persistence import Base
+from sqlalchemy.orm import Session
+from sqlalchemy import Column, Table
 from bookman.common import overrides
-from typing import Any
-import sqlite3
 
 
 class BaseModel(QAbstractItemModel):
-    """Base Qt Model representing database.
+    """Qt Model for Base Class."""
 
-    Structure of this model is like the following::
-
-        ┌────┐
-        │root│
-        └┬───┘
-         │┌──────┐
-         ├┤Table1│
-         │└┬─────┘
-         │ │┌──────┬──────┬──────┐
-         │ └┤Field1│Field2│Field3│
-         │  ├──────┼──────┼──────┤
-         │  ├──────┼──────┼──────┤
-         │  ├──────┼──────┼──────┤
-         │  └──────┴──────┴──────┘
-         │┌──────┐
-         └┤Table2│
-          └┬─────┘
-           │┌──────┬──────┬──────┐
-           └┤Field1│Field2│Field3│
-            ├──────┼──────┼──────┤
-            ├──────┼──────┼──────┤
-            ├──────┼──────┼──────┤
-            └──────┴──────┴──────┘
-    """
-
-    def __init__(self, connection: sqlite3.Connection):
+    def __init__(self, session: Session):
         QAbstractItemModel.__init__(self)
-        self._connection = connection
-        self._data = {t.name: t.select(self._connection) for t in SCHEMA.tables}
+        self._session = session
 
     @overrides(QAbstractItemModel)
     def index(
@@ -44,47 +18,37 @@ class BaseModel(QAbstractItemModel):
     ) -> QModelIndex:
         """Internal pointer of each level is as follows::
 
-        * root : None
-        * table : root Database object
-        * field : parent Table object
+        * 0 : None
+        * 1 : table
+        * 2 : column
         """
         ip = parent.internalPointer()
         if not parent.isValid():
-            # The parent is the root node.
-            # Therefore, the index points to a table node.
-            if row < len(SCHEMA.tables) and column == 0:
-                return self.createIndex(row, column, SCHEMA)
-            else:
-                return QModelIndex()
-        elif isinstance(ip, Database):
-            # The parent is not the root node.
-            # Therefore, the parent is a table and
-            #  the index points to a field node.
-            table = ip.tables[parent.row()]
-            if all([row < len(self._data[table.name]), column < len(table.fields)]):
-                return self.createIndex(row, column, table)
-            else:
-                return QModelIndex()
+            # The parent is the root node,
+            # therefore, this is level 1 index.
+            return self.createIndex(row, column, Base.metadata.sorted_tables[row])
+        elif isinstance(ip, Table):
+            # The parent is a table,
+            # therefore, this is level 2 index.
+            return self.createIndex(row, column, ip.columns.values()[column])
         else:
             return QModelIndex()
 
     @overrides(QAbstractItemModel)
     def parent(self, child: QModelIndex) -> QModelIndex:
+        ip = child.internalPointer()
         if not child.isValid():
             return QModelIndex()
+        elif isinstance(ip, Table):
+            # Internal pointer of the child is a table,
+            # therefore, the parent is level 0 (i.e. root).
+            return QModelIndex()
+        elif isinstance(ip, Column):
+            # Internal pointer of the child is a column,
+            # therefore, the parent is level 1.
+            return self.index(Base.metadata.sorted_tables.index(ip.table), 0)
         else:
-            ip = child.internalPointer()
-            if isinstance(ip, Database):
-                # Internal pointer is database object.
-                # Therefore, the parent node is the root.
-                return QModelIndex()
-            elif isinstance(ip, Table):
-                # Internal pointer is table object.
-                # Therefore, the parent node is a table.
-                # Find the index of the parent table.
-                return self.createIndex(SCHEMA.tables.index(ip), 0, SCHEMA)
-            else:
-                return QModelIndex()
+            return QModelIndex()
 
     @overrides(QAbstractItemModel)
     def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
@@ -92,12 +56,12 @@ class BaseModel(QAbstractItemModel):
         if not parent.isValid():
             # The parent is the root.
             # Find the number of tables.
-            return len(SCHEMA.tables)
-        elif isinstance(ip, Database):
-            # If internal pointer of parent index is Database object,
-            # the parent is a table.
-            # Find the number of rows inside the parent table.
-            return len(self._data[SCHEMA.tables[parent.row()].name])
+            return len(Base.metadata.sorted_tables)
+        elif isinstance(ip, Table):
+            # Internal pointer of the parent is a table,
+            # therefore, the parent is level 1.
+            # Find the number of rows.
+            return self._session.query(ip).count()
         else:
             return 0
 
@@ -105,31 +69,32 @@ class BaseModel(QAbstractItemModel):
     def columnCount(self, parent: QModelIndex = QModelIndex()) -> int:
         ip = parent.internalPointer()
         if not parent.isValid():
-            # The parent is the root.
+            # The parent is the root (i.e. level 0).
             return 1
-        elif isinstance(ip, Database):
-            # If internal pointer of parent index is Database object,
-            # the parent is a table.
-            # Find the number of fields inside the parent table.
-            return len(SCHEMA.tables[parent.row()].fields)
+        elif isinstance(ip, Table):
+            # Internal pointer of the parent is a table,
+            # therefore, the parent is level 1.
+            # Find the number of columns in table.
+            return len(ip.columns)
         else:
             return 0
 
     @overrides(QAbstractItemModel)
-    def data(self, index: QModelIndex, role: int = Qt.ItemDataRole.DisplayRole) -> Any:
-        ip = index.internalPointer()
+    def data(self, index: QModelIndex, role: int = Qt.ItemDataRole.DisplayRole) -> Base:
         if not index.isValid():
             return None
-        elif isinstance(ip, Database):
-            # Internal pointer of the index is Database object.
-            # Therefore, the index points to a table.
-            # Return table name for display role.
-            if role == Qt.ItemDataRole.DisplayRole:
-                return SCHEMA.tables[index.row()].name
-            else:
-                return None
-        elif isinstance(ip, Table):
-            # Internal pointer of the index is Table object.
-            # Therefore, the index points to a field.
-            if role == Qt.ItemDataRole.DisplayRole:
-                return self._data[ip.name][index.row()][ip.fields[index.column()].name]
+
+        ip = index.internalPointer()
+        if isinstance(ip, Column) and role == Qt.DisplayRole:
+            # Internal pointer is a column,
+            # therefore, this is level 2.
+            return self._session.query(ip)[index.row()][0]
+        else:
+            return None
+
+    @overrides(QAbstractItemModel)
+    def flags(self, index: QModelIndex) -> Qt.ItemFlags:
+        if index.isValid():
+            return Qt.ItemIsEnabled
+        else:
+            return Qt.NoItemFlags

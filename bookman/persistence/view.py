@@ -1,9 +1,13 @@
-import datetime
+from bookman.persistence import Base, Member
+from sqlalchemy import Column, Integer, DateTime, ForeignKey
+from sqlalchemy.orm import relationship
 
 
-class View:
-    """Simple object representing a view"""
+class View(Base):
+    __tablename__ = "Views"
 
-    def __init__(self, member_id: int, timestamp: datetime.time = None):
-        self.member_id = member_id
-        self.timestamp = timestamp
+    id = Column("Id", Integer, primary_key=True)
+    member_id = Column("MemberId", Integer, ForeignKey(Member.id), nullable=False)
+    timestamp = Column("Timestamp", DateTime)
+
+    member = relationship(Member, cascade="all")

@@ -12,8 +12,10 @@ from PySide2.QtWidgets import (
 from PySide2.QtCore import Qt, Slot
 from bookman.widgets import BooksPage, MembersPage
 from bookman.models import BaseModel, TableModel
+from bookman.persistence import Book, Member, create_session
 from functools import partial
-import sqlite3
+from sqlalchemy.orm import Session
+from sqlalchemy.engine.url import URL
 import pathlib
 import logging
 
@@ -70,7 +72,7 @@ class MainWindow(QMainWindow):
         self._mainlayout = QHBoxLayout(self._root)
 
         # Model
-        self._connection: sqlite3.Connection = None
+        self._session: Session = None
         self._base_model: BaseModel = None
 
         # Sidebar.
@@ -137,11 +139,11 @@ class MainWindow(QMainWindow):
     def use_database(self, path: pathlib.Path):
         """Open database file and update model."""
         try:
-            self._connection = sqlite3.connect(path)
-            self._base_model = BaseModel(self._connection)
-            books_table_model = TableModel(0)
+            self._session = create_session(URL('sqlite', database=str(path)))
+            self._base_model = BaseModel(self._session)
+            books_table_model = TableModel(Book)
             books_table_model.setSourceModel(self._base_model)
-            members_table_model = TableModel(1)
+            members_table_model = TableModel(Member)
             members_table_model.setSourceModel(self._base_model)
             self._content.set_models(books_table_model, members_table_model)
         except Exception as e:
