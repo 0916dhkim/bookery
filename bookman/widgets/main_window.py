@@ -11,8 +11,8 @@ from PySide2.QtWidgets import (
 )
 from PySide2.QtCore import Qt, Slot
 from bookman.widgets import BooksPage, MembersPage
-from bookman.models import BaseModel, TableModel
-from bookman.persistence import Book, Member, create_session
+from bookman.models import BookModel, MemberModel
+from bookman.persistence import create_session
 from functools import partial
 from sqlalchemy.orm import Session
 from sqlalchemy.engine.url import URL
@@ -56,7 +56,7 @@ class ContentWidget(QStackedWidget):
         self.select_books_page = partial(self.setCurrentIndex, self._books_page_index)
 
     def set_models(
-        self, books_table_model: TableModel, members_table_model: TableModel
+        self, books_table_model: BookModel, members_table_model: MemberModel
     ):
         self._books_page.set_model(books_table_model)
         self._members_page.set_model(members_table_model)
@@ -73,7 +73,6 @@ class MainWindow(QMainWindow):
 
         # Model
         self._session: Session = None
-        self._base_model: BaseModel = None
 
         # Sidebar.
         self._sidebar = SideBar()
@@ -96,6 +95,9 @@ class MainWindow(QMainWindow):
         self.open_action = QAction(self.tr("Open"), self)
         self.open_action.triggered.connect(self.open_file)
         self.file_menu.addAction(self.open_action)
+        self.save_action = QAction(self.tr("Save"), self)
+        self.save_action.triggered.connect(self.save)
+        self.file_menu.addAction(self.save_action)
         # Edit menu.
         self.edit_menu: QMenu = self.menuBar().addMenu(self.tr("Edit"))
         self.add_member_action = QAction(self.tr("Add Member"), self)
@@ -127,6 +129,10 @@ class MainWindow(QMainWindow):
             self.use_database(pathlib.Path(file_name))
 
     @Slot()
+    def save(self):
+        self._session.commit()
+
+    @Slot()
     def add_member(self):
         """TODO"""
         pass
@@ -139,13 +145,10 @@ class MainWindow(QMainWindow):
     def use_database(self, path: pathlib.Path):
         """Open database file and update model."""
         try:
-            self._session = create_session(URL('sqlite', database=str(path)))
-            self._base_model = BaseModel(self._session)
-            books_table_model = TableModel(Book)
-            books_table_model.setSourceModel(self._base_model)
-            members_table_model = TableModel(Member)
-            members_table_model.setSourceModel(self._base_model)
-            self._content.set_models(books_table_model, members_table_model)
+            self._session = create_session(URL("sqlite", database=str(path)))
+            self._content.set_models(
+                BookModel(self._session), MemberModel(self._session)
+            )
         except Exception as e:
             logger.exception(e)
             raise e

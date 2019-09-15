@@ -1,5 +1,5 @@
 """Qt models"""
-from .base_model import BaseModel
-from .table_model import TableModel
+from .book_model import BookModel
+from .member_model import MemberModel
 
-__all__ = ["BaseModel", "TableModel"]
+__all__ = ["BookModel", "MemberModel"]
