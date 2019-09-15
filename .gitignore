@@ -15,3 +15,6 @@ docs/_build
 
 # Visual Studio Code
 .vscode
+
+# PyCharm
+.idea/
