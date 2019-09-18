@@ -2,64 +2,20 @@ from PySide2.QtWidgets import (
     QMainWindow,
     QWidget,
     QHBoxLayout,
-    QVBoxLayout,
-    QPushButton,
-    QStackedWidget,
     QAction,
     QMenu,
     QFileDialog,
 )
-from PySide2.QtCore import Qt, Slot
-from bookman.widgets import BooksPage, MembersPage
+from PySide2.QtCore import Slot
+from bookman.widgets import SideBar, ContentWidget
 from bookman.models import BookModel, MemberModel
 from bookman.persistence import create_session
-from functools import partial
 from sqlalchemy.orm import Session
 from sqlalchemy.engine.url import URL
 import pathlib
 import logging
 
 logger = logging.getLogger(__name__)
-
-
-class SideBar(QWidget):
-    def __init__(self):
-        QWidget.__init__(self)
-
-        # Layout.
-        self._layout = QVBoxLayout(self)
-        self._layout.setAlignment(Qt.AlignTop)
-
-        # Buttons.
-        self._members_button = QPushButton(self.tr("Members"))
-        self.members_button_clicked = self._members_button.clicked
-        self._layout.addWidget(self._members_button)
-        self._books_button = QPushButton(self.tr("Books"))
-        self.books_button_clicked = self._books_button.clicked
-        self._layout.addWidget(self._books_button)
-
-
-class ContentWidget(QStackedWidget):
-    def __init__(self):
-        QStackedWidget.__init__(self)
-
-        # Members page.
-        self._members_page = MembersPage()
-        self._members_page_index = self.addWidget(self._members_page)
-        self.select_members_page = partial(
-            self.setCurrentIndex, self._members_page_index
-        )
-
-        # Books page.
-        self._books_page = BooksPage()
-        self._books_page_index = self.addWidget(self._books_page)
-        self.select_books_page = partial(self.setCurrentIndex, self._books_page_index)
-
-    def set_models(
-        self, books_table_model: BookModel, members_table_model: MemberModel
-    ):
-        self._books_page.set_model(books_table_model)
-        self._members_page.set_model(members_table_model)
 
 
 class MainWindow(QMainWindow):
