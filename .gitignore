@@ -6,6 +6,9 @@ venv
 build
 dist
 
+# mypy
+.mypy_cache
+
 # pytest
 .pytest_cache
 pytest.log
