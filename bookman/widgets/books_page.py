@@ -1,4 +1,4 @@
-from PySide2.QtWidgets import QWidget, QVBoxLayout, QLabel, QListView
+from PySide2.QtWidgets import QWidget, QVBoxLayout, QLabel, QHeaderView, QTableView
 from bookman.models import BookModel
 from bookman.persistence import Book
 from PySide2.QtCore import Signal, Slot, QModelIndex
@@ -11,13 +11,18 @@ class BooksPage(QWidget):
         QWidget.__init__(self)
         self._layout = QVBoxLayout(self)
         self._layout.addWidget(QLabel("Books Page"))
-        self._view = QListView()
-        self._view.doubleClicked.connect(self.item_double_clicked)
+
+        self._view = QTableView()
+        self._view.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self._view.setAlternatingRowColors(True)
         self._layout.addWidget(self._view)
 
+        self._model: BookModel = None
+
     def set_model(self, model: BookModel):
+        self._model = model
         self._view.setModel(model)
 
     @Slot(QModelIndex)
     def item_double_clicked(self, index: QModelIndex):
-        self.book_double_clicked.emit(index.data())
+        pass

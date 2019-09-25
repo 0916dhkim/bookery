@@ -1,3 +1,4 @@
 from sqlalchemy.ext.declarative import declarative_base
+from typing import Type
 
-Base = declarative_base()
+Base: Type = declarative_base()
