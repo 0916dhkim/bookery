@@ -2,9 +2,12 @@ from PySide2.QtCore import QModelIndex, Qt, QAbstractTableModel
 from bookman.persistence import Book
 from sqlalchemy.event import listen
 from sqlalchemy import bindparam
-from sqlalchemy.orm import Session, Query
+from sqlalchemy.ext import baked
+from sqlalchemy.orm import Session
 from bookman.common import overrides
 from typing import Any, List
+
+bakery = baked.bakery()
 
 
 class BookModel(QAbstractTableModel):
@@ -18,10 +21,16 @@ class BookModel(QAbstractTableModel):
 
         # Cache.
         self._id_list: List[int] = []
-        self._query_all: Query = session.query(Book)
-        self._query_by_id: Query = session.query(Book).filter(
-            Book.id == bindparam("id")
-        )
+
+        def query_all_function(session: Session) -> baked.BakedQuery:
+            return session.query(Book)
+
+        self._query_all: baked.BakedQuery = bakery(query_all_function)
+
+        def query_by_id_function(session: Session) -> baked.BakedQuery:
+            return session.query(Book).filter(Book.id == bindparam("id"))
+
+        self._query_by_id: baked.BakedQuery = bakery(query_by_id_function)
         self._rebuild_cache()
 
         # Handle SQLAlchemy events.
@@ -46,7 +55,11 @@ class BookModel(QAbstractTableModel):
     @overrides(QAbstractTableModel)
     def data(self, index: QModelIndex, role: int = Qt.DisplayRole) -> Any:
         if index.isValid() and role in (Qt.DisplayRole, Qt.EditRole):
-            book = self._query_by_id.params(id=self._id_list[index.row()]).one()
+            book = (
+                self._query_by_id(self.session)
+                .params(id=self._id_list[index.row()])
+                .one()
+            )
             assert isinstance(book, Book)
             return getattr(book, BookModel.columns[index.column()].key)
         else:
@@ -64,7 +77,11 @@ class BookModel(QAbstractTableModel):
     @overrides(QAbstractTableModel)
     def setData(self, index: QModelIndex, value: Any, role: int = Qt.EditRole) -> bool:
         if index.isValid() and role == Qt.EditRole:
-            book = self._query_by_id.params(id=self._id_list[index.row()]).one()
+            book = (
+                self._query_by_id(self.session)
+                .params(id=self._id_list[index.row()])
+                .one()
+            )
             assert isinstance(book, Book)
             setattr(book, BookModel.columns[index.column()].key, value)
             return True
@@ -80,7 +97,7 @@ class BookModel(QAbstractTableModel):
 
     def _rebuild_cache(self):
         with self.session.no_autoflush:
-            query_result: List[Book] = self._query_all.all()
+            query_result: List[Book] = self._query_all(self.session).all()
             self._id_list = [x.id for x in query_result]
 
     def _sql_after_delete(self, mapper, connection, target: Book):
