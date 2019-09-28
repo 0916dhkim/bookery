@@ -6,7 +6,7 @@ from sqlalchemy import bindparam, Column
 from sqlalchemy.ext import baked
 from sqlalchemy.orm import Session
 from bookman.common import overrides
-from typing import Any, List, Type
+from typing import Any, List, Type, Iterable, Callable
 from abc import ABCMeta, abstractmethod
 
 
@@ -41,7 +41,15 @@ class MappedClassModel(QAbstractTableModel, metaclass=MappedClassModelMeta):
     @abstractmethod
     def mapped_class(cls) -> Type[Base]:
         """Target SQLAlchemy class of this model."""
-        ...
+
+    @property
+    def predicate(self):
+        return self._predicate
+
+    @predicate.setter
+    def predicate(self, fn: Callable[[Iterable], Iterable]):
+        self._predicate = fn
+        self._rebuild_cache()
 
     def __init__(self, session: Session):
         QAbstractTableModel.__init__(self)
@@ -53,23 +61,37 @@ class MappedClassModel(QAbstractTableModel, metaclass=MappedClassModelMeta):
         # Bakery.
         bakery = baked.bakery()
 
+        self._predicate = lambda x: True
+
         def query_all_function(s: Session) -> baked.BakedQuery:
             return s.query(self.mapped_class())
 
         self._query_all: baked.BakedQuery = bakery(query_all_function)
 
-        def query_by_id_function(s: Session) -> baked.BakedQuery:
+        def query_one_function(s: Session) -> baked.BakedQuery:
             return s.query(self.mapped_class()).filter(
                 self.id_column() == bindparam("id")
             )
 
-        self._query_by_id: baked.BakedQuery = bakery(query_by_id_function)
+        self._query_one: baked.BakedQuery = bakery(query_one_function)
         self._rebuild_cache()
 
         # Handle SQLAlchemy events.
         listen(self.mapped_class(), "after_delete", self._sql_after_delete)
         listen(self.mapped_class(), "after_insert", self._sql_after_insert)
         listen(self.mapped_class(), "after_update", self._sql_after_update)
+
+    def query_all(self) -> Iterable:
+        return filter(self.predicate, self._query_all(self.session))
+
+    def query_one(self, id):
+        result = self._query_one(self.session).params({"id": id}).one_or_none()
+        if result is None:
+            return None
+        elif self.predicate(result):
+            return result
+        else:
+            return None
 
     @overrides(QAbstractTableModel)
     def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
@@ -88,11 +110,7 @@ class MappedClassModel(QAbstractTableModel, metaclass=MappedClassModelMeta):
     @overrides(QAbstractTableModel)
     def data(self, index: QModelIndex, role: int = Qt.DisplayRole) -> Any:
         if index.isValid() and role in (Qt.DisplayRole, Qt.EditRole):
-            instance = (
-                self._query_by_id(self.session)
-                .params(id=self._id_list[index.row()])
-                .one()
-            )
+            instance = self.query_one(self._id_list[index.row()])
             assert isinstance(instance, self.mapped_class())
             return getattr(instance, self.columns()[index.column()].key)
         else:
@@ -110,11 +128,7 @@ class MappedClassModel(QAbstractTableModel, metaclass=MappedClassModelMeta):
     @overrides(QAbstractTableModel)
     def setData(self, index: QModelIndex, value: Any, role: int = Qt.EditRole) -> bool:
         if index.isValid() and role == Qt.EditRole:
-            instance = (
-                self._query_by_id(self.session)
-                .params(id=self._id_list[index.row()])
-                .one()
-            )
+            instance = self.query_one(self._id_list[index.row()])
             assert isinstance(instance, self.mapped_class())
             setattr(instance, self.columns()[index.column()].key, value)
             return True
@@ -130,10 +144,9 @@ class MappedClassModel(QAbstractTableModel, metaclass=MappedClassModelMeta):
 
     def _rebuild_cache(self):
         with self.session.no_autoflush:
-            query_result = self._query_all(
-                self.session
-            ).all()
+            query_result = self.query_all()
             self._id_list = [getattr(x, self.id_column().key) for x in query_result]
+        self.modelReset.emit()
 
     def _sql_after_delete(self, mapper, connection, target):
         assert isinstance(target, self.mapped_class())
