@@ -1,6 +1,6 @@
 from PySide2.QtWidgets import QStackedWidget
-from bookman.widgets import BooksPage, MembersPage
-from bookman.models import BookModel, MemberModel
+from bookery.widgets import BooksPage, MembersPage
+from bookery.models import BookModel, MemberModel
 from functools import partial
 
 

@@ -1,4 +1,4 @@
-from bookman.persistence import Base
+from bookery.persistence import Base
 from sqlalchemy import Column, Integer, Text
 
 

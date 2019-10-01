@@ -1,5 +1,5 @@
 import sys
-from bookman.widgets.main_window import MainWindow
+from bookery.widgets.main_window import MainWindow
 from PySide2.QtWidgets import QApplication
 
 

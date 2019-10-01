@@ -1,14 +1,14 @@
-bookman package
+bookery package
 ===============
 
 .. toctree::
    :maxdepth: 4
 
-   bookman.models
-   bookman.persistence
-   bookman.widgets
+   bookery.models
+   bookery.persistence
+   bookery.widgets
 
-.. automodule:: bookman
+.. automodule:: bookery
    :members:
    :undoc-members:
    :show-inheritance:

@@ -1,7 +1,7 @@
 """Common fixtures for pytest are declared in this module."""
 import pytest
 from pathlib import Path
-from bookman.persistence import Book, Member, create_new_sqlite_database_file
+from bookery.persistence import Book, Member, create_new_sqlite_database_file
 import logging
 from typing import List
 
@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 @pytest.fixture()
 def empty_bookman_database(tmp_path: Path) -> Path:
-    """Creates an empty bookman database and returns its path."""
+    """Creates an empty bookery database and returns its path."""
 
     def file_name(i: int) -> str:
         return "{:d}.sqlite3".format(i)

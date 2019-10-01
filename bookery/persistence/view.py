@@ -1,4 +1,4 @@
-from bookman.persistence import Base, Member
+from bookery.persistence import Base, Member
 from sqlalchemy import Column, Integer, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 

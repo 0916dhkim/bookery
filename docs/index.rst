@@ -2,4 +2,4 @@
 .. toctree::
     :maxdepth: 2
 
-    api/bookman.rst
+    api/bookery.rst

@@ -1,6 +1,6 @@
-from bookman.models import MappedClassModel
-from bookman.persistence import Book
-from bookman.common import overrides
+from bookery.models import MappedClassModel
+from bookery.persistence import Book
+from bookery.common import overrides
 
 
 class BookModel(MappedClassModel):

@@ -1,11 +1,11 @@
 from __future__ import annotations
 from PySide2.QtCore import QModelIndex, Qt, QAbstractTableModel
-from bookman.persistence import Base
+from bookery.persistence import Base
 from sqlalchemy.event import listen
 from sqlalchemy import bindparam, Column
 from sqlalchemy.ext import baked
 from sqlalchemy.orm import Session
-from bookman.common import overrides
+from bookery.common import overrides
 from typing import Any, List, Type, Iterable, Callable
 from abc import ABCMeta, abstractmethod
 

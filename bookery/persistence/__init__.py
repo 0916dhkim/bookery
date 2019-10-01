@@ -1,4 +1,4 @@
-"""Data persistence of bookman application.
+"""Data persistence of bookery application.
 
 Using SQLAlchemy with SQLite database to save application data.
 """

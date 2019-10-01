@@ -1,4 +1,4 @@
-from bookman.persistence import create_new_sqlite_database_file
+from bookery.persistence import create_new_sqlite_database_file
 import logging
 from pathlib import Path
 

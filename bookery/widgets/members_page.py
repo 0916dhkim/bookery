@@ -6,8 +6,8 @@ from PySide2.QtWidgets import (
     QTableView,
     QLineEdit,
 )
-from bookman.models import MemberModel
-from bookman.persistence import Member
+from bookery.models import MemberModel
+from bookery.persistence import Member
 from PySide2.QtCore import Signal, Slot, QModelIndex
 
 

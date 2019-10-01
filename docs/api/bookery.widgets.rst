@@ -1,6 +1,6 @@
-bookman.persistence package
+bookery.widgets package
 ===========================
-.. automodule:: bookman.persistence
+.. automodule:: bookery.widgets
    :members:
    :undoc-members:
    :show-inheritance:

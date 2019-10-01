@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "bookman"
+name = "bookery"
 version = "0.2.0"
 description = ""
 authors = ["Donghyeon Kim <0916dhkim@gmail.com>"]

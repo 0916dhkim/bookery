@@ -1,6 +1,6 @@
-bookman.models package
+bookery.models package
 ======================
-.. automodule:: bookman.models
+.. automodule:: bookery.models
    :members:
    :undoc-members:
    :show-inheritance:

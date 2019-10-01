@@ -1,4 +1,4 @@
-"""Qt widgets for Bookman application"""
+"""Qt widgets for Bookery application"""
 from .book_details_page import BookDetailsPage
 from .books_page import BooksPage
 from .member_details_page import MemberDetailsPage

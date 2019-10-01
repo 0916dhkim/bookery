@@ -1,8 +1,8 @@
 =======
-Bookman
+Bookery
 =======
 
-Bookclub Manager
+Bookclub Managing Application
 
 Developers
 ==========
@@ -18,6 +18,5 @@ Run Tests
 ---------
 .. code-block::
 
-    poetry shell
-    pytest
+    poetry run pytest
 

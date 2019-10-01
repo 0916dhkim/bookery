@@ -7,9 +7,9 @@ from PySide2.QtWidgets import (
     QFileDialog,
 )
 from PySide2.QtCore import Slot
-from bookman.widgets import SideBar, ContentWidget
-from bookman.models import BookModel, MemberModel
-from bookman.persistence import create_session
+from bookery.widgets import SideBar, ContentWidget
+from bookery.models import BookModel, MemberModel
+from bookery.persistence import create_session
 from sqlalchemy.orm import Session
 from sqlalchemy.engine.url import URL
 import pathlib

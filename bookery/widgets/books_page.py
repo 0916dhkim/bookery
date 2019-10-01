@@ -1,6 +1,6 @@
 from PySide2.QtWidgets import QWidget, QVBoxLayout, QLabel, QHeaderView, QTableView
-from bookman.models import BookModel
-from bookman.persistence import Book
+from bookery.models import BookModel
+from bookery.persistence import Book
 from PySide2.QtCore import Signal, Slot, QModelIndex
 
 
