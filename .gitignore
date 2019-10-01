@@ -13,9 +13,6 @@ dist
 .pytest_cache
 pytest.log
 
-# Documentation
-docs/_build
-
 # Visual Studio Code
 .vscode
 
