@@ -2,7 +2,10 @@
 name = "bookery"
 version = "0.2.0"
 description = ""
+license = "MIT"
 authors = ["Donghyeon Kim <0916dhkim@gmail.com>"]
+readme = "README.rst"
+repository = "https://github.com/0916dhkim/bookery"
 
 [tool.poetry.dependencies]
 python = "^3.7"
