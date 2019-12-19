@@ -1,20 +1,7 @@
-# Python
-.venv
-venv
-**.egg-info
-**/__pycache__
-build
+# Node.js
+node_modules
 dist
 
-# mypy
-.mypy_cache
-
-# pytest
-.pytest_cache
-pytest.log
-
 # Visual Studio Code
-.vscode
-
-# PyCharm
-.idea/
+.vscode/*
+!.vscode/launch.json
