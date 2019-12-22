@@ -1,6 +1,7 @@
 import { Serializer } from "./serializable";
 import * as moment from "moment";
 export class View {
+  public readonly id: number;
   private userId: number;
   private bookId: number;
   private date: moment.Moment;

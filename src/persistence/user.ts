@@ -1,7 +1,7 @@
 import { Serializer } from "./serializable";
 
 export class User {
-  private id: number;
+  public readonly id: number;
   private lastName: string;
   private firstName: string;
   private note: string;

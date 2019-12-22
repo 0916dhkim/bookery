@@ -1,6 +1,7 @@
 import { Serializer } from "./serializable";
 
 export class Book {
+  public readonly id: number;
   private title: string;
   private author: string;
   private isbn?: string;
