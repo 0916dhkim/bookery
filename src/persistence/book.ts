@@ -3,7 +3,7 @@ import { Serializer } from "./serializable";
 export class Book {
   private title: string;
   private author: string;
-  private isbn: string;
+  private isbn?: string;
 }
 
 export class BookSerializer implements Serializer<Book> {
