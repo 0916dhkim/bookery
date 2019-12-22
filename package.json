@@ -10,7 +10,8 @@
   "scripts": {
     "build": "webpack",
     "test": "mocha -r ts-node/register test/**/*.ts",
-    "start": "electron ."
+    "start": "electron .",
+    "prestart": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -24,6 +25,7 @@
   "homepage": "https://github.com/0916dhkim/bookery#readme",
   "dependencies": {
     "electron": "^7.1.5",
+    "moment": "^2.24.0",
     "ts-loader": "^6.2.1",
     "typescript": "^3.7.3",
     "webpack": "^4.41.3",
