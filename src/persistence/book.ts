@@ -1,10 +1,12 @@
 import { Serializer } from "./serializable";
 
 export class Book {
-  public readonly id: number;
-  private title: string;
-  private author: string;
-  private isbn?: string;
+  constructor(
+    readonly id: number,
+    private title: string,
+    private author: string,
+    private isbn?: string
+  ) {}
 }
 
 export class BookSerializer implements Serializer<Book> {
