@@ -30,5 +30,13 @@ describe("Book", function() {
         book.isbn
       );
     });
+
+    it("Serialize a Book Without ISBN", function() {
+      const book = new Book(22, "Twenty Two", "Chris Johnson");
+      const bookSerializer = new BookSerializer();
+      const str = bookSerializer.serialize(book);
+      const deserialized = bookSerializer.deserialize(str);
+      assertBookProperties(deserialized, book.id, book.title, book.author);
+    });
   });
 });
