@@ -1,10 +1,40 @@
 import { Serializer } from "./serializable";
 import * as moment from "moment";
 export class View {
-  public readonly id: number;
-  private userId: number;
-  private bookId: number;
-  private date: moment.Moment;
+  private _userId: number;
+  get userId(): number {
+    return this._userId;
+  }
+  set userId(newUserId: number) {
+    this._userId = newUserId;
+  }
+
+  private _bookId: number;
+  get bookId(): number {
+    return this._bookId;
+  }
+  set bookId(newBookId: number) {
+    this._bookId = newBookId;
+  }
+
+  private _date: moment.Moment;
+  get date(): moment.Moment {
+    return this._date;
+  }
+  set date(newDate: moment.Moment) {
+    this._date = newDate;
+  }
+
+  constructor(
+    readonly id: number,
+    userId: number,
+    bookId: number,
+    date: moment.Moment
+  ) {
+    this.userId = userId;
+    this.bookId = bookId;
+    this.date = date;
+  }
 }
 
 export class ViewSerializer implements Serializer<View> {
