@@ -39,12 +39,21 @@ export class Book {
 
 export class BookSerializer implements Serializer<Book> {
   public serialize(target: Book): string {
-    // TODO: Implement.
-    return "";
+    return JSON.stringify({
+      id: target.id,
+      title: target.title,
+      author: target.author,
+      isbn: target.isbn
+    });
   }
 
   public deserialize(serializedString: string): Book {
-    // TODO: Implement.
-    return undefined;
+    const parsedJson = JSON.parse(serializedString);
+    return new Book(
+      parsedJson.id,
+      parsedJson.title,
+      parsedJson.author,
+      parsedJson.isbn
+    );
   }
 }
