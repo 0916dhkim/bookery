@@ -39,12 +39,21 @@ export class View {
 
 export class ViewSerializer implements Serializer<View> {
   public serialize(target: View): string {
-    // TODO: Implement.
-    return "";
+    return JSON.stringify({
+      id: target.id,
+      userId: target.userId,
+      bookId: target.bookId,
+      date: target.date.valueOf()
+    });
   }
 
   public deserialize(serializedString: string): View {
-    // TODO: Implement.
-    return undefined;
+    const parsedJson = JSON.parse(serializedString);
+    return new View(
+      parsedJson.id,
+      parsedJson.userId,
+      parsedJson.bookId,
+      moment(parsedJson.date)
+    );
   }
 }
