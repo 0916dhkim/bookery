@@ -39,12 +39,21 @@ export class User {
 
 export class UserSerializer implements Serializer<User> {
   public serialize(target: User): string {
-    // TODO: Implement.
-    return "";
+    return JSON.stringify({
+      id: target.id,
+      lastName: target.lastName,
+      firstName: target.firstName,
+      note: target.note
+    });
   }
 
   public deserialize(serializedString: string): User {
-    // TODO: Implement.
-    return undefined;
+    const parsedJson = JSON.parse(serializedString);
+    return new User(
+      parsedJson.id,
+      parsedJson.lastName,
+      parsedJson.firstName,
+      parsedJson.note
+    );
   }
 }
