@@ -1,0 +1,46 @@
+{
+  "name": "bookery",
+  "version": "0.0.3",
+  "description": "======= Bookery =======",
+  "main": "dist/electron.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "build": "webpack",
+    "test": "mocha -r ts-node/register test/**/*.ts",
+    "start": "electron .",
+    "prestart": "npm run build",
+    "lint": "eslint --ext=ts ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/0916dhkim/bookery.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/0916dhkim/bookery/issues"
+  },
+  "homepage": "https://github.com/0916dhkim/bookery#readme",
+  "dependencies": {
+    "electron": "^7.1.5",
+    "moment": "^2.24.0",
+    "ts-loader": "^6.2.1",
+    "typescript": "^3.7.3",
+    "webpack": "^4.41.3",
+    "webpack-cli": "^3.3.10"
+  },
+  "devDependencies": {
+    "@types/mocha": "^5.2.7",
+    "@typescript-eslint/eslint-plugin": "^2.12.0",
+    "@typescript-eslint/parser": "^2.12.0",
+    "eslint": "^6.7.2",
+    "eslint-config-prettier": "^6.7.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "mocha": "^6.2.2",
+    "prettier": "^1.19.1",
+    "ts-node": "^8.5.4"
+  }
+}
