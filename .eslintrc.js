@@ -1,11 +1,22 @@
 module.exports = {
   parser: "@typescript-eslint/parser",
   extends: [
+    "eslint:recommended",
+    "plugin:react/recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:prettier/recommended"
   ],
   parserOptions: {
     ecmaVersion: 2018,
     sourceType: "module"
-  }
+  },
+  overrides: [
+    {
+      files: ["webpack.config.js"],
+      extends: ["eslint:recommended"],
+      env: {
+        node: true
+      }
+    }
+  ]
 };

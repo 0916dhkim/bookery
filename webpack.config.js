@@ -1,5 +1,5 @@
 module.exports = {
-  entry: "./src/electron.ts",
+  entry: "./src/electron.tsx",
   mode: "development",
   target: "electron-main",
   devtool: "inline-source-map",
