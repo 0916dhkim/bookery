@@ -7,7 +7,7 @@ function onAppReady(): void {
     }
   });
 
-  win.loadFile("index.html");
+  win.loadFile("src/ui/index.html");
 }
 
 app.on("ready", onAppReady);
