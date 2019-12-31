@@ -1,4 +1,3 @@
-/** eslint-disable no-alert, no-console */
 module.exports = {
   parser: "@typescript-eslint/parser",
   extends: [
