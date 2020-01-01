@@ -8,7 +8,7 @@
     "test": "tests"
   },
   "scripts": {
-    "build": "webpack -p --config configs/webpack.config.base.ts",
+    "build": "webpack -p --config configs/webpack.config.main.ts",
     "test": "mocha -r ts-node/register test/**/*.ts",
     "start": "electron .",
     "prestart": "npm run build",
@@ -38,6 +38,8 @@
     "@types/mocha": "^5.2.7",
     "@types/react": "^16.9.17",
     "@types/react-dom": "^16.9.4",
+    "@types/webpack": "^4.41.1",
+    "@types/webpack-merge": "^4.1.5",
     "@typescript-eslint/eslint-plugin": "^2.12.0",
     "@typescript-eslint/parser": "^2.12.0",
     "eslint": "^6.7.2",
@@ -46,6 +48,7 @@
     "eslint-plugin-react": "^7.17.0",
     "mocha": "^6.2.2",
     "prettier": "^1.19.1",
-    "ts-node": "^8.5.4"
+    "ts-node": "^8.5.4",
+    "webpack-merge": "^4.2.2"
   }
 }

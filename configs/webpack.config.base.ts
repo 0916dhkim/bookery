@@ -1,6 +1,7 @@
-export default {
-  entry: "./src/electron.tsx",
-  target: "electron-main",
+import { Configuration } from "webpack";
+import * as path from "path";
+
+const config: Configuration = {
   devtool: "inline-source-map",
   resolve: {
     extensions: [".ts", ".tsx", ".js"]
@@ -15,7 +16,8 @@ export default {
     ]
   },
   output: {
-    path: __dirname + "/dist",
-    filename: "electron.js"
+    path: path.join(__dirname, "../dist")
   }
 };
+
+export default config;
