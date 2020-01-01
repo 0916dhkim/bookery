@@ -1,6 +1,5 @@
-module.exports = {
+export default {
   entry: "./src/electron.tsx",
-  mode: "development",
   target: "electron-main",
   devtool: "inline-source-map",
   resolve: {

@@ -8,7 +8,7 @@
     "test": "tests"
   },
   "scripts": {
-    "build": "webpack",
+    "build": "webpack -p --config configs/webpack.config.base.ts",
     "test": "mocha -r ts-node/register test/**/*.ts",
     "start": "electron .",
     "prestart": "npm run build",

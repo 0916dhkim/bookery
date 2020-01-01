@@ -12,7 +12,7 @@ module.exports = {
   },
   overrides: [
     {
-      files: ["webpack.config.js"],
+      files: ["configs/**/*.ts"],
       extends: ["eslint:recommended"],
       env: {
         node: true
