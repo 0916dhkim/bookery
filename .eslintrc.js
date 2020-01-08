@@ -17,6 +17,12 @@ module.exports = {
       env: {
         node: true
       }
+    },
+    {
+      files: ["src/**/*.tsx"],
+      env: {
+        browser: true
+      }
     }
   ]
 };

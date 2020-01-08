@@ -2,7 +2,7 @@ import { Configuration } from "webpack";
 import * as path from "path";
 
 const config: Configuration = {
-  devtool: "inline-source-map",
+  devtool: "source-map",
   resolve: {
     extensions: [".ts", ".tsx", ".js"]
   },
