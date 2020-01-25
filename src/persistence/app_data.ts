@@ -1,7 +1,7 @@
 import { Serializer } from "./serializable";
-import { Book } from "./book";
-import { User } from "./user";
-import { View } from "./view";
+import { Book, BookSerializer } from "./book";
+import { User, UserSerializer } from "./user";
+import { View, ViewSerializer } from "./view";
 
 export class AppData {
   private _books: Book[];
@@ -18,16 +18,60 @@ export class AppData {
   get views(): View[] {
     return this._views;
   }
+
+  constructor() {
+    this._books = [];
+    this._users = [];
+    this._views = [];
+  }
 }
 
 export class AppDataSerializer implements Serializer<AppData> {
   public serialize(target: AppData): string {
-    // TODO: Implement.
-    return "";
+    const bookSerializer = new BookSerializer();
+    const userSerializer = new UserSerializer();
+    const viewSerializer = new ViewSerializer();
+
+    const books = target.books.map(book =>
+      JSON.parse(bookSerializer.serialize(book))
+    );
+    const users = target.users.map(user =>
+      JSON.parse(userSerializer.serialize(user))
+    );
+    const views = target.views.map(view =>
+      JSON.parse(viewSerializer.serialize(view))
+    );
+
+    return JSON.stringify({
+      books: books,
+      users: users,
+      views: views
+    });
   }
 
   public deserialize(serializedString: string): AppData {
-    // TODO: Implement.
-    return undefined;
+    const bookSerializer = new BookSerializer();
+    const userSerializer = new UserSerializer();
+    const viewSerializer = new ViewSerializer();
+
+    const ret = new AppData();
+
+    const parsedJson = JSON.parse(serializedString);
+
+    const parsedBooks = parsedJson.books as {}[];
+    const parsedUsers = parsedJson.users as {}[];
+    const parsedViews = parsedJson.views as {}[];
+
+    ret.books.push(
+      ...parsedBooks.map(x => bookSerializer.deserialize(JSON.stringify(x)))
+    );
+    ret.users.push(
+      ...parsedUsers.map(x => userSerializer.deserialize(JSON.stringify(x)))
+    );
+    ret.views.push(
+      ...parsedViews.map(x => viewSerializer.deserialize(JSON.stringify(x)))
+    );
+
+    return ret;
   }
 }
