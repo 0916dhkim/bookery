@@ -4,9 +4,20 @@ import { User } from "./user";
 import { View } from "./view";
 
 export class AppData {
-  private books: Book[];
-  private users: User[];
-  private views: View[];
+  private _books: Book[];
+  get books(): Book[] {
+    return this._books;
+  }
+
+  private _users: User[];
+  get users(): User[] {
+    return this._users;
+  }
+
+  private _views: View[];
+  get views(): View[] {
+    return this._views;
+  }
 }
 
 export class AppDataSerializer implements Serializer<AppData> {
