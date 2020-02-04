@@ -1,8 +1,8 @@
 import * as React from "react";
-import { ContentViewType } from "./content_view";
+import { ContentView } from "./content_view";
 
 export interface Props {
-  onMenuClick: (contentViewTypeName: ContentViewType) => void;
+  onMenuClick: (contentViewType: typeof ContentView) => void;
 }
 
 export class SideMenu extends React.Component<Props, {}> {
@@ -11,13 +11,15 @@ export class SideMenu extends React.Component<Props, {}> {
       <nav className="js-side-menu">
         <a>Navigation</a>
         <ul>
-          {Object.values(ContentViewType).map(v => (
-            <li key={v}>
+          {Array.from(ContentView.sideMenuEntries).map(contentViewType => (
+            <li key={contentViewType.title}>
               <a
                 href="#"
-                onClick={(() => this.props.onMenuClick(v)) as () => void}
+                onClick={
+                  (() => this.props.onMenuClick(contentViewType)) as () => void
+                }
               >
-                {v}
+                {contentViewType.title}
               </a>
             </li>
           ))}

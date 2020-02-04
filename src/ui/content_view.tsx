@@ -1,18 +1,11 @@
 import * as React from "react";
-import { Type } from "../type";
-import { BooksView } from "./books_view";
-import { UsersView } from "./users_view";
+import { AppData } from "../persistence/app_data";
 
-export enum ContentViewType {
-  BOOKS_VIEW = "Books",
-  USERS_VIEW = "Users"
+export interface Props {
+  appData: AppData;
 }
 
-export function nameToType(typeName: ContentViewType): Type<React.Component> {
-  switch (typeName) {
-    case ContentViewType.BOOKS_VIEW:
-      return BooksView;
-    case ContentViewType.USERS_VIEW:
-      return UsersView;
-  }
+export class ContentView extends React.Component<Props, {}> {
+  static readonly title: string;
+  static readonly sideMenuEntries: Set<typeof ContentView> = new Set();
 }
