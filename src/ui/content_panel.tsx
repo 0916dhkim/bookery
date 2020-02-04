@@ -1,13 +1,21 @@
 import * as React from "react";
-import { ContentViewType, nameToType } from "./content_view";
+import { ContentView, Props as ContentViewProps } from "./content_view";
+import { AppData } from "../persistence/app_data";
 
 export interface Props {
-  contentViewType: ContentViewType;
+  contentViewType: typeof ContentView;
+  appData: AppData;
 }
 
 export class ContentPanel extends React.Component<Props, {}> {
   render(): React.ReactNode {
-    const content = React.createElement(nameToType(this.props.contentViewType));
-    return <div className="js-content-panel">Content Panel{content}</div>;
+    const contentPanelProps: ContentViewProps = {
+      appData: this.props.appData
+    };
+    const contentPanel = React.createElement(
+      this.props.contentViewType,
+      contentPanelProps
+    );
+    return <div className="js-content-panel">Content Panel{contentPanel}</div>;
   }
 }

@@ -3,7 +3,7 @@ import * as assert from "assert";
 import * as moment from "moment";
 import { View, ViewSerializer } from "../../src/persistence/view";
 
-function assertViewProperties(
+export function assertViewProperties(
   view: View,
   id: number,
   userId: number,
