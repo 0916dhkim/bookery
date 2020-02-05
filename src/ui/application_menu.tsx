@@ -1,21 +1,43 @@
+import * as React from "react";
 import { remote } from "electron";
+import * as fs from "fs";
+import { Main } from "./main";
+import { AppDataSerializer } from "../persistence/app_data";
 
-export const applicationMenu = new remote.Menu();
+export function initializeApplicationMenu(main: React.RefObject<Main>): void {
+  remote.Menu.setApplicationMenu(
+    remote.Menu.buildFromTemplate([
+      {
+        label: "File",
+        submenu: [
+          {
+            label: "Open File...",
+            click(): void {
+              const result = remote.dialog.showOpenDialogSync({
+                properties: ["openFile"]
+              });
 
-export const fileMenu = new remote.MenuItem({
-  label: "File",
-  submenu: []
-});
-applicationMenu.append(fileMenu);
-
-export const openFileMenuItem = new remote.MenuItem({ label: "Open File..." });
-fileMenu.submenu.append(openFileMenuItem);
-
-export const saveMenuItem = new remote.MenuItem({ label: "Save" });
-fileMenu.submenu.append(saveMenuItem);
-
-export const saveAsMenuItem = new remote.MenuItem({ label: "Save As..." });
-fileMenu.submenu.append(saveAsMenuItem);
-
-applicationMenu.append(new remote.MenuItem({ role: "editMenu" }));
-applicationMenu.append(new remote.MenuItem({ role: "viewMenu" }));
+              if (result !== undefined && result.length === 1) {
+                const fileContent = fs.readFileSync(result[0], {
+                  encoding: "utf8"
+                });
+                const appDataSerializer = new AppDataSerializer();
+                main.current.setState({
+                  appData: appDataSerializer.deserialize(fileContent)
+                });
+              }
+            }
+          },
+          {
+            label: "Save"
+          },
+          {
+            label: "Save As..."
+          }
+        ]
+      },
+      { role: "editMenu" },
+      { role: "viewMenu" }
+    ])
+  );
+}
