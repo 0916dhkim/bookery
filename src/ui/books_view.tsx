@@ -1,7 +1,7 @@
 import * as React from "react";
-import { ContentView } from "./content_view";
+import { ContentViewProps } from "./content_view";
 
-export class BooksView extends ContentView {
+export class BooksView extends React.Component<ContentViewProps, {}> {
   static readonly title: string = "Books";
   render(): React.ReactNode {
     return (
@@ -20,5 +20,3 @@ export class BooksView extends ContentView {
     );
   }
 }
-
-ContentView.sideMenuEntries.add(BooksView);

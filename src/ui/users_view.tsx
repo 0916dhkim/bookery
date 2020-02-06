@@ -1,11 +1,9 @@
 import * as React from "react";
-import { ContentView } from "./content_view";
+import { ContentViewProps } from "./content_view";
 
-export class UsersView extends ContentView {
+export class UsersView extends React.Component<ContentViewProps, {}> {
   static readonly title: string = "Users";
   render(): React.ReactNode {
     return <div className="js-users-view">Users View</div>;
   }
 }
-
-ContentView.sideMenuEntries.add(UsersView);
