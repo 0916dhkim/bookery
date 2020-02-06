@@ -1,39 +1,65 @@
 import * as React from "react";
 import { SideMenu } from "./side_menu";
-import { ContentPanel } from "./content_panel";
-import { ContentView } from "./content_view";
 import { AppData } from "../persistence/app_data";
+import { ContentViewProps } from "./content_view";
 import { BooksView } from "./books_view";
+import { UsersView } from "./users_view";
+
+interface ContentViewElementInterface {
+  name: string;
+  viewType: new (props: ContentViewProps) => React.Component<
+    ContentViewProps,
+    {}
+  >;
+}
+
+const contentViews: ContentViewElementInterface[] = [
+  {
+    name: "Books",
+    viewType: BooksView
+  },
+  {
+    name: "Users",
+    viewType: UsersView
+  }
+];
 
 export interface State {
-  contentViewType: typeof ContentView;
   appData: AppData;
+  contentViewIndex: number;
 }
 
 export class Main extends React.Component<{}, State> {
   constructor(props: {}) {
     super(props);
     this.state = {
-      contentViewType: BooksView,
-      appData: new AppData()
+      appData: new AppData(),
+      contentViewIndex: 0
     };
   }
 
   render(): React.ReactNode {
+    const contentViewElementProps: ContentViewProps = {
+      appData: this.state.appData
+    };
+    const contentViewElement = React.createElement(
+      contentViews[this.state.contentViewIndex].viewType,
+      contentViewElementProps
+    );
     return (
       <div className="js-main">
-        <SideMenu onMenuClick={this.onMenuClick.bind(this)} />
-        <ContentPanel
-          contentViewType={this.state.contentViewType}
-          appData={this.state.appData}
+        <SideMenu
+          contentViewNames={contentViews.map(contentView => contentView.name)}
+          onMenuClick={this.onMenuClick.bind(this)}
         />
+        {contentViewElement}
       </div>
     );
   }
 
-  onMenuClick(contentViewType: typeof ContentView): void {
+  onMenuClick(index: number): void {
     this.setState({
-      contentViewType: contentViewType
+      contentViewIndex: index
     });
   }
 }
