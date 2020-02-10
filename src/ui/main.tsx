@@ -4,7 +4,11 @@ import { AppData } from "../persistence/app_data";
 import { ContentViewProps } from "./content_view";
 import { BooksView } from "./books_view";
 import { UsersView } from "./users_view";
+import { QueryView } from "./query_view";
 
+/**
+ * Interface for view type array elements.
+ */
 interface ContentViewElementInterface {
   name: string;
   viewType: new (props: ContentViewProps) => React.Component<
@@ -13,6 +17,9 @@ interface ContentViewElementInterface {
   >;
 }
 
+/**
+ * List of Available View Types.
+ */
 const contentViews: ContentViewElementInterface[] = [
   {
     name: "Books",
@@ -21,6 +28,10 @@ const contentViews: ContentViewElementInterface[] = [
   {
     name: "Users",
     viewType: UsersView
+  },
+  {
+    name: "Query",
+    viewType: QueryView
   }
 ];
 
