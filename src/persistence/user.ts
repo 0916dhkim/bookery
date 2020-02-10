@@ -1,6 +1,7 @@
 import { Serializer } from "./serializable";
+import { Queryable } from "./queryable";
 
-export class User {
+export class User implements Queryable {
   private _lastName: string;
   get lastName(): string {
     return this._lastName;
@@ -34,6 +35,11 @@ export class User {
     this.lastName = lastName;
     this.firstName = firstName;
     this.note = note;
+  }
+
+  query(queryString: string): number {
+    // TODO: Implement.
+    return -1;
   }
 }
 
