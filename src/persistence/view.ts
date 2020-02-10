@@ -1,6 +1,7 @@
 import { Serializer } from "./serializable";
 import * as moment from "moment";
-export class View {
+import { Queryable } from "./queryable";
+export class View implements Queryable {
   private _userId: number;
   get userId(): number {
     return this._userId;
@@ -34,6 +35,11 @@ export class View {
     this.userId = userId;
     this.bookId = bookId;
     this.date = date;
+  }
+
+  query(queryString: string): number {
+    // TODO: Implement.
+    return -1;
   }
 }
 
