@@ -1,5 +1,12 @@
 import * as React from "react";
 import { ContentViewProps } from "./content_view";
+import { Book } from "../persistence/book";
+import { User } from "../persistence/user";
+
+interface State {
+  bookSuggestions: Book[];
+  userSuggestions: User[];
+}
 
 export class QueryView extends React.Component<ContentViewProps, {}> {
   private userInputRef: React.RefObject<HTMLInputElement>;
@@ -8,6 +15,10 @@ export class QueryView extends React.Component<ContentViewProps, {}> {
     super(props);
     this.userInputRef = React.createRef();
     this.bookInputRef = React.createRef();
+    this.state = {
+      bookSuggestions: [],
+      userSuggestions: []
+    };
   }
 
   render(): React.ReactNode {
