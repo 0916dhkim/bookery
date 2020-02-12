@@ -17,9 +17,15 @@ export class QueryView extends React.Component<ContentViewProps, State> {
     super(props);
 
     const bookFuseOptions: Fuse.FuseOptions<Book> = {
+      shouldSort: true,
+      includeMatches: false,
+      includeScore: false,
       keys: ["title", "author", "isbn"]
     };
     const userFuseOptions: Fuse.FuseOptions<User> = {
+      shouldSort: true,
+      includeMatches: false,
+      includeScore: false,
       keys: ["lastName", "firstName", "note"]
     };
     this.bookFuse = new Fuse(this.props.appData.books, bookFuseOptions);
