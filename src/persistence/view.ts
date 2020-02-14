@@ -1,5 +1,6 @@
 import { Serializer } from "./serializable";
 import * as moment from "moment";
+
 export class View {
   private _userId: number;
   get userId(): number {
