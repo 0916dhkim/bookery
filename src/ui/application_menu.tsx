@@ -31,7 +31,18 @@ export function initializeApplicationMenu(main: React.RefObject<Main>): void {
             }
           },
           {
-            label: "Save"
+            label: "Save",
+            click(): void {
+              const appDataSerializer = new AppDataSerializer();
+              const stringifiedAppData = appDataSerializer.serialize(
+                main.current.state.appData
+              );
+              fs.writeFileSync(
+                main.current.state.currentFilePath,
+                stringifiedAppData,
+                { encoding: "utf8" }
+              );
+            }
           },
           {
             label: "Save As..."
