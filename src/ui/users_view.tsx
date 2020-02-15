@@ -1,7 +1,12 @@
 import * as React from "react";
 import { ContentViewProps } from "./content_view";
+import { User } from "../persistence/user";
 
-export class UsersView extends React.Component<ContentViewProps, {}> {
+interface State {
+  activeUser?: User;
+}
+
+export class UsersView extends React.Component<ContentViewProps, State> {
   static readonly title: string = "Users";
   render(): React.ReactNode {
     return (
@@ -10,7 +15,7 @@ export class UsersView extends React.Component<ContentViewProps, {}> {
         <ul>
           {this.props.appData.users.map(user => (
             <li key={user.id.toString()}>
-              <a>
+              <a href="#">
                 {user.lastName}, {user.firstName}: {user.note}
               </a>
             </li>
