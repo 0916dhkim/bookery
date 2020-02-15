@@ -36,36 +36,40 @@ const contentViews: ContentViewElementInterface[] = [
 ];
 
 export interface State {
-  appData: AppData;
+  appData?: AppData;
   contentViewIndex: number;
+  currentFilePath?: string;
 }
 
 export class Main extends React.Component<{}, State> {
   constructor(props: {}) {
     super(props);
     this.state = {
-      appData: new AppData(),
       contentViewIndex: 0
     };
   }
 
   render(): React.ReactNode {
-    const contentViewElementProps: ContentViewProps = {
-      appData: this.state.appData
-    };
-    const contentViewElement = React.createElement(
-      contentViews[this.state.contentViewIndex].viewType,
-      contentViewElementProps
-    );
-    return (
-      <div className="js-main">
-        <SideMenu
-          contentViewNames={contentViews.map(contentView => contentView.name)}
-          onMenuClick={this.onMenuClick.bind(this)}
-        />
-        {contentViewElement}
-      </div>
-    );
+    if (this.state.appData === undefined) {
+      return <p>Welcome Screen</p>;
+    } else {
+      const contentViewElementProps: ContentViewProps = {
+        appData: this.state.appData
+      };
+      const contentViewElement = React.createElement(
+        contentViews[this.state.contentViewIndex].viewType,
+        contentViewElementProps
+      );
+      return (
+        <div className="js-main">
+          <SideMenu
+            contentViewNames={contentViews.map(contentView => contentView.name)}
+            onMenuClick={this.onMenuClick.bind(this)}
+          />
+          {contentViewElement}
+        </div>
+      );
+    }
   }
 
   onMenuClick(index: number): void {
