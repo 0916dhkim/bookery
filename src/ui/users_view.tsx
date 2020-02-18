@@ -1,62 +1,131 @@
 import * as React from "react";
 import { ContentViewProps } from "./content_view";
 import { User } from "../persistence/user";
-import { UserEditForm } from "./user_edit_form";
 import {
-  ModifiedDialogOption,
-  showModifiedDialogSync
+  showModifiedDialogSync,
+  ModifiedDialogOption
 } from "./modified_dialog";
+import { showFormValidityErrorMessage } from "./form_validity_error_message";
 
-interface State {
-  activeUser?: User;
-}
+export function UsersView(
+  props: ContentViewProps
+): React.ReactElement<ContentViewProps> {
+  const [activeUser, setActiveUser] = React.useState<User>();
+  const [firstNameValue, setFirstNameValue] = React.useState<string>("");
+  const [lastNameValue, setLastNameValue] = React.useState<string>("");
+  const [noteValue, setNoteValue] = React.useState<string>("");
+  const [, forceUpdate] = React.useState();
 
-export class UsersView extends React.Component<ContentViewProps, State> {
-  static readonly title: string = "Users";
+  const formRef = React.useRef<HTMLFormElement>();
 
-  private userEditFormRef: React.RefObject<UserEditForm>;
-
-  constructor(props: ContentViewProps) {
-    super(props);
-    this.state = {};
-
-    this.userEditFormRef = React.createRef();
-  }
-
-  render(): React.ReactNode {
+  function isModified(): boolean {
     return (
-      <div className="js-users-view">
-        Users View
-        <ul>
-          {this.props.appData.users.map(user => (
-            <li key={user.id.toString()}>
-              <a onClick={this.setActiveUser.bind(this, user)}>
-                {user.lastName}, {user.firstName}: {user.note}
-              </a>
-            </li>
-          ))}
-        </ul>
-        {this.state.activeUser && (
-          <UserEditForm
-            user={this.state.activeUser}
-            onUserChange={(): void => this.forceUpdate()}
-            ref={this.userEditFormRef}
-          />
-        )}
-      </div>
+      activeUser &&
+      [
+        activeUser.firstName !== firstNameValue,
+        activeUser.lastName !== lastNameValue,
+        activeUser.note ? activeUser.note !== noteValue : noteValue !== ""
+      ].reduce((a, b) => a || b, false)
     );
   }
 
-  setActiveUser(user: User): void {
-    const form = this.userEditFormRef.current;
-    if (form && form.isModified) {
-      const dialogResponse = showModifiedDialogSync();
-      if (dialogResponse === ModifiedDialogOption.CANCEL) {
-        return;
-      }
+  function commitChanges(): boolean {
+    if (!formRef.current.checkValidity()) {
+      showFormValidityErrorMessage();
+      return false;
     }
-    this.setState({ activeUser: user }, (): void => {
-      this.userEditFormRef.current.resetForm();
-    });
+    activeUser.firstName = firstNameValue;
+    activeUser.lastName = lastNameValue;
+    activeUser.note = noteValue === "" ? undefined : noteValue;
+    setActiveUser(activeUser);
+    forceUpdate({});
+    return true;
   }
+
+  function resetForms(toUser: User): void {
+    setFirstNameValue(toUser.firstName);
+    setLastNameValue(toUser.lastName);
+    setNoteValue(toUser.note ? toUser.note : "");
+  }
+
+  function ensureNotModified(): boolean {
+    if (!isModified()) {
+      return true;
+    }
+
+    const response: ModifiedDialogOption = showModifiedDialogSync();
+    switch (response) {
+      case ModifiedDialogOption.CANCEL:
+        return false;
+      case ModifiedDialogOption.SAVE:
+        return commitChanges();
+      case ModifiedDialogOption.DONTSAVE:
+        return true;
+    }
+  }
+
+  return (
+    <div className="js-users-view">
+      Users View
+      <ul>
+        {props.appData.users.map(user => (
+          <li key={user.id.toString()}>
+            <a
+              onClick={(): void => {
+                if (ensureNotModified()) {
+                  setActiveUser(user);
+                  resetForms(user);
+                }
+              }}
+            >
+              {user.lastName}, {user.firstName}: {user.note}
+            </a>
+          </li>
+        ))}
+      </ul>
+      {activeUser && (
+        <form
+          ref={formRef}
+          onSubmit={(event): void => {
+            commitChanges();
+            event.preventDefault();
+          }}
+        >
+          <label>
+            Last Name
+            <input
+              type="text"
+              value={lastNameValue}
+              onChange={(event): void => {
+                setLastNameValue(event.target.value);
+              }}
+              required
+            />
+          </label>
+          <label>
+            First Name
+            <input
+              type="text"
+              value={firstNameValue}
+              onChange={(event): void => {
+                setFirstNameValue(event.target.value);
+              }}
+              required
+            />
+          </label>
+          <label>
+            Note
+            <textarea
+              value={noteValue}
+              onChange={(event): void => {
+                setNoteValue(event.target.value);
+              }}
+            />
+          </label>
+          <button onClick={resetForms.bind(null, activeUser)}>Reset</button>
+          <button type="submit">Apply</button>
+        </form>
+      )}
+    </div>
+  );
 }
