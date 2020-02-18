@@ -11,10 +11,7 @@ import { QueryView } from "./query_view";
  */
 interface ContentViewElementInterface {
   name: string;
-  viewType: new (props: ContentViewProps) => React.Component<
-    ContentViewProps,
-    {}
-  >;
+  viewType: React.ComponentType<ContentViewProps>;
 }
 
 /**
