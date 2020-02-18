@@ -1,7 +1,10 @@
 import { Serializer } from "./serializable";
 import * as moment from "moment";
+import { immerable } from "immer";
 
 export class View {
+  [immerable] = true;
+
   private _userId: number;
   get userId(): number {
     return this._userId;

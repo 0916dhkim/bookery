@@ -1,6 +1,9 @@
 import { Serializer } from "./serializable";
+import { immerable } from "immer";
 
 export class User {
+  [immerable] = true;
+
   private _lastName: string;
   get lastName(): string {
     return this._lastName;

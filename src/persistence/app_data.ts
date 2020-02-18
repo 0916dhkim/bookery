@@ -2,8 +2,11 @@ import { Serializer } from "./serializable";
 import { Book, BookSerializer } from "./book";
 import { User, UserSerializer } from "./user";
 import { View, ViewSerializer } from "./view";
+import { immerable } from "immer";
 
 export class AppData {
+  [immerable] = true;
+
   private _books: Book[];
   get books(): Book[] {
     return this._books;

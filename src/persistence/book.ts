@@ -1,6 +1,9 @@
 import { Serializer } from "./serializable";
+import { immerable } from "immer";
 
 export class Book {
+  [immerable] = true;
+
   private _title: string;
   get title(): string {
     return this._title;
