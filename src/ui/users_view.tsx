@@ -2,6 +2,10 @@ import * as React from "react";
 import { ContentViewProps } from "./content_view";
 import { User } from "../persistence/user";
 import { UserEditForm } from "./user_edit_form";
+import {
+  ModifiedDialogOption,
+  showModifiedDialogSync
+} from "./modified_dialog";
 
 interface State {
   activeUser?: User;
@@ -35,6 +39,7 @@ export class UsersView extends React.Component<ContentViewProps, State> {
         {this.state.activeUser && (
           <UserEditForm
             user={this.state.activeUser}
+            onUserChange={(): void => this.forceUpdate()}
             ref={this.userEditFormRef}
           />
         )}
@@ -43,8 +48,15 @@ export class UsersView extends React.Component<ContentViewProps, State> {
   }
 
   setActiveUser(user: User): void {
-    this.setState({ activeUser: user }, (): void =>
-      this.userEditFormRef.current.resetForm()
-    );
+    const form = this.userEditFormRef.current;
+    if (form && form.isModified) {
+      const dialogResponse = showModifiedDialogSync();
+      if (dialogResponse === ModifiedDialogOption.CANCEL) {
+        return;
+      }
+    }
+    this.setState({ activeUser: user }, (): void => {
+      this.userEditFormRef.current.resetForm();
+    });
   }
 }
