@@ -6,6 +6,8 @@ import {
 } from "./modified_dialog";
 import { showFormValidityErrorMessage } from "./form_validity_error_message";
 import produce from "immer";
+import * as Fuse from "fuse.js";
+import { User } from "../persistence/user";
 
 export function UsersView(
   props: ContentViewProps
@@ -14,9 +16,36 @@ export function UsersView(
   const [firstNameValue, setFirstNameValue] = React.useState<string>("");
   const [lastNameValue, setLastNameValue] = React.useState<string>("");
   const [noteValue, setNoteValue] = React.useState<string>("");
+  const [filterValue, setFilterValue] = React.useState<string>("");
 
   const formRef = React.useRef<HTMLFormElement>();
 
+  /**
+   * Filtered array of users by search term.
+   * When there is no search term input by user, no filter is applied.
+   */
+  const filteredUsers = React.useMemo<ReadonlyArray<User>>((): ReadonlyArray<
+    User
+  > => {
+    if (filterValue.length === 0) {
+      return Array.from(props.appData.users.values());
+    }
+    const fuseOptions: Fuse.FuseOptions<User> = {
+      shouldSort: true,
+      includeMatches: false,
+      includeScore: false,
+      keys: ["lastName", "firstName", "note"]
+    };
+    const filterFuse: Fuse<User, Fuse.FuseOptions<User>> = new Fuse(
+      Array.from(props.appData.users.values()),
+      fuseOptions
+    );
+    return filterFuse.search(filterValue) as User[];
+  }, [filterValue, props.appData]);
+
+  /**
+   * @returns true if the user edit form is modified. False otherwise.
+   */
   function isModified(): boolean {
     if (activeUserId) {
       const activeUser = props.appData.users.get(activeUserId);
@@ -29,6 +58,10 @@ export function UsersView(
     return false;
   }
 
+  /**
+   * Apply data from the user edit form to the app data.
+   * Display an error message if the form is invalid.
+   */
   function commitChanges(): boolean {
     if (!formRef.current.checkValidity()) {
       showFormValidityErrorMessage();
@@ -48,6 +81,10 @@ export function UsersView(
     return true;
   }
 
+  /**
+   * Reset the user edit form to its default values.
+   * @param toUserId ID of the user that this form is resetting to.
+   */
   function resetForms(toUserId: number): void {
     const toUser = props.appData.users.get(toUserId);
     setFirstNameValue(toUser.firstName);
@@ -55,6 +92,9 @@ export function UsersView(
     setNoteValue(toUser.note ? toUser.note : "");
   }
 
+  /**
+   * @returns true if the form can be discarded without worrying about user modifications. False otherwise.
+   */
   function ensureNotModified(): boolean {
     if (!isModified()) {
       return true;
@@ -74,8 +114,22 @@ export function UsersView(
   return (
     <div className="js-users-view">
       Users View
+      {/* Search Bar */}
+      <form onSubmit={(event): void => event.preventDefault()}>
+        <label>
+          Search
+          <input
+            type="text"
+            value={filterValue}
+            onChange={(event): void => {
+              setFilterValue(event.target.value);
+            }}
+          />
+        </label>
+      </form>
+      {/* Users List */}
       <ul>
-        {Array.from(props.appData.users.values()).map(user => (
+        {filteredUsers.map(user => (
           <li key={user.id.toString()}>
             <a
               onClick={(): void => {
@@ -90,6 +144,7 @@ export function UsersView(
           </li>
         ))}
       </ul>
+      {/* User Edit Form */}
       {activeUserId && (
         <form
           ref={formRef}
