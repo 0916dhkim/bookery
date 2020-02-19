@@ -1,44 +1,18 @@
 import { Serializer } from "./serializable";
-import * as moment from "moment";
 import { immerable } from "immer";
 
 export class View {
   [immerable] = true;
 
-  private _userId: number;
-  get userId(): number {
-    return this._userId;
-  }
-  set userId(newUserId: number) {
-    this._userId = newUserId;
-  }
-
-  private _bookId: number;
-  get bookId(): number {
-    return this._bookId;
-  }
-  set bookId(newBookId: number) {
-    this._bookId = newBookId;
-  }
-
-  private _date: moment.Moment;
-  get date(): moment.Moment {
-    return this._date;
-  }
-  set date(newDate: moment.Moment) {
-    this._date = newDate;
-  }
-
   constructor(
     readonly id: number,
-    userId: number,
-    bookId: number,
-    date: moment.Moment
-  ) {
-    this.userId = userId;
-    this.bookId = bookId;
-    this.date = date;
-  }
+    readonly userId: number,
+    readonly bookId: number,
+    /**
+     * UNIX timestamp in milliseconds.
+     */
+    readonly date: number
+  ) {}
 }
 
 export class ViewSerializer implements Serializer<View> {
@@ -47,7 +21,7 @@ export class ViewSerializer implements Serializer<View> {
       id: target.id,
       userId: target.userId,
       bookId: target.bookId,
-      date: target.date.valueOf()
+      date: target.date
     });
   }
 
@@ -57,7 +31,7 @@ export class ViewSerializer implements Serializer<View> {
       parsedJson.id,
       parsedJson.userId,
       parsedJson.bookId,
-      moment(parsedJson.date)
+      parsedJson.date
     );
   }
 }

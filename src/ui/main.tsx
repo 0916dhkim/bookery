@@ -51,7 +51,8 @@ export class Main extends React.Component<{}, State> {
       return <p>Welcome Screen</p>;
     } else {
       const contentViewElementProps: ContentViewProps = {
-        appData: this.state.appData
+        appData: this.state.appData,
+        setAppData: (appData): void => this.setState({ appData: appData })
       };
       const contentViewElement = React.createElement(
         contentViews[this.state.contentViewIndex].viewType,

@@ -8,7 +8,7 @@ export class BooksView extends React.Component<ContentViewProps, {}> {
       <div className="js-books-view">
         Books View
         <ul>
-          {this.props.appData.books.map(book => (
+          {Array.from(this.props.appData.books.values()).map(book => (
             <li key={book.id.toString()}>
               <a>
                 {book.title} by {book.author}
