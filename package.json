@@ -8,11 +8,10 @@
     "test": "tests"
   },
   "scripts": {
-    "build:production": "webpack -p --config configs/webpack.config.main.ts",
-    "build:development": "webpack --mode=development --config configs/webpack.config.main.ts",
+    "build": "webpack",
     "test": "mocha -r ts-node/register test/**/*.ts",
     "start": "electron .",
-    "prestart": "npm run build:production",
+    "prestart": "npm run build",
     "lint": "eslint --ext=js,jsx,ts,tsx ."
   },
   "repository": {
