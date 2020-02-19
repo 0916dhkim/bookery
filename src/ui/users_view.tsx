@@ -20,6 +20,10 @@ export function UsersView(
 
   const formRef = React.useRef<HTMLFormElement>();
 
+  /**
+   * Filtered array of users by search term.
+   * When there is no search term input by user, no filter is applied.
+   */
   const filteredUsers = React.useMemo<ReadonlyArray<User>>((): ReadonlyArray<
     User
   > => {
@@ -110,6 +114,7 @@ export function UsersView(
   return (
     <div className="js-users-view">
       Users View
+      {/* Search Bar */}
       <form onSubmit={(event): void => event.preventDefault()}>
         <label>
           Search
@@ -122,6 +127,7 @@ export function UsersView(
           />
         </label>
       </form>
+      {/* Users List */}
       <ul>
         {filteredUsers.map(user => (
           <li key={user.id.toString()}>
@@ -138,6 +144,7 @@ export function UsersView(
           </li>
         ))}
       </ul>
+      {/* User Edit Form */}
       {activeUserId && (
         <form
           ref={formRef}
