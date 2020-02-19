@@ -1,6 +1,5 @@
 import { describe, it } from "mocha";
 import * as assert from "assert";
-import * as moment from "moment";
 import { Book } from "../../src/persistence/book";
 import { User } from "../../src/persistence/user";
 import { View } from "../../src/persistence/view";
@@ -8,44 +7,48 @@ import { AppData, AppDataSerializer } from "../../src/persistence/app_data";
 import { assertBookProperties } from "./book";
 import { assertUserProperties } from "./user";
 import { assertViewProperties } from "./view";
+import produce from "immer";
 
 function assertAppDataProperties(
   appData: AppData,
-  books: Book[],
-  users: User[],
-  views: View[]
+  books: ReadonlyMap<number, Book>,
+  users: ReadonlyMap<number, User>,
+  views: ReadonlyMap<number, View>
 ): void {
-  assert.strictEqual(appData.books.length, books.length);
-  assert.strictEqual(appData.users.length, users.length);
-  assert.strictEqual(appData.views.length, views.length);
+  assert.strictEqual(appData.books.size, books.size);
+  assert.strictEqual(appData.users.size, users.size);
+  assert.strictEqual(appData.views.size, views.size);
 
-  for (let i = 0; i < books.length; i++) {
+  for (const [key, book] of books) {
+    assert(appData.books.has(key));
     assertBookProperties(
-      appData.books[i],
-      books[i].id,
-      books[i].title,
-      books[i].author,
-      books[i].isbn
+      appData.books.get(key),
+      book.id,
+      book.title,
+      book.author,
+      book.isbn
     );
   }
 
-  for (let i = 0; i < users.length; i++) {
+  for (const [key, user] of users) {
+    assert(appData.users.has(key));
     assertUserProperties(
-      appData.users[i],
-      users[i].id,
-      users[i].lastName,
-      users[i].firstName,
-      users[i].note
+      appData.users.get(key),
+      user.id,
+      user.lastName,
+      user.firstName,
+      user.note
     );
   }
 
-  for (let i = 0; i < views.length; i++) {
+  for (const [key, view] of views) {
+    assert(appData.views.has(key));
     assertViewProperties(
-      appData.views[i],
-      views[i].id,
-      views[i].userId,
-      views[i].bookId,
-      views[i].date
+      appData.views.get(key),
+      view.id,
+      view.userId,
+      view.bookId,
+      view.date
     );
   }
 }
@@ -66,25 +69,26 @@ describe("App Data", function() {
     });
 
     it("Small App Data Serialization and Deserialization", function() {
-      const appData = new AppData();
-      // Add books.
-      appData.books.push(
-        new Book(1, "First Title", "Willy Du"),
-        new Book(33, "Second", "John Doe"),
-        new Book(23232, "Cool Stuff", "Mary Jane")
-      );
-      // Add Users.
-      appData.users.push(
-        new User(123, "Handsome", "Jack", "The Hero"),
-        new User(23894, "Tiny", "Tina", "Maniac")
-      );
-      // Add Views.
-      appData.views.push(
-        new View(1, 123, 1, moment.utc(1318781875817)),
-        new View(2, 23894, 1, moment.utc(1318781876807)),
-        new View(3, 123, 33, moment.utc(1318781875811)),
-        new View(4, 1, 23232, moment.utc(1318781875822))
-      );
+      const appData = produce(new AppData(), draft => {
+        // Add books.
+        [
+          new Book(1, "First Title", "Willy Du"),
+          new Book(33, "Second", "John Doe"),
+          new Book(23232, "Cool Stuff", "Mary Jane")
+        ].forEach(book => draft.books.set(book.id, book));
+        // Add Users.
+        [
+          new User(123, "Handsome", "Jack", "The Hero"),
+          new User(23894, "Tiny", "Tina", "Maniac")
+        ].forEach(user => draft.users.set(user.id, user));
+        // Add Views.
+        [
+          new View(1, 123, 1, 1318781875817),
+          new View(2, 23894, 1, 1318781876807),
+          new View(3, 123, 33, 1318781875811),
+          new View(4, 1, 23232, 1318781875822)
+        ].forEach(view => draft.views.set(view.id, view));
+      });
       const appDataSerializer = new AppDataSerializer();
       const str = appDataSerializer.serialize(appData);
       const deserialized = appDataSerializer.deserialize(str);

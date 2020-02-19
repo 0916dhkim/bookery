@@ -8,18 +8,18 @@ export function assertViewProperties(
   id: number,
   userId: number,
   bookId: number,
-  date: moment.Moment
+  date: number
 ): void {
   assert.strictEqual(view.id, id);
   assert.strictEqual(view.userId, userId);
   assert.strictEqual(view.bookId, bookId);
-  assert.strictEqual(view.date.valueOf(), date.valueOf());
+  assert.strictEqual(view.date, date);
 }
 
 describe("View", function() {
   describe("ViewSerializer", function() {
     it("Single View Serialization and Deserialization", function() {
-      const view = new View(1, 2, 3, moment.utc(1318781875806));
+      const view = new View(1, 2, 3, 1318781875806);
       const viewSerializer = new ViewSerializer();
       const str = viewSerializer.serialize(view);
       const deserialized = viewSerializer.deserialize(str);
@@ -33,26 +33,29 @@ describe("View", function() {
     });
 
     it("Date Serialization", function() {
-      const view = new View(4, 5, 6, moment.utc(1318781875807));
+      const view = new View(4, 5, 6, 1318781875807);
       const viewSerializer = new ViewSerializer();
       const str = viewSerializer.serialize(view);
       const deserialized = viewSerializer.deserialize(str);
 
-      const year = view.date.utc().year();
-      const month = view.date.utc().month();
-      const date = view.date.utc().date();
-      const hour = view.date.utc().hour();
-      const minute = view.date.utc().minute();
-      const second = view.date.utc().second();
-      const millisecond = view.date.utc().millisecond();
+      const viewDate = moment.utc(view.date);
+      const deserializedDate = moment.utc(deserialized.date);
 
-      assert.strictEqual(year, deserialized.date.utc().year());
-      assert.strictEqual(month, deserialized.date.utc().month());
-      assert.strictEqual(date, deserialized.date.utc().date());
-      assert.strictEqual(hour, deserialized.date.utc().hour());
-      assert.strictEqual(minute, deserialized.date.utc().minute());
-      assert.strictEqual(second, deserialized.date.utc().second());
-      assert.strictEqual(millisecond, deserialized.date.utc().millisecond());
+      const year = viewDate.utc().year();
+      const month = viewDate.utc().month();
+      const date = viewDate.utc().date();
+      const hour = viewDate.utc().hour();
+      const minute = viewDate.utc().minute();
+      const second = viewDate.utc().second();
+      const millisecond = viewDate.utc().millisecond();
+
+      assert.strictEqual(year, deserializedDate.utc().year());
+      assert.strictEqual(month, deserializedDate.utc().month());
+      assert.strictEqual(date, deserializedDate.utc().date());
+      assert.strictEqual(hour, deserializedDate.utc().hour());
+      assert.strictEqual(minute, deserializedDate.utc().minute());
+      assert.strictEqual(second, deserializedDate.utc().second());
+      assert.strictEqual(millisecond, deserializedDate.utc().millisecond());
     });
   });
 });

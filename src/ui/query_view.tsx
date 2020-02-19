@@ -18,7 +18,7 @@ function ResultView(props: {
   appData: AppData;
 }): React.ReactElement {
   if (
-    props.appData.views.filter(
+    Array.from(props.appData.views.values()).filter(
       view => view.bookId === props.bookId && view.userId === props.userId
     ).length === 0
   ) {
@@ -52,8 +52,14 @@ export class QueryView extends React.Component<ContentViewProps, State> {
       includeScore: false,
       keys: ["lastName", "firstName", "note"]
     };
-    this.bookFuse = new Fuse(this.props.appData.books, bookFuseOptions);
-    this.userFuse = new Fuse(this.props.appData.users, userFuseOptions);
+    this.bookFuse = new Fuse(
+      Array.from(this.props.appData.books.values()),
+      bookFuseOptions
+    );
+    this.userFuse = new Fuse(
+      Array.from(this.props.appData.users.values()),
+      userFuseOptions
+    );
 
     this.state = {
       bookSuggestions: [],
