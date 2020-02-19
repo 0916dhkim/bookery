@@ -111,6 +111,24 @@ export function UsersView(
     }
   }
 
+  /**
+   * Handle user list element click event.
+   * @param user Clicked user.
+   */
+  function handleUserClick(user: User): void {
+    if (ensureNotModified()) {
+      setActiveUserId(user.id);
+      resetForms(user.id);
+    }
+  }
+
+  /**
+   * Handle new user button click event.
+   */
+  function handleNewUserButtonClick(): void {
+    // TODO: Implement.
+  }
+
   return (
     <div className="js-users-view">
       Users View
@@ -126,19 +144,13 @@ export function UsersView(
             }}
           />
         </label>
+        <button onClick={handleNewUserButtonClick}>New User</button>
       </form>
       {/* Users List */}
       <ul>
         {filteredUsers.map(user => (
           <li key={user.id.toString()}>
-            <a
-              onClick={(): void => {
-                if (ensureNotModified()) {
-                  setActiveUserId(user.id);
-                  resetForms(user.id);
-                }
-              }}
-            >
+            <a onClick={handleUserClick.bind(null, user)}>
               {user.lastName}, {user.firstName}: {user.note}
             </a>
           </li>
