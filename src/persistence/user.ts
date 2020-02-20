@@ -1,5 +1,5 @@
 import { Serializer } from "./serializable";
-import { immerable } from "immer";
+import produce, { immerable } from "immer";
 
 export class User {
   [immerable] = true;
@@ -10,6 +10,24 @@ export class User {
     readonly firstName: string,
     readonly note?: string
   ) {}
+
+  setLastName(lastName: string): User {
+    return produce(this, draft => {
+      draft.lastName = lastName;
+    });
+  }
+
+  setFirstName(firstName: string): User {
+    return produce(this, draft => {
+      draft.firstName = firstName;
+    });
+  }
+
+  setNote(note?: string): User {
+    return produce(this, draft => {
+      draft.note = note;
+    });
+  }
 }
 
 export class UserSerializer implements Serializer<User> {
