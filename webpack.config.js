@@ -1,3 +1,4 @@
+const webpack = require("webpack");
 const merge = require("webpack-merge");
 const path = require("path");
 
@@ -32,8 +33,15 @@ const baseConfig = {
   },
   output: {
     path: path.join(__dirname, "./dist")
-  }
+  },
+  plugins: []
 };
+
+// Settings specific to development mode.
+if (!PRODUCTION) {
+  baseConfig.devtool = "source-map";
+  baseConfig.plugins.push(new webpack.ProgressPlugin());
+}
 
 /** @type {import("webpack").Configuration} */
 const mainConfig = {
