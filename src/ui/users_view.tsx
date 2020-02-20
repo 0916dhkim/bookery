@@ -128,6 +128,13 @@ export function UsersView(
     }
   }
 
+  /**
+   * Handle delete user button click event.
+   */
+  function handleDeleteUserButtonClick(): void {
+    // TODO: Implement.
+  }
+
   return (
     <div className="js-users-view">
       Users View
@@ -195,6 +202,7 @@ export function UsersView(
               }}
             />
           </label>
+          <button onClick={handleDeleteUserButtonClick}>Delete User</button>
           <button onClick={overrideUserEditForm.bind(null, stagingUser)}>
             Reset
           </button>
