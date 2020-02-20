@@ -18,11 +18,11 @@ const baseConfig = {
     rules: [
       {
         test: /\.tsx?$/,
-        include: /src/,
         use: [
           {
             loader: "ts-loader",
             options: {
+              onlyCompileBundledFiles: true,
               transpileOnly: !PRODUCTION // For fast development builds.
             }
           }
