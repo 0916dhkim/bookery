@@ -1,13 +1,14 @@
-import * as merge from "webpack-merge";
-import { Configuration } from "webpack";
-import * as path from "path";
+const merge = require("webpack-merge");
+const path = require("path");
 
 /**
+ * @type {boolean}
  * Ignore command-line argument `mode` and only consider environment variable `NODE_ENV`.
  */
-const PRODUCTION: boolean = process.env.NODE_ENV === "production";
+const PRODUCTION = process.env.NODE_ENV === "production";
 
-const baseConfig: Configuration = {
+/** @type {import("webpack").Configuration} */
+const baseConfig = {
   mode: PRODUCTION ? "production" : "development",
   devtool: PRODUCTION ? false : "source-map",
   resolve: {
@@ -34,7 +35,8 @@ const baseConfig: Configuration = {
   }
 };
 
-const mainConfig: Configuration = {
+/** @type {import("webpack").Configuration} */
+const mainConfig = {
   entry: path.join(__dirname, "./src/electron.tsx"),
   target: "electron-main",
   output: {
@@ -42,7 +44,8 @@ const mainConfig: Configuration = {
   }
 };
 
-const rendererConfig: Configuration = {
+/** @type {import("webpack").Configuration} */
+const rendererConfig = {
   entry: path.join(__dirname, "./src/renderer.tsx"),
   target: "electron-renderer",
   output: {
@@ -50,6 +53,6 @@ const rendererConfig: Configuration = {
   }
 };
 
-export default [mainConfig, rendererConfig].map(config =>
+module.exports = [mainConfig, rendererConfig].map(config =>
   merge.smart(baseConfig, config)
 );
