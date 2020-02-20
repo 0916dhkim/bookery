@@ -1,5 +1,8 @@
 module.exports = {
-  extends: ["eslint:recommended"],
+  extends: [
+    "eslint:recommended",
+    "plugin:prettier/recommended"
+  ],
   env: {
     node: true,
     es6: true,
@@ -11,7 +14,6 @@ module.exports = {
       extends: [
         "plugin:react/recommended",
         "plugin:@typescript-eslint/recommended",
-        "plugin:prettier/recommended"
       ],
       parserOptions: {
         ecmaVersion: 2018,
