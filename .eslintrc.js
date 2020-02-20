@@ -1,15 +1,10 @@
 module.exports = {
   extends: ["eslint:recommended"],
   env: {
+    node: true,
     es6: true,
   },
   overrides: [
-    {
-      files: ["webpack.config.js"],
-      env: {
-        node: true
-      }
-    },
     {
       files: ["**/*.ts", "**/*.tsx"],
       parser: "@typescript-eslint/parser",
