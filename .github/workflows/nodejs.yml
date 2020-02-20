@@ -6,11 +6,15 @@ jobs:
   build:
     name: Build
 
-    runs-on: windows-latest
-
     strategy:
       matrix:
+        os: [ubuntu-latest]
         node-version: [12.x, 13.x]
+        mode: [production, development]
+
+    runs-on: ${{ matrix.os }}
+    env:
+      NODE_ENV: ${{ matrix.mode }}
 
     steps:
     - uses: actions/checkout@v2
@@ -19,8 +23,8 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - run: npm ci
-    - run: npm run build:production
+    - run: npm run build
     - run: npm run lint
+      if: matrix.mode == 'development'
     - run: npm test
-      env:
-        CI: true
+      if: matrix.mode == 'development'

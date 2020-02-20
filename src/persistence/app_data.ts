@@ -16,6 +16,34 @@ export class AppData {
     this.users = new Map();
     this.views = new Map();
   }
+
+  /**
+   * Set given user into users map.
+   * @param user new user
+   * @returns new instance of this with set user.
+   */
+  setUser(user: User): AppData {
+    return produce(this, (draft): void => {
+      draft.users.set(user.id, user);
+    });
+  }
+
+  /**
+   * @param collection Iterable collection of objects with ID number.
+   * @returns next available unique ID for given collection.
+   */
+  private getNextId(collection: Iterable<{ id: number }>): number {
+    return Math.max(...Array.from(collection).map(item => item.id)) + 1;
+  }
+
+  /**
+   * Generate a new user.
+   * This method does NOT alter any app data.
+   * @returns generated user.
+   */
+  generateUser(): User {
+    return new User(this.getNextId(this.users.values()), "", "");
+  }
 }
 
 export class AppDataSerializer implements Serializer<AppData> {

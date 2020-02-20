@@ -5,20 +5,39 @@ import {
   ModifiedDialogOption
 } from "./modified_dialog";
 import { showFormValidityErrorMessage } from "./form_validity_error_message";
-import produce from "immer";
 import * as Fuse from "fuse.js";
 import { User } from "../persistence/user";
 
 export function UsersView(
   props: ContentViewProps
 ): React.ReactElement<ContentViewProps> {
-  const [activeUserId, setActiveUserId] = React.useState<number>();
+  const [stagingUser, setStagingUser] = React.useState<User>();
   const [firstNameValue, setFirstNameValue] = React.useState<string>("");
   const [lastNameValue, setLastNameValue] = React.useState<string>("");
   const [noteValue, setNoteValue] = React.useState<string>("");
   const [filterValue, setFilterValue] = React.useState<string>("");
 
   const formRef = React.useRef<HTMLFormElement>();
+
+  /**
+   * Override user edit form fields by given user.
+   * @param targetUser override target.
+   */
+  function overrideUserEditForm(targetUser: User): void {
+    setFirstNameValue(targetUser.firstName);
+    setLastNameValue(targetUser.lastName);
+    setNoteValue(targetUser.note ? targetUser.note : "");
+  }
+
+  // Synchronize staging user to the user edit form.
+  React.useEffect(
+    () => {
+      if (stagingUser) {
+        overrideUserEditForm(stagingUser);
+      }
+    },
+    [stagingUser] // When staging user is changed.
+  );
 
   /**
    * Filtered array of users by search term.
@@ -44,21 +63,6 @@ export function UsersView(
   }, [filterValue, props.appData]);
 
   /**
-   * @returns true if the user edit form is modified. False otherwise.
-   */
-  function isModified(): boolean {
-    if (activeUserId) {
-      const activeUser = props.appData.users.get(activeUserId);
-      return [
-        activeUser.firstName !== firstNameValue,
-        activeUser.lastName !== lastNameValue,
-        activeUser.note ? activeUser.note !== noteValue : noteValue !== ""
-      ].reduce((a, b) => a || b, false);
-    }
-    return false;
-  }
-
-  /**
    * Apply data from the user edit form to the app data.
    * Display an error message if the form is invalid.
    */
@@ -67,47 +71,60 @@ export function UsersView(
       showFormValidityErrorMessage();
       return false;
     }
-    props.setAppData(
-      produce(props.appData, draft => {
-        draft.users.forEach(user => {
-          if (user.id === activeUserId) {
-            user.firstName = firstNameValue;
-            user.lastName = lastNameValue;
-            user.note = noteValue === "" ? undefined : noteValue;
-          }
-        });
-      })
-    );
+    const nextUser = stagingUser
+      .setFirstName(firstNameValue)
+      .setLastName(lastNameValue)
+      .setNote(noteValue === "" ? undefined : noteValue);
+    setStagingUser(nextUser);
+    props.setAppData(props.appData.setUser(nextUser));
     return true;
-  }
-
-  /**
-   * Reset the user edit form to its default values.
-   * @param toUserId ID of the user that this form is resetting to.
-   */
-  function resetForms(toUserId: number): void {
-    const toUser = props.appData.users.get(toUserId);
-    setFirstNameValue(toUser.firstName);
-    setLastNameValue(toUser.lastName);
-    setNoteValue(toUser.note ? toUser.note : "");
   }
 
   /**
    * @returns true if the form can be discarded without worrying about user modifications. False otherwise.
    */
-  function ensureNotModified(): boolean {
-    if (!isModified()) {
+  function safeToOverrideUserEditForm(): boolean {
+    if (!stagingUser) {
       return true;
     }
+    const original = props.appData.users.get(stagingUser.id);
+    const needToAsk =
+      !original ||
+      firstNameValue !== stagingUser.firstName ||
+      lastNameValue !== stagingUser.lastName ||
+      noteValue !== (stagingUser.note ? stagingUser.note : "");
 
-    const response: ModifiedDialogOption = showModifiedDialogSync();
-    switch (response) {
-      case ModifiedDialogOption.CANCEL:
-        return false;
-      case ModifiedDialogOption.SAVE:
-        return commitChanges();
-      case ModifiedDialogOption.DONTSAVE:
-        return true;
+    if (needToAsk) {
+      const response: ModifiedDialogOption = showModifiedDialogSync();
+      switch (response) {
+        case ModifiedDialogOption.CANCEL:
+          return false;
+        case ModifiedDialogOption.SAVE:
+          return commitChanges();
+        case ModifiedDialogOption.DONTSAVE:
+          return true;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Handle user list element click event.
+   * @param user Clicked user.
+   */
+  function handleUserClick(user: User): void {
+    if (safeToOverrideUserEditForm()) {
+      setStagingUser(user);
+    }
+  }
+
+  /**
+   * Handle new user button click event.
+   */
+  function handleNewUserButtonClick(): void {
+    if (safeToOverrideUserEditForm()) {
+      const generatedUser = props.appData.generateUser();
+      setStagingUser(generatedUser);
     }
   }
 
@@ -126,26 +143,20 @@ export function UsersView(
             }}
           />
         </label>
+        <button onClick={handleNewUserButtonClick}>New User</button>
       </form>
       {/* Users List */}
       <ul>
         {filteredUsers.map(user => (
           <li key={user.id.toString()}>
-            <a
-              onClick={(): void => {
-                if (ensureNotModified()) {
-                  setActiveUserId(user.id);
-                  resetForms(user.id);
-                }
-              }}
-            >
+            <a onClick={handleUserClick.bind(null, user)}>
               {user.lastName}, {user.firstName}: {user.note}
             </a>
           </li>
         ))}
       </ul>
       {/* User Edit Form */}
-      {activeUserId && (
+      {stagingUser && (
         <form
           ref={formRef}
           onSubmit={(event): void => {
@@ -184,7 +195,9 @@ export function UsersView(
               }}
             />
           </label>
-          <button onClick={resetForms.bind(null, activeUserId)}>Reset</button>
+          <button onClick={overrideUserEditForm.bind(null, stagingUser)}>
+            Reset
+          </button>
           <button type="submit">Apply</button>
         </form>
       )}
