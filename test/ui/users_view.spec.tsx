@@ -1,22 +1,9 @@
-import { describe, it, beforeEach, afterEach } from "mocha";
+import { describe, it } from "mocha";
+import { act, render } from "@testing-library/react";
 import * as React from "react";
-import * as ReactDOM from "react-dom";
-import { act } from "react-dom/test-utils";
 import { UsersView } from "../../src/ui/users_view";
 import { AppData } from "../../src/persistence/app_data";
 import * as assert from "assert";
-
-let container = document.createElement("div");
-
-beforeEach(function() {
-  container = document.createElement("div");
-  document.body.appendChild(container);
-});
-
-afterEach(function() {
-  ReactDOM.unmountComponentAtNode(container);
-  container.remove();
-});
 
 function mockAppDataState(): [() => AppData, (x: AppData) => void] {
   let appData = new AppData();
@@ -37,9 +24,8 @@ describe("UsersView", function() {
         .setFirstName("X")
         .setLastName("Y");
       setAppData(getAppData().setUser(user));
-      ReactDOM.render(
-        <UsersView appData={getAppData()} setAppData={setAppData} />,
-        container
+      const { container } = render(
+        <UsersView appData={getAppData()} setAppData={setAppData} />
       );
       const firstSuggestion = container.querySelector(
         "[data-testid=suggestions-list] li"
@@ -55,9 +41,8 @@ describe("UsersView", function() {
         .setFirstName("X")
         .setLastName("Y");
       setAppData(getAppData().setUser(user));
-      ReactDOM.render(
-        <UsersView appData={getAppData()} setAppData={setAppData} />,
-        container
+      const { container, getByTestId } = render(
+        <UsersView appData={getAppData()} setAppData={setAppData} />
       );
       const firstSuggestion = container.querySelector(
         "[data-testid=suggestions-list] a"
@@ -67,10 +52,7 @@ describe("UsersView", function() {
           new MouseEvent("click", { bubbles: true })
         );
       });
-      const deleteButton = container.querySelector(
-        "[data-testid=delete-button]"
-      );
-      assert.notStrictEqual(deleteButton, null);
+      getByTestId("delete-button");
     });
 
     it("Delete Single User", function() {
@@ -81,16 +63,28 @@ describe("UsersView", function() {
         .setLastName("Doe")
         .setNote("Dummy");
       setAppData(getAppData().setUser(user));
-      ReactDOM.render(
-        <UsersView appData={getAppData()} setAppData={setAppData} />,
-        container
+      const { container, getByTestId } = render(
+        <UsersView appData={getAppData()} setAppData={setAppData} />
       );
 
       assert.strictEqual(getAppData().users.size, 1);
-      const button = container.querySelector("[data-testid=delete-button]");
+
+      // Click the first element of the suggestions list.
+      const firstSuggestion = container.querySelector(
+        "[data-testid=suggestions-list] a"
+      );
+      act(() => {
+        firstSuggestion.dispatchEvent(
+          new MouseEvent("click", { bubbles: true })
+        );
+      });
+
+      // Click the delete button.
+      const button = getByTestId("delete-button");
       act(() => {
         button.dispatchEvent(new MouseEvent("click", { bubbles: true }));
       });
+
       assert.strictEqual(getAppData().users.size, 0);
     });
   });
