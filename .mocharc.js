@@ -7,5 +7,7 @@ module.exports = {
   require: [
     "ts-node/register",
     "jsdom-global/register"
-  ]
+  ],
+  colors: true,
+  ui: "tdd"
 }
