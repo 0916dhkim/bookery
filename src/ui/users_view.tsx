@@ -1,5 +1,4 @@
 import * as React from "react";
-import { ContentViewProps } from "./content_view";
 import {
   showModifiedDialogSync,
   ModifiedDialogOption
@@ -7,10 +6,10 @@ import {
 import { showFormValidityErrorMessage } from "./form_validity_error_message";
 import * as Fuse from "fuse.js";
 import { User } from "../persistence/user";
+import { AppDataContext } from "./app_data_context";
 
-export function UsersView(
-  props: ContentViewProps
-): React.ReactElement<ContentViewProps> {
+export function UsersView(): React.ReactElement {
+  const { appData, setAppData } = React.useContext(AppDataContext);
   const [stagingUser, setStagingUser] = React.useState<User>();
   const [firstNameValue, setFirstNameValue] = React.useState<string>("");
   const [lastNameValue, setLastNameValue] = React.useState<string>("");
@@ -47,7 +46,7 @@ export function UsersView(
     User
   > => {
     if (filterValue.length === 0) {
-      return Array.from(props.appData.users.values());
+      return Array.from(appData.users.values());
     }
     const fuseOptions: Fuse.FuseOptions<User> = {
       shouldSort: true,
@@ -56,11 +55,11 @@ export function UsersView(
       keys: ["lastName", "firstName", "note"]
     };
     const filterFuse: Fuse<User, Fuse.FuseOptions<User>> = new Fuse(
-      Array.from(props.appData.users.values()),
+      Array.from(appData.users.values()),
       fuseOptions
     );
     return filterFuse.search(filterValue) as User[];
-  }, [filterValue, props.appData]);
+  }, [filterValue, appData]);
 
   /**
    * Apply data from the user edit form to the app data.
@@ -76,7 +75,7 @@ export function UsersView(
       .setLastName(lastNameValue)
       .setNote(noteValue === "" ? undefined : noteValue);
     setStagingUser(nextUser);
-    props.setAppData(props.appData.setUser(nextUser));
+    setAppData(appData.setUser(nextUser));
     return true;
   }
 
@@ -87,7 +86,7 @@ export function UsersView(
     if (!stagingUser) {
       return true;
     }
-    const original = props.appData.users.get(stagingUser.id);
+    const original = appData.users.get(stagingUser.id);
     const needToAsk =
       !original ||
       firstNameValue !== stagingUser.firstName ||
@@ -123,7 +122,7 @@ export function UsersView(
    */
   function handleNewUserButtonClick(): void {
     if (safeToOverrideUserEditForm()) {
-      const generatedUser = props.appData.generateUser();
+      const generatedUser = appData.generateUser();
       setStagingUser(generatedUser);
     }
   }
@@ -132,7 +131,7 @@ export function UsersView(
    * Handle delete user button click event.
    */
   function handleDeleteUserButtonClick(): void {
-    props.setAppData(props.appData.deleteUser(stagingUser)[0]);
+    setAppData(appData.deleteUser(stagingUser)[0]);
     setStagingUser(null);
   }
 
