@@ -153,7 +153,7 @@ export function UsersView(
         <button onClick={handleNewUserButtonClick}>New User</button>
       </form>
       {/* Users List */}
-      <ul>
+      <ul data-testid="suggestions-list">
         {filteredUsers.map(user => (
           <li key={user.id.toString()}>
             <a onClick={handleUserClick.bind(null, user)}>
@@ -202,7 +202,12 @@ export function UsersView(
               }}
             />
           </label>
-          <button onClick={handleDeleteUserButtonClick}>Delete User</button>
+          <button
+            onClick={handleDeleteUserButtonClick}
+            data-testid="delete-button"
+          >
+            Delete User
+          </button>
           <button onClick={overrideUserEditForm.bind(null, stagingUser)}>
             Reset
           </button>
