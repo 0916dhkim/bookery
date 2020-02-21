@@ -170,6 +170,7 @@ export function UsersView(
       {stagingUser && (
         <form
           ref={formRef}
+          data-testid="user-edit-form"
           onSubmit={(event): void => {
             commitChanges();
             event.preventDefault();
