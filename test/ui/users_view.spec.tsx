@@ -1,5 +1,5 @@
 import { describe, it } from "mocha";
-import { act, render } from "@testing-library/react";
+import { fireEvent, render, within } from "@testing-library/react";
 import * as React from "react";
 import { UsersView } from "../../src/ui/users_view";
 import { AppData } from "../../src/persistence/app_data";
@@ -15,75 +15,63 @@ function mockAppDataState(): [() => AppData, (x: AppData) => void] {
   ];
 }
 
+const emptyAppData = new AppData();
+const userJenny = emptyAppData
+  .generateUser()
+  .setFirstName("Jenny")
+  .setLastName("Doe")
+  .setNote("Dummy");
+const singleUserAppData = emptyAppData.setUser(userJenny);
+const userJohn = singleUserAppData
+  .generateUser()
+  .setFirstName("John")
+  .setLastName("Doe")
+  .setNote("The greatest name in the world!");
+const doubleUserAppData = singleUserAppData.setUser(userJohn);
+
 describe("UsersView", function() {
   describe("Suggestions List", function() {
     it("Exists", function() {
       const [getAppData, setAppData] = mockAppDataState();
-      const user = getAppData()
-        .generateUser()
-        .setFirstName("X")
-        .setLastName("Y");
-      setAppData(getAppData().setUser(user));
-      const { container } = render(
+      setAppData(singleUserAppData);
+      const { getByTestId } = render(
         <UsersView appData={getAppData()} setAppData={setAppData} />
       );
-      const firstSuggestion = container.querySelector(
-        "[data-testid=suggestions-list] li"
-      );
-      assert.notStrictEqual(firstSuggestion, null);
+      const suggestionsList = getByTestId("suggestions-list");
+      within(suggestionsList).getByRole("option");
     });
   });
   describe("Delete Button", function() {
     it("Exists", function() {
       const [getAppData, setAppData] = mockAppDataState();
-      const user = getAppData()
-        .generateUser()
-        .setFirstName("X")
-        .setLastName("Y");
-      setAppData(getAppData().setUser(user));
-      const { container, getByTestId } = render(
+      setAppData(doubleUserAppData);
+      const { getByTestId } = render(
         <UsersView appData={getAppData()} setAppData={setAppData} />
       );
-      const firstSuggestion = container.querySelector(
-        "[data-testid=suggestions-list] a"
+      const firstSuggestion = within(getByTestId("suggestions-list")).getByRole(
+        "option"
       );
-      act(() => {
-        firstSuggestion.dispatchEvent(
-          new MouseEvent("click", { bubbles: true })
-        );
-      });
+      fireEvent.click(firstSuggestion);
       getByTestId("delete-button");
     });
 
     it("Delete Single User", function() {
       const [getAppData, setAppData] = mockAppDataState();
-      const user = getAppData()
-        .generateUser()
-        .setFirstName("Jenny")
-        .setLastName("Doe")
-        .setNote("Dummy");
-      setAppData(getAppData().setUser(user));
-      const { container, getByTestId } = render(
+      setAppData(singleUserAppData);
+      const { getByTestId } = render(
         <UsersView appData={getAppData()} setAppData={setAppData} />
       );
 
       assert.strictEqual(getAppData().users.size, 1);
 
-      // Click the first element of the suggestions list.
-      const firstSuggestion = container.querySelector(
-        "[data-testid=suggestions-list] a"
+      const firstSuggestion = within(getByTestId("suggestions-list")).getByRole(
+        "option"
       );
-      act(() => {
-        firstSuggestion.dispatchEvent(
-          new MouseEvent("click", { bubbles: true })
-        );
-      });
+      fireEvent.click(firstSuggestion);
 
       // Click the delete button.
       const button = getByTestId("delete-button");
-      act(() => {
-        button.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-      });
+      fireEvent.click(button);
 
       assert.strictEqual(getAppData().users.size, 0);
     });
