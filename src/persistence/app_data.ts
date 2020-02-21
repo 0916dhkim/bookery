@@ -46,7 +46,7 @@ export class AppData {
    * @returns next available unique ID for given collection.
    */
   private getNextId(collection: Iterable<{ id: number }>): number {
-    return Math.max(...Array.from(collection).map(item => item.id)) + 1;
+    return Math.max(0, ...Array.from(collection).map(item => item.id)) + 1;
   }
 
   /**
