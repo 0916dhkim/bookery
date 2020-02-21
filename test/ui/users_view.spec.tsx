@@ -1,18 +1,42 @@
-import { describe, it, afterEach } from "mocha";
-import { fireEvent, render, within, cleanup } from "@testing-library/react";
+import { describe, it, afterEach, beforeEach } from "mocha";
+import {
+  fireEvent,
+  render,
+  within,
+  cleanup,
+  RenderResult
+} from "@testing-library/react";
 import * as React from "react";
 import { UsersView } from "../../src/ui/users_view";
 import { AppData } from "../../src/persistence/app_data";
 import * as assert from "assert";
+import { AppDataContext } from "../../src/ui/app_data_context";
+import { act } from "react-dom/test-utils";
 
-function mockAppDataState(): [() => AppData, (x: AppData) => void] {
-  let appData = new AppData();
-  return [
-    (): AppData => appData,
-    (x: AppData): void => {
-      appData = x;
-    }
-  ];
+class Tester extends React.Component<
+  { children: React.ReactElement },
+  { appData: AppData }
+> {
+  constructor(props: { children: React.ReactElement }) {
+    super(props);
+    this.state = {
+      appData: new AppData()
+    };
+  }
+  render(): React.ReactNode {
+    return (
+      <AppDataContext.Provider
+        value={{
+          appData: this.state.appData,
+          setAppData: (x: AppData): void => {
+            this.setState({ appData: x });
+          }
+        }}
+      >
+        {this.props.children}
+      </AppDataContext.Provider>
+    );
+  }
 }
 
 const emptyAppData = new AppData();
@@ -29,6 +53,26 @@ const userJohn = singleUserAppData
   .setNote("The greatest name in the world!");
 const doubleUserAppData = singleUserAppData.setUser(userJohn);
 
+const testerRef = React.createRef<Tester>();
+let renderResult: RenderResult;
+function getAppData(): AppData {
+  return testerRef.current.state.appData;
+}
+
+function setAppData(x: AppData): void {
+  act(() => {
+    testerRef.current.setState({ appData: x });
+  });
+}
+
+beforeEach(function() {
+  renderResult = render(
+    <Tester ref={testerRef}>
+      <UsersView />
+    </Tester>
+  );
+});
+
 afterEach(function() {
   cleanup();
 });
@@ -36,67 +80,50 @@ afterEach(function() {
 describe("UsersView", function() {
   describe("Suggestions List", function() {
     it("Exists", function() {
-      const [getAppData, setAppData] = mockAppDataState();
       setAppData(singleUserAppData);
-      const { getByTestId } = render(
-        <UsersView appData={getAppData()} setAppData={setAppData} />
-      );
-      const suggestionsList = getByTestId("suggestions-list");
-      within(suggestionsList).getByRole("option");
+      const suggestionsList = renderResult.getByTestId("suggestions-list");
+      within(suggestionsList).getAllByRole("option")[0];
     });
   });
   describe("Delete Button", function() {
     it("Exists", function() {
-      const [getAppData, setAppData] = mockAppDataState();
       setAppData(doubleUserAppData);
-      const { getByTestId } = render(
-        <UsersView appData={getAppData()} setAppData={setAppData} />
-      );
-      const firstSuggestion = within(getByTestId("suggestions-list")).getByRole(
-        "option"
-      );
+      const firstSuggestion = within(
+        renderResult.getByTestId("suggestions-list")
+      ).getAllByRole("option")[0];
       fireEvent.click(firstSuggestion);
-      getByTestId("delete-button");
+      renderResult.getByTestId("delete-button");
     });
 
     it("Delete Single User", function() {
-      const [getAppData, setAppData] = mockAppDataState();
       setAppData(singleUserAppData);
-      const { getByTestId } = render(
-        <UsersView appData={getAppData()} setAppData={setAppData} />
-      );
 
       assert.strictEqual(getAppData().users.size, 1);
 
-      const firstSuggestion = within(getByTestId("suggestions-list")).getByRole(
-        "option"
-      );
+      const firstSuggestion = within(
+        renderResult.getByTestId("suggestions-list")
+      ).getAllByRole("option")[0];
       fireEvent.click(firstSuggestion);
 
       // Click the delete button.
-      const button = getByTestId("delete-button");
+      const button = renderResult.getByTestId("delete-button");
       fireEvent.click(button);
 
       assert.strictEqual(getAppData().users.size, 0);
     });
 
     it("Deleting A User Hides The Edit Form", function() {
-      const [getAppData, setAppData] = mockAppDataState();
       setAppData(doubleUserAppData);
-      const { getByTestId, queryByTestId, rerender } = render(
-        <UsersView appData={getAppData()} setAppData={setAppData} />
-      );
 
-      const option = within(getByTestId("suggestions-list")).getByRole(
-        "option"
-      );
+      const option = within(
+        renderResult.getByTestId("suggestions-list")
+      ).getAllByRole("option")[0];
       fireEvent.click(option);
 
-      const deleteButton = getByTestId("delete-button");
+      const deleteButton = renderResult.getByTestId("delete-button");
       fireEvent.click(deleteButton);
 
-      rerender(<UsersView appData={getAppData()} setAppData={setAppData} />);
-      assert.strictEqual(queryByTestId("user-edit-form"), null);
+      assert.strictEqual(renderResult.queryByTestId("user-edit-form"), null);
     });
   });
 });
