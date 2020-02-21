@@ -132,7 +132,8 @@ export function UsersView(
    * Handle delete user button click event.
    */
   function handleDeleteUserButtonClick(): void {
-    // TODO: Implement.
+    props.setAppData(props.appData.deleteUser(stagingUser)[0]);
+    setStagingUser(null);
   }
 
   return (

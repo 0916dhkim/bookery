@@ -29,6 +29,19 @@ export class AppData {
   }
 
   /**
+   * Delete a user from users map.
+   * @param user user to be deleted.
+   * @returns new instance of this without deleted user and the return value of the delete call.
+   */
+  deleteUser(user: User): [AppData, boolean] {
+    let ret = false;
+    const nextAppData = produce(this, (draft): void => {
+      ret = draft.users.delete(user.id);
+    });
+    return [nextAppData, ret];
+  }
+
+  /**
    * @param collection Iterable collection of objects with ID number.
    * @returns next available unique ID for given collection.
    */

@@ -1,5 +1,5 @@
-import { describe, it } from "mocha";
-import { fireEvent, render, within } from "@testing-library/react";
+import { describe, it, afterEach } from "mocha";
+import { fireEvent, render, within, cleanup } from "@testing-library/react";
 import * as React from "react";
 import { UsersView } from "../../src/ui/users_view";
 import { AppData } from "../../src/persistence/app_data";
@@ -28,6 +28,10 @@ const userJohn = singleUserAppData
   .setLastName("Doe")
   .setNote("The greatest name in the world!");
 const doubleUserAppData = singleUserAppData.setUser(userJohn);
+
+afterEach(function() {
+  cleanup();
+});
 
 describe("UsersView", function() {
   describe("Suggestions List", function() {
@@ -79,7 +83,7 @@ describe("UsersView", function() {
     it("Deleting A User Hides The Edit Form", function() {
       const [getAppData, setAppData] = mockAppDataState();
       setAppData(doubleUserAppData);
-      const { getByTestId, queryByTestId } = render(
+      const { getByTestId, queryByTestId, rerender } = render(
         <UsersView appData={getAppData()} setAppData={setAppData} />
       );
 
@@ -91,6 +95,7 @@ describe("UsersView", function() {
       const deleteButton = getByTestId("delete-button");
       fireEvent.click(deleteButton);
 
+      rerender(<UsersView appData={getAppData()} setAppData={setAppData} />);
       assert.strictEqual(queryByTestId("user-edit-form"), null);
     });
   });
