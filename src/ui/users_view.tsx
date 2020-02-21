@@ -150,7 +150,9 @@ export function UsersView(): React.ReactElement {
             }}
           />
         </label>
-        <button onClick={handleNewUserButtonClick}>New User</button>
+        <button type="button" onClick={handleNewUserButtonClick}>
+          New User
+        </button>
         {/* Users List */}
         <ul role="listbox" data-testid="suggestions-list">
           {filteredUsers.map(user => (
@@ -208,12 +210,16 @@ export function UsersView(): React.ReactElement {
             />
           </label>
           <button
+            type="button"
             onClick={handleDeleteUserButtonClick}
             data-testid="delete-button"
           >
             Delete User
           </button>
-          <button onClick={overrideUserEditForm.bind(null, stagingUser)}>
+          <button
+            type="button"
+            onClick={overrideUserEditForm.bind(null, stagingUser)}
+          >
             Reset
           </button>
           <button type="submit">Apply</button>
