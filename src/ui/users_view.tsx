@@ -139,7 +139,7 @@ export function UsersView(
     <div className="js-users-view">
       Users View
       {/* Search Bar */}
-      <form onSubmit={(event): void => event.preventDefault()}>
+      <form role="search" onSubmit={(event): void => event.preventDefault()}>
         <label>
           Search
           <input
@@ -151,17 +151,21 @@ export function UsersView(
           />
         </label>
         <button onClick={handleNewUserButtonClick}>New User</button>
+        {/* Users List */}
+        <ul role="listbox" data-testid="suggestions-list">
+          {filteredUsers.map(user => (
+            <li role="presentation" key={user.id.toString()}>
+              <a
+                href="#"
+                onClick={handleUserClick.bind(null, user)}
+                role="option"
+              >
+                {user.lastName}, {user.firstName}: {user.note}
+              </a>
+            </li>
+          ))}
+        </ul>
       </form>
-      {/* Users List */}
-      <ul data-testid="suggestions-list">
-        {filteredUsers.map(user => (
-          <li key={user.id.toString()}>
-            <a onClick={handleUserClick.bind(null, user)}>
-              {user.lastName}, {user.firstName}: {user.note}
-            </a>
-          </li>
-        ))}
-      </ul>
       {/* User Edit Form */}
       {stagingUser && (
         <form
