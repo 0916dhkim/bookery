@@ -75,5 +75,23 @@ describe("UsersView", function() {
 
       assert.strictEqual(getAppData().users.size, 0);
     });
+
+    it("Deleting A User Hides The Edit Form", function() {
+      const [getAppData, setAppData] = mockAppDataState();
+      setAppData(doubleUserAppData);
+      const { getByTestId, queryByTestId } = render(
+        <UsersView appData={getAppData()} setAppData={setAppData} />
+      );
+
+      const option = within(getByTestId("suggestions-list")).getByRole(
+        "option"
+      );
+      fireEvent.click(option);
+
+      const deleteButton = getByTestId("delete-button");
+      fireEvent.click(deleteButton);
+
+      assert.strictEqual(queryByTestId("user-edit-form"), null);
+    });
   });
 });
