@@ -287,6 +287,36 @@ describe("UsersView", function() {
         ).getAllByRole("listitem").length;
         assert.strictEqual(historyCount, 1);
       });
+
+      it("Selecting A Book Should Disable Input", async function() {
+        let x = new AppData();
+        x = x.setUser(x.generateUser("Guest", "Special", "Only For Today"));
+        x = x.setBook(x.generateBook("How to Unit Test", "Amazing Dev"));
+        setAppData(x);
+
+        // Select user.
+        const userOption = within(
+          renderResult.getByTestId("suggestions-list")
+        ).getByRole("option");
+        userEvent.click(userOption);
+
+        // Search for the book.
+        renderResult.getByTestId("history-search-input").focus();
+        await userEvent.type(document.activeElement, "How");
+
+        // Select book suggestion.
+        userEvent.selectOptions(
+          renderResult.getByTestId("history-list"),
+          Array.from(getAppData().books.values())[0].id.toString()
+        );
+
+        assert.strictEqual(
+          renderResult
+            .getByTestId("history-search-input")
+            .getAttribute("disabled"),
+          true
+        );
+      });
     });
   });
 });
