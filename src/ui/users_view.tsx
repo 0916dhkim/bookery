@@ -1,14 +1,27 @@
 import * as React from "react";
 import {
-  showModifiedDialogSync,
-  ModifiedDialogOption
+  ModifiedDialogOption,
+  showModifiedDialogSync as defaultShowModifiedDialogSync
 } from "./modified_dialog";
+import {
+  DeleteUserDialogOption,
+  showDeleteUserDialogSync as defaultShowDeleteUserDialogSync
+} from "./delete_user_dialog";
 import { showFormValidityErrorMessage } from "./form_validity_error_message";
 import * as Fuse from "fuse.js";
 import { User } from "../persistence/user";
 import { AppDataContext } from "./app_data_context";
 
-export function UsersView(): React.ReactElement {
+export interface UsersViewProps {
+  showModifiedDialogSync?: () => ModifiedDialogOption;
+  showDeleteUserDialogSync?: () => DeleteUserDialogOption;
+  children?: React.ReactNode;
+}
+
+export function UsersView({
+  showModifiedDialogSync = defaultShowModifiedDialogSync,
+  showDeleteUserDialogSync = defaultShowDeleteUserDialogSync
+}: UsersViewProps): React.ReactElement<UsersViewProps> {
   const { appData, setAppData } = React.useContext(AppDataContext);
   const [stagingUser, setStagingUser] = React.useState<User>();
   const [firstNameValue, setFirstNameValue] = React.useState<string>("");
@@ -131,8 +144,15 @@ export function UsersView(): React.ReactElement {
    * Handle delete user button click event.
    */
   function handleDeleteUserButtonClick(): void {
-    setAppData(appData.deleteUser(stagingUser)[0]);
-    setStagingUser(null);
+    const response = showDeleteUserDialogSync();
+    switch (response) {
+      case DeleteUserDialogOption.CANCEL:
+        return;
+      case DeleteUserDialogOption.OK:
+        setAppData(appData.deleteUser(stagingUser)[0]);
+        setStagingUser(null);
+        return;
+    }
   }
 
   return (

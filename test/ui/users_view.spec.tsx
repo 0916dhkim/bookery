@@ -7,20 +7,26 @@ import {
   RenderResult
 } from "@testing-library/react";
 import * as React from "react";
-import { UsersView } from "../../src/ui/users_view";
+import { UsersView, UsersViewProps } from "../../src/ui/users_view";
 import { AppData } from "../../src/persistence/app_data";
 import * as assert from "assert";
 import { AppDataContext } from "../../src/ui/app_data_context";
 import { act } from "react-dom/test-utils";
+import { ModifiedDialogOption } from "../../src/ui/modified_dialog";
+import { DeleteUserDialogOption } from "../../src/ui/delete_user_dialog";
 
-class Tester extends React.Component<
-  { children: React.ReactElement },
-  { appData: AppData }
-> {
+interface TesterState extends UsersViewProps {
+  appData: AppData;
+}
+class Tester extends React.Component<{}, TesterState> {
   constructor(props: { children: React.ReactElement }) {
     super(props);
     this.state = {
-      appData: new AppData()
+      appData: new AppData(),
+      showModifiedDialogSync: (): ModifiedDialogOption =>
+        ModifiedDialogOption.SAVE,
+      showDeleteUserDialogSync: (): DeleteUserDialogOption =>
+        DeleteUserDialogOption.OK
     };
   }
   render(): React.ReactNode {
@@ -33,7 +39,10 @@ class Tester extends React.Component<
           }
         }}
       >
-        {this.props.children}
+        <UsersView
+          showModifiedDialogSync={this.state.showModifiedDialogSync}
+          showDeleteUserDialogSync={this.state.showDeleteUserDialogSync}
+        />
       </AppDataContext.Provider>
     );
   }
@@ -85,6 +94,7 @@ describe("UsersView", function() {
       within(suggestionsList).getAllByRole("option")[0];
     });
   });
+
   describe("Delete Button", function() {
     it("Exists", function() {
       setAppData(doubleUserAppData);
@@ -93,6 +103,29 @@ describe("UsersView", function() {
       ).getAllByRole("option")[0];
       fireEvent.click(firstSuggestion);
       renderResult.getByTestId("delete-button");
+    });
+
+    it("Warns When Deleting A User", function() {
+      setAppData(doubleUserAppData);
+
+      let count = 0;
+      act(() => {
+        testerRef.current.setState({
+          showDeleteUserDialogSync: () => {
+            count++;
+            return DeleteUserDialogOption.CANCEL;
+          }
+        });
+      });
+
+      const firstSuggestion = within(
+        renderResult.getByTestId("suggestions-list")
+      ).getAllByRole("option")[0];
+      fireEvent.click(firstSuggestion);
+      const deleteButton = renderResult.getByTestId("delete-button");
+      fireEvent.click(deleteButton);
+
+      assert.strictEqual(count, 1);
     });
 
     it("Delete Single User", function() {
