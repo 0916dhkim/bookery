@@ -179,4 +179,88 @@ describe("UsersView", function() {
       assert.strictEqual(renderResult.queryByTestId("user-edit-form"), null);
     });
   });
+
+  describe("User History Edit Form", function() {
+    describe("User History List Length", function() {
+      it("1 User 3 Books 2 Views", function() {
+        let appData = new AppData();
+        appData = appData.setUser(appData.generateUser("A", "K"));
+        appData = appData.setBook(appData.generateBook("LSDKFK", "LSKQWE"));
+        appData = appData.setBook(appData.generateBook("RIELWWL", "OQWI#KDS"));
+        appData = appData.setBook(appData.generateBook("RWOIVV", "PIOPWERU"));
+        const user = Array.from(appData.users.values())[0];
+        const twoBooks = Array.from(appData.books.values()).slice(0, 2);
+        twoBooks.forEach(book => {
+          appData = appData.setView(
+            appData.generateView(user.id, book.id, 1318781875826)
+          );
+        });
+        setAppData(appData);
+
+        // Select user.
+        const userOption = within(
+          renderResult.getByTestId("suggestions-list")
+        ).getByRole("option");
+        fireEvent.click(userOption);
+
+        const historyCount = within(
+          renderResult.getByTestId("history-list")
+        ).getAllByRole("listitem").length;
+        assert.strictEqual(historyCount, 2);
+      });
+
+      it("2 Users 2 Books 1 View Each (2 Total)", function() {
+        let appData = new AppData();
+        appData = appData.setUser(
+          appData.generateUser("SDL", "SLKD", "QWLELL")
+        );
+        appData = appData.setUser(appData.generateUser("WQks", "QLklwe"));
+        appData = appData.setBook(appData.generateBook("QWOIewr", "CLK"));
+        appData = appData.setBook(appData.generateBook("VLKD", "EWL"));
+        const users = Array.from(appData.users.values());
+        const books = Array.from(appData.books.values());
+        users.forEach((user, i) => {
+          appData = appData.setView(
+            appData.generateView(user.id, books[i].id, 1318781875426)
+          );
+        });
+        setAppData(appData);
+
+        // Select user.
+        const firstUserOption = within(
+          renderResult.getByTestId("suggestions-list")
+        ).getAllByRole("option")[0];
+        fireEvent.click(firstUserOption);
+
+        const historyCount = within(
+          renderResult.getByTestId("history-list")
+        ).getAllByRole("listitem").length;
+        assert.strictEqual(historyCount, 1);
+      });
+
+      it("1 User 0 Book 0 View", function() {
+        let appData = new AppData();
+        appData = appData.setUser(
+          appData.generateUser(
+            "The Great",
+            "Alexander",
+            "I don't know his last name."
+          )
+        );
+        setAppData(appData);
+
+        // Select Alexander the Great.
+        const alexanderOption = within(
+          renderResult.getByTestId("suggestions-list")
+        ).getByRole("option");
+        fireEvent.click(alexanderOption);
+
+        const historyCount = within(
+          renderResult.getByTestId("history-list")
+        ).getAllByRole("listitem").length;
+
+        assert.strictEqual(historyCount, 0);
+      });
+    });
+  });
 });
