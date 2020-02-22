@@ -128,6 +128,30 @@ describe("UsersView", function() {
       assert.strictEqual(count, 1);
     });
 
+    it("Abort Deleting When Requested", function() {
+      setAppData(doubleUserAppData);
+
+      // Represent pressing cancel option.
+      act(() => {
+        testerRef.current.setState({
+          showDeleteUserDialogSync: () => DeleteUserDialogOption.CANCEL
+        });
+      });
+
+      const firstSuggestion = within(
+        renderResult.getByTestId("suggestions-list")
+      ).getAllByRole("option")[0];
+      fireEvent.click(firstSuggestion);
+
+      assert.strictEqual(getAppData().users.size, 2);
+
+      const deleteButton = renderResult.getByTestId("delete-button");
+      fireEvent.click(deleteButton);
+
+      // Number of users should be unchanged.
+      assert.strictEqual(getAppData().users.size, 2);
+    });
+
     it("Delete Single User", function() {
       setAppData(singleUserAppData);
 
