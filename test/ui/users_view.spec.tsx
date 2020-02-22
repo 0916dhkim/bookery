@@ -49,17 +49,13 @@ class Tester extends React.Component<{}, TesterState> {
 }
 
 const emptyAppData = new AppData();
-const userJenny = emptyAppData
-  .generateUser()
-  .setFirstName("Jenny")
-  .setLastName("Doe")
-  .setNote("Dummy");
+const userJenny = emptyAppData.generateUser("Doe", "Jenny", "Dummy");
 const singleUserAppData = emptyAppData.setUser(userJenny);
-const userJohn = singleUserAppData
-  .generateUser()
-  .setFirstName("John")
-  .setLastName("Doe")
-  .setNote("The greatest name in the world!");
+const userJohn = singleUserAppData.generateUser(
+  "Doe",
+  "John",
+  "The greatest name in the world!"
+);
 const doubleUserAppData = singleUserAppData.setUser(userJohn);
 
 const testerRef = React.createRef<Tester>();

@@ -135,7 +135,7 @@ export function UsersView({
    */
   function handleNewUserButtonClick(): void {
     if (safeToOverrideUserEditForm()) {
-      const generatedUser = appData.generateUser();
+      const generatedUser = appData.generateUser("", "");
       setStagingUser(generatedUser);
     }
   }
