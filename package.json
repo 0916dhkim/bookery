@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "webpack",
-    "test": "mocha -r ts-node/register test/**/*.ts",
+    "test": "mocha",
     "start": "electron .",
     "prestart": "npm run build",
     "lint": "eslint --ext=js,jsx,ts,tsx ."
@@ -25,6 +25,11 @@
   },
   "homepage": "https://github.com/0916dhkim/bookery#readme",
   "dependencies": {
+    "@types/jquery": "^3.3.32",
+    "@types/react": "^16.9.20",
+    "@types/react-dom": "^16.9.5",
+    "@types/webpack": "^4.41.6",
+    "@types/webpack-merge": "^4.1.5",
     "electron": "^8.0.1",
     "fuse.js": "^3.4.6",
     "immer": "^5.3.6",
@@ -36,14 +41,10 @@
     "typescript": "^3.7.5",
     "webpack": "^4.41.6",
     "webpack-cli": "^3.3.11",
-    "@types/jquery": "^3.3.32",
-    "@types/react": "^16.9.20",
-    "@types/react-dom": "^16.9.5",
-    "@types/webpack": "^4.41.6",
-    "@types/webpack-merge": "^4.1.5",
     "webpack-merge": "^4.2.2"
   },
   "devDependencies": {
+    "@testing-library/react": "^9.4.0",
     "@types/mocha": "^7.0.1",
     "@typescript-eslint/eslint-plugin": "^2.20.0",
     "@typescript-eslint/parser": "^2.20.0",
@@ -51,6 +52,8 @@
     "eslint-config-prettier": "^6.10.0",
     "eslint-plugin-prettier": "^3.1.2",
     "eslint-plugin-react": "^7.18.3",
+    "jsdom": "^16.2.0",
+    "jsdom-global": "^3.0.2",
     "mocha": "^7.0.1",
     "prettier": "^1.19.1",
     "ts-node": "^8.6.2"

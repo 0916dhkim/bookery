@@ -1,16 +1,28 @@
 import * as React from "react";
-import { ContentViewProps } from "./content_view";
 import {
-  showModifiedDialogSync,
-  ModifiedDialogOption
+  ModifiedDialogOption,
+  showModifiedDialogSync as defaultShowModifiedDialogSync
 } from "./modified_dialog";
+import {
+  DeleteUserDialogOption,
+  showDeleteUserDialogSync as defaultShowDeleteUserDialogSync
+} from "./delete_user_dialog";
 import { showFormValidityErrorMessage } from "./form_validity_error_message";
 import * as Fuse from "fuse.js";
 import { User } from "../persistence/user";
+import { AppDataContext } from "./app_data_context";
 
-export function UsersView(
-  props: ContentViewProps
-): React.ReactElement<ContentViewProps> {
+export interface UsersViewProps {
+  showModifiedDialogSync?: () => ModifiedDialogOption;
+  showDeleteUserDialogSync?: () => DeleteUserDialogOption;
+  children?: React.ReactNode;
+}
+
+export function UsersView({
+  showModifiedDialogSync = defaultShowModifiedDialogSync,
+  showDeleteUserDialogSync = defaultShowDeleteUserDialogSync
+}: UsersViewProps): React.ReactElement<UsersViewProps> {
+  const { appData, setAppData } = React.useContext(AppDataContext);
   const [stagingUser, setStagingUser] = React.useState<User>();
   const [firstNameValue, setFirstNameValue] = React.useState<string>("");
   const [lastNameValue, setLastNameValue] = React.useState<string>("");
@@ -47,7 +59,7 @@ export function UsersView(
     User
   > => {
     if (filterValue.length === 0) {
-      return Array.from(props.appData.users.values());
+      return Array.from(appData.users.values());
     }
     const fuseOptions: Fuse.FuseOptions<User> = {
       shouldSort: true,
@@ -56,11 +68,11 @@ export function UsersView(
       keys: ["lastName", "firstName", "note"]
     };
     const filterFuse: Fuse<User, Fuse.FuseOptions<User>> = new Fuse(
-      Array.from(props.appData.users.values()),
+      Array.from(appData.users.values()),
       fuseOptions
     );
     return filterFuse.search(filterValue) as User[];
-  }, [filterValue, props.appData]);
+  }, [filterValue, appData]);
 
   /**
    * Apply data from the user edit form to the app data.
@@ -76,7 +88,7 @@ export function UsersView(
       .setLastName(lastNameValue)
       .setNote(noteValue === "" ? undefined : noteValue);
     setStagingUser(nextUser);
-    props.setAppData(props.appData.setUser(nextUser));
+    setAppData(appData.setUser(nextUser));
     return true;
   }
 
@@ -87,7 +99,7 @@ export function UsersView(
     if (!stagingUser) {
       return true;
     }
-    const original = props.appData.users.get(stagingUser.id);
+    const original = appData.users.get(stagingUser.id);
     const needToAsk =
       !original ||
       firstNameValue !== stagingUser.firstName ||
@@ -123,8 +135,23 @@ export function UsersView(
    */
   function handleNewUserButtonClick(): void {
     if (safeToOverrideUserEditForm()) {
-      const generatedUser = props.appData.generateUser();
+      const generatedUser = appData.generateUser();
       setStagingUser(generatedUser);
+    }
+  }
+
+  /**
+   * Handle delete user button click event.
+   */
+  function handleDeleteUserButtonClick(): void {
+    const response = showDeleteUserDialogSync();
+    switch (response) {
+      case DeleteUserDialogOption.CANCEL:
+        return;
+      case DeleteUserDialogOption.OK:
+        setAppData(appData.deleteUser(stagingUser)[0]);
+        setStagingUser(null);
+        return;
     }
   }
 
@@ -132,7 +159,7 @@ export function UsersView(
     <div className="js-users-view">
       Users View
       {/* Search Bar */}
-      <form onSubmit={(event): void => event.preventDefault()}>
+      <form role="search" onSubmit={(event): void => event.preventDefault()}>
         <label>
           Search
           <input
@@ -143,22 +170,29 @@ export function UsersView(
             }}
           />
         </label>
-        <button onClick={handleNewUserButtonClick}>New User</button>
+        <button type="button" onClick={handleNewUserButtonClick}>
+          New User
+        </button>
+        {/* Users List */}
+        <ul role="listbox" data-testid="suggestions-list">
+          {filteredUsers.map(user => (
+            <li role="presentation" key={user.id.toString()}>
+              <a
+                href="#"
+                onClick={handleUserClick.bind(null, user)}
+                role="option"
+              >
+                {user.lastName}, {user.firstName}: {user.note}
+              </a>
+            </li>
+          ))}
+        </ul>
       </form>
-      {/* Users List */}
-      <ul>
-        {filteredUsers.map(user => (
-          <li key={user.id.toString()}>
-            <a onClick={handleUserClick.bind(null, user)}>
-              {user.lastName}, {user.firstName}: {user.note}
-            </a>
-          </li>
-        ))}
-      </ul>
       {/* User Edit Form */}
       {stagingUser && (
         <form
           ref={formRef}
+          data-testid="user-edit-form"
           onSubmit={(event): void => {
             commitChanges();
             event.preventDefault();
@@ -195,7 +229,17 @@ export function UsersView(
               }}
             />
           </label>
-          <button onClick={overrideUserEditForm.bind(null, stagingUser)}>
+          <button
+            type="button"
+            onClick={handleDeleteUserButtonClick}
+            data-testid="delete-button"
+          >
+            Delete User
+          </button>
+          <button
+            type="button"
+            onClick={overrideUserEditForm.bind(null, stagingUser)}
+          >
             Reset
           </button>
           <button type="submit">Apply</button>
