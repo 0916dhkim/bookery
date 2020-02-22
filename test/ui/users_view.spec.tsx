@@ -6,6 +6,7 @@ import {
   cleanup,
   RenderResult
 } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import * as React from "react";
 import { UsersView, UsersViewProps } from "../../src/ui/users_view";
 import { AppData } from "../../src/persistence/app_data";
@@ -260,6 +261,37 @@ describe("UsersView", function() {
         ).getAllByRole("listitem").length;
 
         assert.strictEqual(historyCount, 0);
+      });
+    });
+
+    describe("Adding Views", function() {
+      it("1 User 1 Book 0 View", async function() {
+        let x = new AppData();
+        x = x.setBook(x.generateBook("Diary", "You Know Who"));
+        x = x.setUser(x.generateUser("Last", "First", "Nothing in particular"));
+        setAppData(x);
+
+        // Select user.
+        const userOption = within(
+          renderResult.getByTestId("suggestions-list")
+        ).getByRole("option");
+        userEvent.click(userOption);
+
+        renderResult.getByTestId("history-search-input").focus();
+        await userEvent.type(document.activeElement, "Diary");
+
+        userEvent.selectOptions(
+          renderResult.getByTestId("history-list"),
+          Array.from(getAppData().books.values())[0].id.toString()
+        );
+
+        userEvent.click(renderResult.getByTestId("history-add-button"));
+
+        assert.strictEqual(getAppData().views.size, 1);
+        const historyCount = within(
+          renderResult.getByTestId("history-list")
+        ).getAllByRole("listitem").length;
+        assert.strictEqual(historyCount, 1);
       });
     });
   });
