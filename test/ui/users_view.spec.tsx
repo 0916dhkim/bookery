@@ -1,11 +1,5 @@
 import { describe, it, afterEach, beforeEach } from "mocha";
-import {
-  fireEvent,
-  render,
-  within,
-  cleanup,
-  RenderResult
-} from "@testing-library/react";
+import { render, within, cleanup, RenderResult } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import * as React from "react";
 import { UsersView, UsersViewProps } from "../../src/ui/users_view";
@@ -98,7 +92,7 @@ describe("UsersView", function() {
       const firstSuggestion = within(
         renderResult.getByTestId("suggestions-list")
       ).getAllByRole("option")[0];
-      fireEvent.click(firstSuggestion);
+      userEvent.click(firstSuggestion);
       renderResult.getByTestId("delete-button");
     });
 
@@ -118,9 +112,9 @@ describe("UsersView", function() {
       const firstSuggestion = within(
         renderResult.getByTestId("suggestions-list")
       ).getAllByRole("option")[0];
-      fireEvent.click(firstSuggestion);
+      userEvent.click(firstSuggestion);
       const deleteButton = renderResult.getByTestId("delete-button");
-      fireEvent.click(deleteButton);
+      userEvent.click(deleteButton);
 
       assert.strictEqual(count, 1);
     });
@@ -138,12 +132,12 @@ describe("UsersView", function() {
       const firstSuggestion = within(
         renderResult.getByTestId("suggestions-list")
       ).getAllByRole("option")[0];
-      fireEvent.click(firstSuggestion);
+      userEvent.click(firstSuggestion);
 
       assert.strictEqual(getAppData().users.size, 2);
 
       const deleteButton = renderResult.getByTestId("delete-button");
-      fireEvent.click(deleteButton);
+      userEvent.click(deleteButton);
 
       // Number of users should be unchanged.
       assert.strictEqual(getAppData().users.size, 2);
@@ -157,11 +151,11 @@ describe("UsersView", function() {
       const firstSuggestion = within(
         renderResult.getByTestId("suggestions-list")
       ).getAllByRole("option")[0];
-      fireEvent.click(firstSuggestion);
+      userEvent.click(firstSuggestion);
 
       // Click the delete button.
       const button = renderResult.getByTestId("delete-button");
-      fireEvent.click(button);
+      userEvent.click(button);
 
       assert.strictEqual(getAppData().users.size, 0);
     });
@@ -172,10 +166,10 @@ describe("UsersView", function() {
       const option = within(
         renderResult.getByTestId("suggestions-list")
       ).getAllByRole("option")[0];
-      fireEvent.click(option);
+      userEvent.click(option);
 
       const deleteButton = renderResult.getByTestId("delete-button");
-      fireEvent.click(deleteButton);
+      userEvent.click(deleteButton);
 
       assert.strictEqual(renderResult.queryByTestId("user-edit-form"), null);
     });
@@ -202,7 +196,7 @@ describe("UsersView", function() {
         const userOption = within(
           renderResult.getByTestId("suggestions-list")
         ).getByRole("option");
-        fireEvent.click(userOption);
+        userEvent.click(userOption);
 
         const historyCount = within(
           renderResult.getByTestId("history-list")
@@ -231,7 +225,7 @@ describe("UsersView", function() {
         const firstUserOption = within(
           renderResult.getByTestId("suggestions-list")
         ).getAllByRole("option")[0];
-        fireEvent.click(firstUserOption);
+        userEvent.click(firstUserOption);
 
         const historyCount = within(
           renderResult.getByTestId("history-list")
@@ -254,7 +248,7 @@ describe("UsersView", function() {
         const alexanderOption = within(
           renderResult.getByTestId("suggestions-list")
         ).getByRole("option");
-        fireEvent.click(alexanderOption);
+        userEvent.click(alexanderOption);
 
         const historyCount = within(
           renderResult.getByTestId("history-list")
