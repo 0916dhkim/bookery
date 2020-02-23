@@ -317,6 +317,25 @@ describe("UsersView", function() {
           true
         );
       });
+
+      it("History Add Button Should Be Disabled Before Selecting A Book", async function() {
+        let x = new AppData();
+        x = x.setUser(x.generateUser("Host", "Jack"));
+        setAppData(x);
+
+        // Select user.
+        const userOption = within(
+          renderResult.getByTestId("suggestions-list")
+        ).getByRole("option");
+        userEvent.click(userOption);
+
+        assert.strictEqual(
+          renderResult
+            .getByTestId("history-add-button")
+            .getAttribute("disabled"),
+          true
+        );
+      });
     });
   });
 });
