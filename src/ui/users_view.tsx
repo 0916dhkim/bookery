@@ -11,6 +11,7 @@ import { showFormValidityErrorMessage } from "./form_validity_error_message";
 import * as Fuse from "fuse.js";
 import { User } from "../persistence/user";
 import { AppDataContext } from "./app_data_context";
+import { Button, Dropdown, Icon } from "semantic-ui-react";
 
 export interface UsersViewProps {
   showModifiedDialogSync?: () => ModifiedDialogOption;
@@ -155,6 +156,15 @@ export function UsersView({
     }
   }
 
+  /**
+   * Handle history add button click event.
+   */
+  function handleHistoryAddButtonClick(
+    event: React.MouseEvent<HTMLButtonElement>
+  ): void {
+    event.preventDefault();
+  }
+
   return (
     <div className="js-users-view">
       Users View
@@ -247,11 +257,29 @@ export function UsersView({
           </form>
           <form>
             <label>
-              <input type="text" data-testid="history-search-input" />
+              <Dropdown
+                data-testid="history-search-input"
+                placeholder="Select Book"
+                fluid
+                selection
+                options={[
+                  {
+                    key: "A",
+                    value: "A"
+                  },
+                  {
+                    key: "B",
+                    value: "B"
+                  }
+                ]}
+              />
             </label>
-            <button type="submit" data-testid="history-add-button">
-              Add View
-            </button>
+            <Button
+              data-testid="history-add-button"
+              onClick={handleHistoryAddButtonClick}
+            >
+              <Icon name="plus" />
+            </Button>
             <ul data-testid="history-list"></ul>
           </form>
         </div>
