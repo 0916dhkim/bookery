@@ -11,8 +11,15 @@ import { showFormValidityErrorMessage } from "./form_validity_error_message";
 import * as Fuse from "fuse.js";
 import { User } from "../persistence/user";
 import { AppDataContext } from "./app_data_context";
-import { Button, Dropdown, DropdownItemProps, List } from "semantic-ui-react";
+import {
+  Button,
+  Dropdown,
+  DropdownItemProps,
+  List,
+  DropdownProps
+} from "semantic-ui-react";
 import { assertWrapper } from "../assert_wrapper";
+import moment = require("moment");
 
 export interface UsersViewProps {
   showModifiedDialogSync?: () => ModifiedDialogOption;
@@ -168,10 +175,34 @@ export function UsersView({
   /**
    * Handle history add button click event.
    */
-  function handleHistoryAddButtonClick(
-    event: React.MouseEvent<HTMLButtonElement>
+  function handleHistoryAddButtonClick(): void {
+    assertWrapper(stagingUser);
+    assertWrapper(historyInputValue);
+    const selectedBook = appData.books.get(historyInputValue);
+    assertWrapper(selectedBook);
+    const view = appData.generateView(
+      stagingUser.id,
+      selectedBook.id,
+      moment.utc().valueOf()
+    );
+    setAppData(appData.setView(view));
+    setHistoryInputValue(null);
+  }
+
+  /**
+   * Handle history addition candidate change.
+   */
+  function handleHistoryInputValueChange(
+    event: React.SyntheticEvent,
+    data: DropdownProps
   ): void {
-    event.preventDefault();
+    // When cleared.
+    if (data.value === "") {
+      setHistoryInputValue(null);
+    } else {
+      assertWrapper(typeof data.value === "number");
+      setHistoryInputValue(data.value);
+    }
   }
 
   return (
@@ -269,13 +300,8 @@ export function UsersView({
             fluid
             selection
             clearable
-            value={historyInputValue ?? undefined}
-            onChange={(event, data): void => {
-              assertWrapper(
-                data.value === null || typeof data.value === "number"
-              );
-              setHistoryInputValue(data.value);
-            }}
+            value={historyInputValue ?? ""}
+            onChange={handleHistoryInputValueChange}
             options={Array.from(appData.books.values()).map<DropdownItemProps>(
               book => ({
                 key: book.id.toString(),
@@ -304,9 +330,11 @@ export function UsersView({
               .map(view => appData.books.get(view.bookId))
               .map(book => {
                 assertWrapper(!!book);
-                <List.Item key={book.id.toString()}>
-                  {book.title} by {book.author}
-                </List.Item>;
+                return (
+                  <List.Item key={book.id.toString()}>
+                    {book.title} by {book.author}
+                  </List.Item>
+                );
               })}
           </List>
         </div>
