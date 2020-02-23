@@ -6,6 +6,7 @@ import { UsersView } from "./users_view";
 import { QueryView } from "./query_view";
 import { AppDataContext } from "./app_data_context";
 import { ContentViewProps } from "./content_view";
+import { Container } from "semantic-ui-react";
 
 /**
  * Interface for view type array elements.
@@ -28,7 +29,7 @@ function wrap(
       appData: appData,
       setAppData: setAppData
     });
-    return <div>{wrappedComponent}</div>;
+    return wrappedComponent;
   };
 }
 
@@ -69,7 +70,7 @@ export class Main extends React.Component<{}, State> {
       return <p>Welcome Screen</p>;
     } else {
       return (
-        <div className="js-main">
+        <Container>
           <SideMenu
             contentViewNames={contentViews.map(contentView => contentView.name)}
             onMenuClick={this.onMenuClick.bind(this)}
@@ -86,7 +87,7 @@ export class Main extends React.Component<{}, State> {
               contentViews[this.state.contentViewIndex].viewType
             )}
           </AppDataContext.Provider>
-        </div>
+        </Container>
       );
     }
   }
