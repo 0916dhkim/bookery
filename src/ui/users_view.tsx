@@ -12,7 +12,7 @@ import * as Fuse from "fuse.js";
 import { User } from "../persistence/user";
 import { AppDataContext } from "./app_data_context";
 import { Button, Dropdown, DropdownItemProps, List } from "semantic-ui-react";
-import { assertNumber } from "../assert_type";
+import { assertWrapper } from "../assert_wrapper";
 
 export interface UsersViewProps {
   showModifiedDialogSync?: () => ModifiedDialogOption;
@@ -25,14 +25,18 @@ export function UsersView({
   showDeleteUserDialogSync = defaultShowDeleteUserDialogSync
 }: UsersViewProps): React.ReactElement<UsersViewProps> {
   const { appData, setAppData } = React.useContext(AppDataContext);
-  const [stagingUser, setStagingUser] = React.useState<User>();
+  const [stagingUser, setStagingUser] = React.useState<User | null>(null);
   const [firstNameValue, setFirstNameValue] = React.useState<string>("");
   const [lastNameValue, setLastNameValue] = React.useState<string>("");
   const [noteValue, setNoteValue] = React.useState<string>("");
   const [filterValue, setFilterValue] = React.useState<string>("");
-  const [historyInputValue, setHistoryInputValue] = React.useState<number>();
+  const [historyInputValue, setHistoryInputValue] = React.useState<
+    number | null
+  >(null);
 
-  const formRef = React.useRef<HTMLFormElement>();
+  const [formRef] = React.useState<React.RefObject<HTMLFormElement>>(
+    React.createRef()
+  );
 
   /**
    * Override user edit form fields by given user.
@@ -82,6 +86,8 @@ export function UsersView({
    * Display an error message if the form is invalid.
    */
   function commitChanges(): boolean {
+    assertWrapper(formRef.current);
+    assertWrapper(stagingUser);
     if (!formRef.current.checkValidity()) {
       showFormValidityErrorMessage();
       return false;
@@ -147,6 +153,7 @@ export function UsersView({
    * Handle delete user button click event.
    */
   function handleDeleteUserButtonClick(): void {
+    assertWrapper(stagingUser);
     const response = showDeleteUserDialogSync();
     switch (response) {
       case DeleteUserDialogOption.CANCEL:
@@ -262,9 +269,11 @@ export function UsersView({
             fluid
             selection
             clearable
-            value={historyInputValue}
+            value={historyInputValue ?? undefined}
             onChange={(event, data): void => {
-              assertNumber(data.value);
+              assertWrapper(
+                data.value === null || typeof data.value === "number"
+              );
               setHistoryInputValue(data.value);
             }}
             options={Array.from(appData.books.values()).map<DropdownItemProps>(
@@ -283,20 +292,22 @@ export function UsersView({
           />
           <Button
             data-testid="history-add-button"
+            disabled={!historyInputValue}
+            positive={!!historyInputValue}
             onClick={handleHistoryAddButtonClick}
             circular
-            positive
             icon="plus"
           />
           <List data-testid="history-list">
             {Array.from(appData.views.values())
               .filter(view => view.userId === stagingUser.id)
               .map(view => appData.books.get(view.bookId))
-              .map(book => (
+              .map(book => {
+                assertWrapper(!!book);
                 <List.Item key={book.id.toString()}>
                   {book.title} by {book.author}
-                </List.Item>
-              ))}
+                </List.Item>;
+              })}
           </List>
         </div>
       )}

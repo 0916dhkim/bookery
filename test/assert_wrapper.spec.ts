@@ -1,5 +1,5 @@
 import { describe, it } from "mocha";
-import { assertNumber } from "../src/assert_type";
+import { assertNumber } from "../src/assert_wrapper";
 import * as assert from "assert";
 
 describe("assertNumber", function() {

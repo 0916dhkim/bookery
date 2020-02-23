@@ -5,7 +5,7 @@ import { Main } from "./main";
 import { AppData, AppDataSerializer } from "../persistence/app_data";
 
 function newFile(main: React.RefObject<Main>): void {
-  main.current.setState({
+  main?.current?.setState({
     appData: new AppData()
   });
 }
@@ -21,7 +21,7 @@ function openFile(main: React.RefObject<Main>): void {
       encoding: "utf8"
     });
     const appDataSerializer = new AppDataSerializer();
-    main.current.setState({
+    main?.current?.setState({
       currentFilePath: filePath,
       appData: appDataSerializer.deserialize(fileContent)
     });
@@ -32,7 +32,7 @@ function saveAsFile(main: React.RefObject<Main>): void {
   const result = remote.dialog.showSaveDialogSync({
     properties: ["createDirectory", "showOverwriteConfirmation"]
   });
-  if (result !== undefined) {
+  if (result !== undefined && main?.current?.state.appData) {
     const appDataSerializer = new AppDataSerializer();
     const serializedAppData = appDataSerializer.serialize(
       main.current.state.appData
@@ -47,18 +47,20 @@ function saveAsFile(main: React.RefObject<Main>): void {
 }
 
 function saveFile(main: React.RefObject<Main>): void {
-  const appDataSerializer = new AppDataSerializer();
-  const stringifiedAppData = appDataSerializer.serialize(
-    main.current.state.appData
-  );
+  if (main?.current?.state.appData) {
+    const appDataSerializer = new AppDataSerializer();
+    const stringifiedAppData = appDataSerializer.serialize(
+      main.current.state.appData
+    );
 
-  const targetPath = main.current.state.currentFilePath;
-  if (targetPath) {
-    fs.writeFileSync(targetPath, stringifiedAppData, {
-      encoding: "utf8"
-    });
-  } else {
-    saveAsFile(main);
+    const targetPath = main.current.state.currentFilePath;
+    if (targetPath) {
+      fs.writeFileSync(targetPath, stringifiedAppData, {
+        encoding: "utf8"
+      });
+    } else {
+      saveAsFile(main);
+    }
   }
 }
 
