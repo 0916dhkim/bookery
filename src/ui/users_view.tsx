@@ -297,6 +297,7 @@ export function UsersView({
           </form>
           <Dropdown
             placeholder="Select Book"
+            data-testid="history-combobox"
             fluid
             selection
             clearable
