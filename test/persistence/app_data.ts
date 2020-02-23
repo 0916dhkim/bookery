@@ -8,6 +8,7 @@ import { assertBookProperties } from "./book";
 import { assertUserProperties } from "./user";
 import { assertViewProperties } from "./view";
 import produce from "immer";
+import { assertWrapper } from "../../src/assert_wrapper";
 
 function assertAppDataProperties(
   appData: AppData,
@@ -20,9 +21,10 @@ function assertAppDataProperties(
   assert.strictEqual(appData.views.size, views.size);
 
   for (const [key, book] of books) {
-    assert(appData.books.has(key));
+    const appDataBook = appData.books.get(key);
+    assertWrapper(!!appDataBook);
     assertBookProperties(
-      appData.books.get(key),
+      appDataBook,
       book.id,
       book.title,
       book.author,
@@ -31,9 +33,10 @@ function assertAppDataProperties(
   }
 
   for (const [key, user] of users) {
-    assert(appData.users.has(key));
+    const appDataUser = appData.users.get(key);
+    assertWrapper(!!appDataUser);
     assertUserProperties(
-      appData.users.get(key),
+      appDataUser,
       user.id,
       user.lastName,
       user.firstName,
@@ -42,9 +45,10 @@ function assertAppDataProperties(
   }
 
   for (const [key, view] of views) {
-    assert(appData.views.has(key));
+    const appDataView = appData.views.get(key);
+    assertWrapper(!!appDataView);
     assertViewProperties(
-      appData.views.get(key),
+      appDataView,
       view.id,
       view.userId,
       view.bookId,

@@ -9,6 +9,7 @@ import { AppDataContext } from "../../src/ui/app_data_context";
 import { act } from "react-dom/test-utils";
 import { ModifiedDialogOption } from "../../src/ui/modified_dialog";
 import { DeleteUserDialogOption } from "../../src/ui/delete_user_dialog";
+import { assertWrapper } from "../../src/assert_wrapper";
 
 interface TesterState extends UsersViewProps {
   appData: AppData;
@@ -56,12 +57,23 @@ const doubleUserAppData = singleUserAppData.setUser(userJohn);
 const testerRef = React.createRef<Tester>();
 let renderResult: RenderResult;
 function getAppData(): AppData {
+  assertWrapper(testerRef.current?.state.appData);
   return testerRef.current.state.appData;
 }
 
 function setAppData(x: AppData): void {
   act(() => {
+    assertWrapper(testerRef.current);
     testerRef.current.setState({ appData: x });
+  });
+}
+
+function setShowDeleteUserDialogSync(f: () => DeleteUserDialogOption): void {
+  act(() => {
+    assertWrapper(testerRef.current);
+    testerRef.current.setState({
+      showDeleteUserDialogSync: f
+    });
   });
 }
 
@@ -100,13 +112,9 @@ describe("UsersView", function() {
       setAppData(doubleUserAppData);
 
       let count = 0;
-      act(() => {
-        testerRef.current.setState({
-          showDeleteUserDialogSync: () => {
-            count++;
-            return DeleteUserDialogOption.CANCEL;
-          }
-        });
+      setShowDeleteUserDialogSync(() => {
+        count++;
+        return DeleteUserDialogOption.CANCEL;
       });
 
       const firstSuggestion = within(
@@ -123,11 +131,7 @@ describe("UsersView", function() {
       setAppData(doubleUserAppData);
 
       // Represent pressing cancel option.
-      act(() => {
-        testerRef.current.setState({
-          showDeleteUserDialogSync: () => DeleteUserDialogOption.CANCEL
-        });
-      });
+      setShowDeleteUserDialogSync(() => DeleteUserDialogOption.CANCEL);
 
       const firstSuggestion = within(
         renderResult.getByTestId("suggestions-list")
@@ -272,6 +276,7 @@ describe("UsersView", function() {
         userEvent.click(userOption);
 
         renderResult.getByTestId("history-search-input").focus();
+        assertWrapper(!!document.activeElement);
         await userEvent.type(document.activeElement, "Diary");
 
         userEvent.selectOptions(
@@ -302,6 +307,7 @@ describe("UsersView", function() {
 
         // Search for the book.
         renderResult.getByTestId("history-search-input").focus();
+        assertWrapper(document.activeElement);
         await userEvent.type(document.activeElement, "How");
 
         // Select book suggestion.
