@@ -32,6 +32,14 @@ const baseConfig = {
       {
         test: /\.css$/,
         use: ["style-loader", "css-loader"]
+      },
+      {
+        test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/],
+        loader: "url-loader"
+      },
+      {
+        test: [/\.eot$/, /\.ttf$/, /\.svg$/, /\.woff$/, /\.woff2$/],
+        loader: "file-loader"
       }
     ]
   },
