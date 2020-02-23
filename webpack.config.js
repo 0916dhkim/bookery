@@ -25,8 +25,7 @@ const baseConfig = {
           {
             loader: "ts-loader",
             options: {
-              onlyCompileBundledFiles: true,
-              transpileOnly: !PRODUCTION // For fast development builds.
+              onlyCompileBundledFiles: true
             }
           }
         ]
