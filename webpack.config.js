@@ -13,7 +13,7 @@ const baseConfig = {
   mode: PRODUCTION ? "production" : "development",
   devtool: PRODUCTION ? false : "source-map",
   resolve: {
-    extensions: [".ts", ".tsx", ".js"]
+    extensions: [".ts", ".tsx", ".js", "css"]
   },
   module: {
     rules: [
@@ -28,6 +28,10 @@ const baseConfig = {
             }
           }
         ]
+      },
+      {
+        test: /\.css$/,
+        use: ["style-loader", "css-loader"]
       }
     ]
   },
