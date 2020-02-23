@@ -9,7 +9,9 @@ import {
 } from "./delete_user_dialog";
 import { showFormValidityErrorMessage } from "./form_validity_error_message";
 import * as Fuse from "fuse.js";
+import { Book } from "../persistence/book";
 import { User } from "../persistence/user";
+import { View } from "../persistence/view";
 import { AppDataContext } from "./app_data_context";
 import { Button, Dropdown, DropdownItemProps, List } from "semantic-ui-react";
 
@@ -284,7 +286,16 @@ export function UsersView({
             positive
             icon="plus"
           />
-          <List data-testid="history-list"></List>
+          <List data-testid="history-list">
+            {Array.from(appData.views.values())
+              .filter(view => view.userId === stagingUser.id)
+              .map(view => appData.books.get(view.bookId))
+              .map(book => (
+                <List.Item key={book.id.toString()}>
+                  {book.title} by {book.author}
+                </List.Item>
+              ))}
+          </List>
         </div>
       )}
     </div>
