@@ -12,6 +12,7 @@ import * as Fuse from "fuse.js";
 import { User } from "../persistence/user";
 import { AppDataContext } from "./app_data_context";
 import { Button, Dropdown, DropdownItemProps, List } from "semantic-ui-react";
+import { assertNumber } from "../assert_type";
 
 export interface UsersViewProps {
   showModifiedDialogSync?: () => ModifiedDialogOption;
@@ -29,6 +30,7 @@ export function UsersView({
   const [lastNameValue, setLastNameValue] = React.useState<string>("");
   const [noteValue, setNoteValue] = React.useState<string>("");
   const [filterValue, setFilterValue] = React.useState<string>("");
+  const [historyInputValue, setHistoryInputValue] = React.useState<number>();
 
   const formRef = React.useRef<HTMLFormElement>();
 
@@ -256,26 +258,28 @@ export function UsersView({
             <button type="submit">Apply</button>
           </form>
           <Dropdown
-            data-testid="history-search-input"
             placeholder="Select Book"
             fluid
             selection
             clearable
-            options={[
-              {
-                key: "A",
-                value: "A",
-                text: "AAAA"
-              },
-              {
-                key: "B",
-                value: "B",
-                text: "BBBB"
-              }
-            ]}
+            value={historyInputValue}
+            onChange={(event, data): void => {
+              assertNumber(data.value);
+              setHistoryInputValue(data.value);
+            }}
+            options={Array.from(appData.books.values()).map<DropdownItemProps>(
+              book => ({
+                key: book.id.toString(),
+                value: book.id,
+                text: book.title
+              })
+            )}
             search={(options: DropdownItemProps[]): DropdownItemProps[] =>
               options
             }
+            searchInput={{
+              "data-testid": "history-search-input"
+            }}
           />
           <Button
             data-testid="history-add-button"
