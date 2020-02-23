@@ -190,60 +190,71 @@ export function UsersView({
       </form>
       {/* User Edit Form */}
       {stagingUser && (
-        <form
-          ref={formRef}
-          data-testid="user-edit-form"
-          onSubmit={(event): void => {
-            commitChanges();
-            event.preventDefault();
-          }}
-        >
-          <label>
-            Last Name
-            <input
-              type="text"
-              value={lastNameValue}
-              onChange={(event): void => {
-                setLastNameValue(event.target.value);
-              }}
-              required
-            />
-          </label>
-          <label>
-            First Name
-            <input
-              type="text"
-              value={firstNameValue}
-              onChange={(event): void => {
-                setFirstNameValue(event.target.value);
-              }}
-              required
-            />
-          </label>
-          <label>
-            Note
-            <textarea
-              value={noteValue}
-              onChange={(event): void => {
-                setNoteValue(event.target.value);
-              }}
-            />
-          </label>
-          <button
-            type="button"
-            onClick={handleDeleteUserButtonClick}
-            data-testid="delete-button"
+        <div>
+          <form
+            ref={formRef}
+            data-testid="user-edit-form"
+            onSubmit={(event): void => {
+              commitChanges();
+              event.preventDefault();
+            }}
           >
-            Delete User
-          </button>
-          <button
-            type="button"
-            onClick={overrideUserEditForm.bind(null, stagingUser)}
-          >
-            Reset
-          </button>
-          <button type="submit">Apply</button>
-        </form>
+            <label>
+              Last Name
+              <input
+                type="text"
+                value={lastNameValue}
+                onChange={(event): void => {
+                  setLastNameValue(event.target.value);
+                }}
+                required
+              />
+            </label>
+            <label>
+              First Name
+              <input
+                type="text"
+                value={firstNameValue}
+                onChange={(event): void => {
+                  setFirstNameValue(event.target.value);
+                }}
+                required
+              />
+            </label>
+            <label>
+              Note
+              <textarea
+                value={noteValue}
+                onChange={(event): void => {
+                  setNoteValue(event.target.value);
+                }}
+              />
+            </label>
+            <button
+              type="button"
+              onClick={handleDeleteUserButtonClick}
+              data-testid="delete-button"
+            >
+              Delete User
+            </button>
+            <button
+              type="button"
+              onClick={overrideUserEditForm.bind(null, stagingUser)}
+            >
+              Reset
+            </button>
+            <button type="submit">Apply</button>
+          </form>
+          <form>
+            <label>
+              <input type="text" data-testid="history-search-input" />
+            </label>
+            <button type="submit" data-testid="history-add-button">
+              Add View
+            </button>
+            <ul data-testid="history-list"></ul>
+          </form>
+        </div>
       )}
     </div>
   );
