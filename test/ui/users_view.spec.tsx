@@ -279,10 +279,10 @@ describe("UsersView", function() {
         assertWrapper(!!document.activeElement);
         await userEvent.type(document.activeElement, "Diary");
 
-        userEvent.selectOptions(
-          renderResult.getByTestId("history-list"),
-          Array.from(getAppData().books.values())[0].id.toString()
-        );
+        const firstSuggestion = within(
+          renderResult.getByTestId("history-combobox")
+        ).getByRole("option");
+        userEvent.click(firstSuggestion);
 
         userEvent.click(renderResult.getByTestId("history-add-button"));
 
@@ -291,37 +291,6 @@ describe("UsersView", function() {
           renderResult.getByTestId("history-list")
         ).queryAllByRole("listitem").length;
         assert.strictEqual(historyCount, 1);
-      });
-
-      it("Selecting A Book Should Disable Input", async function() {
-        let x = new AppData();
-        x = x.setUser(x.generateUser("Guest", "Special", "Only For Today"));
-        x = x.setBook(x.generateBook("How to Unit Test", "Amazing Dev"));
-        setAppData(x);
-
-        // Select user.
-        const userOption = within(
-          renderResult.getByTestId("suggestions-list")
-        ).getByRole("option");
-        userEvent.click(userOption);
-
-        // Search for the book.
-        renderResult.getByTestId("history-search-input").focus();
-        assertWrapper(document.activeElement);
-        await userEvent.type(document.activeElement, "How");
-
-        // Select book suggestion.
-        userEvent.selectOptions(
-          renderResult.getByTestId("history-list"),
-          Array.from(getAppData().books.values())[0].id.toString()
-        );
-
-        assert.strictEqual(
-          renderResult
-            .getByTestId("history-search-input")
-            .getAttribute("disabled"),
-          true
-        );
       });
 
       it("History Add Button Should Be Disabled Before Selecting A Book", async function() {
@@ -335,11 +304,11 @@ describe("UsersView", function() {
         ).getByRole("option");
         userEvent.click(userOption);
 
-        assert.strictEqual(
+        assert(
           renderResult
             .getByTestId("history-add-button")
-            .getAttribute("disabled"),
-          true
+            .closest("button")
+            ?.hasAttribute("disabled")
         );
       });
     });
