@@ -200,7 +200,7 @@ describe("UsersView", function() {
 
         const historyCount = within(
           renderResult.getByTestId("history-list")
-        ).getAllByRole("listitem").length;
+        ).queryAllByRole("listitem").length;
         assert.strictEqual(historyCount, 2);
       });
 
@@ -229,7 +229,7 @@ describe("UsersView", function() {
 
         const historyCount = within(
           renderResult.getByTestId("history-list")
-        ).getAllByRole("listitem").length;
+        ).queryAllByRole("listitem").length;
         assert.strictEqual(historyCount, 1);
       });
 
@@ -252,7 +252,7 @@ describe("UsersView", function() {
 
         const historyCount = within(
           renderResult.getByTestId("history-list")
-        ).getAllByRole("listitem").length;
+        ).queryAllByRole("listitem").length;
 
         assert.strictEqual(historyCount, 0);
       });
@@ -284,7 +284,7 @@ describe("UsersView", function() {
         assert.strictEqual(getAppData().views.size, 1);
         const historyCount = within(
           renderResult.getByTestId("history-list")
-        ).getAllByRole("listitem").length;
+        ).queryAllByRole("listitem").length;
         assert.strictEqual(historyCount, 1);
       });
 
