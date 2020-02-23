@@ -8,6 +8,8 @@ const path = require("path");
  */
 const PRODUCTION = process.env.NODE_ENV === "production";
 
+const OUTDIR = "dist/";
+
 /** @type {import("webpack").Configuration} */
 const baseConfig = {
   mode: PRODUCTION ? "production" : "development",
@@ -44,7 +46,8 @@ const baseConfig = {
     ]
   },
   output: {
-    path: path.join(__dirname, "./dist")
+    path: path.resolve(OUTDIR),
+    publicPath: OUTDIR
   },
   plugins: []
 };
