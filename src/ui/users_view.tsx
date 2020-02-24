@@ -16,7 +16,8 @@ import {
   Dropdown,
   DropdownItemProps,
   List,
-  DropdownProps
+  DropdownProps,
+  Container
 } from "semantic-ui-react";
 import { assertWrapper } from "../assert_wrapper";
 import moment = require("moment");
@@ -44,6 +45,10 @@ export function UsersView({
   const [formRef] = React.useState<React.RefObject<HTMLFormElement>>(
     React.createRef()
   );
+
+  const isNewUserStaged = React.useMemo<boolean>(() => {
+    return !!stagingUser && !appData.users.has(stagingUser.id);
+  }, [appData, stagingUser]);
 
   /**
    * Override user edit form fields by given user.
@@ -299,49 +304,53 @@ export function UsersView({
             </button>
             <button type="submit">Apply</button>
           </form>
-          <Dropdown
-            placeholder="Select Book"
-            data-testid="history-combobox"
-            fluid
-            selection
-            clearable
-            value={historyInputValue ?? ""}
-            onChange={handleHistoryInputValueChange}
-            options={Array.from(appData.books.values()).map<DropdownItemProps>(
-              book => ({
-                key: book.id.toString(),
-                value: book.id,
-                text: book.title
-              })
-            )}
-            search={(options: DropdownItemProps[]): DropdownItemProps[] =>
-              options
-            }
-            searchInput={{
-              "data-testid": "history-search-input"
-            }}
-          />
-          <Button
-            data-testid="history-add-button"
-            disabled={!historyInputValue}
-            positive={!!historyInputValue}
-            onClick={handleHistoryAddButtonClick}
-            circular
-            icon="plus"
-          />
-          <List data-testid="history-list">
-            {Array.from(appData.views.values())
-              .filter(view => view.userId === stagingUser.id)
-              .map(view => appData.books.get(view.bookId))
-              .map(book => {
-                assertWrapper(!!book);
-                return (
-                  <List.Item key={book.id.toString()}>
-                    {book.title} by {book.author}
-                  </List.Item>
-                );
-              })}
-          </List>
+          {!isNewUserStaged && (
+            <Container>
+              <Dropdown
+                placeholder="Select Book"
+                data-testid="history-combobox"
+                fluid
+                selection
+                clearable
+                value={historyInputValue ?? ""}
+                onChange={handleHistoryInputValueChange}
+                options={Array.from(appData.books.values()).map<
+                  DropdownItemProps
+                >(book => ({
+                  key: book.id.toString(),
+                  value: book.id,
+                  text: book.title
+                }))}
+                search={(options: DropdownItemProps[]): DropdownItemProps[] =>
+                  options
+                }
+                searchInput={{
+                  "data-testid": "history-search-input"
+                }}
+              />
+              <Button
+                data-testid="history-add-button"
+                disabled={!historyInputValue}
+                positive={!!historyInputValue}
+                onClick={handleHistoryAddButtonClick}
+                circular
+                icon="plus"
+              />
+              <List data-testid="history-list">
+                {Array.from(appData.views.values())
+                  .filter(view => view.userId === stagingUser.id)
+                  .map(view => appData.books.get(view.bookId))
+                  .map(book => {
+                    assertWrapper(!!book);
+                    return (
+                      <List.Item key={book.id.toString()}>
+                        {book.title} by {book.author}
+                      </List.Item>
+                    );
+                  })}
+              </List>
+            </Container>
+          )}
         </div>
       )}
     </div>
