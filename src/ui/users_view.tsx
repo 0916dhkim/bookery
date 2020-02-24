@@ -339,11 +339,11 @@ export function UsersView({
               <List data-testid="history-list">
                 {Array.from(appData.views.values())
                   .filter(view => view.userId === stagingUser.id)
-                  .map(view => appData.books.get(view.bookId))
-                  .map(book => {
+                  .map(view => {
+                    const book = appData.books.get(view.bookId);
                     assertWrapper(!!book);
                     return (
-                      <List.Item key={book.id.toString()}>
+                      <List.Item key={view.id.toString()}>
                         {book.title} by {book.author}
                       </List.Item>
                     );
