@@ -70,7 +70,7 @@ export class Main extends React.Component<{}, State> {
       return <p>Welcome Screen</p>;
     } else {
       return (
-        <Container>
+        <Container fluid>
           <SideMenu
             contentViewNames={contentViews.map(contentView => contentView.name)}
             onMenuClick={this.onMenuClick.bind(this)}
