@@ -1,5 +1,6 @@
 const webpack = require("webpack");
 const merge = require("webpack-merge");
+const HardSourceWebpackPlugin = require("hard-source-webpack-plugin");
 const path = require("path");
 
 /**
@@ -22,7 +23,6 @@ const baseConfig = {
       {
         test: /\.tsx?$/,
         use: [
-          "cache-loader",
           {
             loader: "ts-loader",
             options: {
@@ -55,12 +55,12 @@ const baseConfig = {
     path: path.resolve(OUTDIR),
     publicPath: OUTDIR
   },
-  plugins: []
+  plugins: [new HardSourceWebpackPlugin()]
 };
 
 // Settings specific to development mode.
 if (!PRODUCTION) {
-  baseConfig.devtool = "eval-source-map";
+  baseConfig.devtool = "source-map";
   baseConfig.plugins.push(new webpack.ProgressPlugin());
 }
 
