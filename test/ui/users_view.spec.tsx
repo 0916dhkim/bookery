@@ -362,6 +362,35 @@ describe("UsersView", function() {
             ?.hasAttribute("disabled")
         );
       });
+
+      it("Selecting A Book Should Display What Is Selected", async function() {
+        let x = new AppData();
+        x = x.setBook(x.generateBook("Github Guide", "Seasoned Dev"));
+        x = x.setUser(x.generateUser("Newbie", "Charlie", "Wannabe Hacker"));
+        setAppData(x);
+
+        userEvent.click(
+          within(renderResult.getByTestId("suggestions-list")).getByRole(
+            "option"
+          )
+        );
+
+        renderResult.getByTestId("history-search-input").focus();
+        assertWrapper(document.activeElement);
+        await userEvent.type(document.activeElement, "Github");
+
+        userEvent.click(
+          within(renderResult.getByTestId("history-combobox")).getByRole(
+            "option"
+          )
+        );
+
+        assert(
+          renderResult
+            .getByTestId("history-combobox")
+            .textContent?.includes("Github Guide")
+        );
+      });
     });
 
     describe("Fuzzy Search", function() {

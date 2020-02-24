@@ -29,6 +29,14 @@ export interface UsersViewProps {
   children?: React.ReactNode;
 }
 
+function bookToDropDownItemProps(book: Book): DropdownItemProps {
+  return {
+    key: book.id.toString(),
+    text: book.title,
+    value: book.id
+  };
+}
+
 export function UsersView({
   showModifiedDialogSync = defaultShowModifiedDialogSync,
   showDeleteUserDialogSync = defaultShowDeleteUserDialogSync
@@ -232,11 +240,7 @@ export function UsersView({
     query: string
   ): Array<DropdownItemProps> {
     const books = bookFuse.search(query) as Array<Book>;
-    return books.map(book => ({
-      key: book.id.toString(),
-      text: book.title,
-      value: book.id
-    }));
+    return books.map(bookToDropDownItemProps);
   }
 
   return (
@@ -343,6 +347,9 @@ export function UsersView({
                 clearable
                 value={historyInputValue ?? ""}
                 onChange={handleHistoryInputValueChange}
+                options={Array.from(appData.books.values()).map(
+                  bookToDropDownItemProps
+                )}
                 search={handelHistoryDropDownSearch}
                 searchInput={{
                   "data-testid": "history-search-input"
