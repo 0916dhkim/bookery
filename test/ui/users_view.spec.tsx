@@ -181,6 +181,34 @@ describe("UsersView", function() {
 
   describe("User History Edit Form", function() {
     describe("User History List Length", function() {
+      it("Exists", function() {
+        let x = new AppData();
+        x = x.setBook(x.generateBook("SDFLKA", "Tom Black"));
+        x = x.setUser(x.generateUser("Blue", "Gerald"));
+        setAppData(x);
+
+        userEvent.click(
+          within(renderResult.getByTestId("suggestions-list")).getByRole(
+            "option"
+          )
+        );
+
+        assert.strictEqual(
+          renderResult.queryAllByTestId("history-combobox").length,
+          1
+        );
+
+        assert.strictEqual(
+          renderResult.queryAllByTestId("history-add-button").length,
+          1
+        );
+
+        assert.strictEqual(
+          renderResult.queryAllByTestId("history-list").length,
+          1
+        );
+      });
+
       it("No History View For New User", function() {
         let x = new AppData();
         x = x.setBook(x.generateBook("Pink", "Jace Tuna"));
