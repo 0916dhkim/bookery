@@ -220,7 +220,11 @@ export function UsersView({
             }}
           />
         </label>
-        <button type="button" onClick={handleNewUserButtonClick}>
+        <button
+          type="button"
+          data-testid="new-user-button"
+          onClick={handleNewUserButtonClick}
+        >
           New User
         </button>
         {/* Users List */}

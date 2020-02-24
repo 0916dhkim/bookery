@@ -181,6 +181,29 @@ describe("UsersView", function() {
 
   describe("User History Edit Form", function() {
     describe("User History List Length", function() {
+      it("No History View For New User", function() {
+        let x = new AppData();
+        x = x.setBook(x.generateBook("Pink", "Jace Tuna"));
+        setAppData(x);
+
+        userEvent.click(renderResult.getByTestId("new-user-button"));
+
+        assert.strictEqual(
+          renderResult.queryAllByTestId("history-combobox").length,
+          0
+        );
+
+        assert.strictEqual(
+          renderResult.queryAllByTestId("history-add-button").length,
+          0
+        );
+
+        assert.strictEqual(
+          renderResult.queryAllByTestId("history-list").length,
+          0
+        );
+      });
+
       it("1 User 3 Books 2 Views", function() {
         let appData = new AppData();
         appData = appData.setUser(appData.generateUser("A", "K"));
