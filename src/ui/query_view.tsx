@@ -4,6 +4,7 @@ import { Book } from "../persistence/book";
 import { User } from "../persistence/user";
 import * as Fuse from "fuse.js";
 import { AppData } from "../persistence/app_data";
+import { assertWrapper } from "../assert_wrapper";
 
 interface State {
   bookSuggestions: Book[];
@@ -136,6 +137,7 @@ export class QueryView extends React.Component<ContentViewProps, State> {
       bookSuggestions: [],
       selectedBook: book
     });
+    assertWrapper(!!this.bookInputRef.current);
     this.bookInputRef.current.value = `[${book.title}] by ${book.author}`;
     this.bookInputRef.current.disabled = true;
   }
@@ -144,6 +146,7 @@ export class QueryView extends React.Component<ContentViewProps, State> {
       userSuggestions: [],
       selectedUser: user
     });
+    assertWrapper(!!this.userInputRef.current);
     this.userInputRef.current.value = `${user.lastName}, ${user.firstName}`;
     this.userInputRef.current.disabled = true;
   }

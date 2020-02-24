@@ -11,6 +11,16 @@ import { showFormValidityErrorMessage } from "./form_validity_error_message";
 import * as Fuse from "fuse.js";
 import { User } from "../persistence/user";
 import { AppDataContext } from "./app_data_context";
+import {
+  Button,
+  Dropdown,
+  DropdownItemProps,
+  List,
+  DropdownProps,
+  Container
+} from "semantic-ui-react";
+import { assertWrapper } from "../assert_wrapper";
+import moment = require("moment");
 
 export interface UsersViewProps {
   showModifiedDialogSync?: () => ModifiedDialogOption;
@@ -23,13 +33,22 @@ export function UsersView({
   showDeleteUserDialogSync = defaultShowDeleteUserDialogSync
 }: UsersViewProps): React.ReactElement<UsersViewProps> {
   const { appData, setAppData } = React.useContext(AppDataContext);
-  const [stagingUser, setStagingUser] = React.useState<User>();
+  const [stagingUser, setStagingUser] = React.useState<User | null>(null);
   const [firstNameValue, setFirstNameValue] = React.useState<string>("");
   const [lastNameValue, setLastNameValue] = React.useState<string>("");
   const [noteValue, setNoteValue] = React.useState<string>("");
   const [filterValue, setFilterValue] = React.useState<string>("");
+  const [historyInputValue, setHistoryInputValue] = React.useState<
+    number | null
+  >(null);
 
-  const formRef = React.useRef<HTMLFormElement>();
+  const [formRef] = React.useState<React.RefObject<HTMLFormElement>>(
+    React.createRef()
+  );
+
+  const isNewUserStaged = React.useMemo<boolean>(() => {
+    return !!stagingUser && !appData.users.has(stagingUser.id);
+  }, [appData, stagingUser]);
 
   /**
    * Override user edit form fields by given user.
@@ -79,6 +98,8 @@ export function UsersView({
    * Display an error message if the form is invalid.
    */
   function commitChanges(): boolean {
+    assertWrapper(formRef.current);
+    assertWrapper(stagingUser);
     if (!formRef.current.checkValidity()) {
       showFormValidityErrorMessage();
       return false;
@@ -135,7 +156,7 @@ export function UsersView({
    */
   function handleNewUserButtonClick(): void {
     if (safeToOverrideUserEditForm()) {
-      const generatedUser = appData.generateUser();
+      const generatedUser = appData.generateUser("", "");
       setStagingUser(generatedUser);
     }
   }
@@ -144,6 +165,7 @@ export function UsersView({
    * Handle delete user button click event.
    */
   function handleDeleteUserButtonClick(): void {
+    assertWrapper(stagingUser);
     const response = showDeleteUserDialogSync();
     switch (response) {
       case DeleteUserDialogOption.CANCEL:
@@ -152,6 +174,39 @@ export function UsersView({
         setAppData(appData.deleteUser(stagingUser)[0]);
         setStagingUser(null);
         return;
+    }
+  }
+
+  /**
+   * Handle history add button click event.
+   */
+  function handleHistoryAddButtonClick(): void {
+    assertWrapper(stagingUser);
+    assertWrapper(historyInputValue);
+    const selectedBook = appData.books.get(historyInputValue);
+    assertWrapper(selectedBook);
+    const view = appData.generateView(
+      stagingUser.id,
+      selectedBook.id,
+      moment.utc().valueOf()
+    );
+    setAppData(appData.setView(view));
+    setHistoryInputValue(null);
+  }
+
+  /**
+   * Handle history addition candidate change.
+   */
+  function handleHistoryInputValueChange(
+    event: React.SyntheticEvent,
+    data: DropdownProps
+  ): void {
+    // When cleared.
+    if (data.value === "") {
+      setHistoryInputValue(null);
+    } else {
+      assertWrapper(typeof data.value === "number");
+      setHistoryInputValue(data.value);
     }
   }
 
@@ -170,7 +225,11 @@ export function UsersView({
             }}
           />
         </label>
-        <button type="button" onClick={handleNewUserButtonClick}>
+        <button
+          type="button"
+          data-testid="new-user-button"
+          onClick={handleNewUserButtonClick}
+        >
           New User
         </button>
         {/* Users List */}
@@ -190,60 +249,109 @@ export function UsersView({
       </form>
       {/* User Edit Form */}
       {stagingUser && (
-        <form
-          ref={formRef}
-          data-testid="user-edit-form"
-          onSubmit={(event): void => {
-            commitChanges();
-            event.preventDefault();
-          }}
-        >
-          <label>
-            Last Name
-            <input
-              type="text"
-              value={lastNameValue}
-              onChange={(event): void => {
-                setLastNameValue(event.target.value);
-              }}
-              required
-            />
-          </label>
-          <label>
-            First Name
-            <input
-              type="text"
-              value={firstNameValue}
-              onChange={(event): void => {
-                setFirstNameValue(event.target.value);
-              }}
-              required
-            />
-          </label>
-          <label>
-            Note
-            <textarea
-              value={noteValue}
-              onChange={(event): void => {
-                setNoteValue(event.target.value);
-              }}
-            />
-          </label>
-          <button
-            type="button"
-            onClick={handleDeleteUserButtonClick}
-            data-testid="delete-button"
+        <div>
+          <form
+            ref={formRef}
+            data-testid="user-edit-form"
+            onSubmit={(event): void => {
+              commitChanges();
+              event.preventDefault();
+            }}
           >
-            Delete User
-          </button>
-          <button
-            type="button"
-            onClick={overrideUserEditForm.bind(null, stagingUser)}
-          >
-            Reset
-          </button>
-          <button type="submit">Apply</button>
-        </form>
+            <label>
+              Last Name
+              <input
+                type="text"
+                value={lastNameValue}
+                onChange={(event): void => {
+                  setLastNameValue(event.target.value);
+                }}
+                required
+              />
+            </label>
+            <label>
+              First Name
+              <input
+                type="text"
+                value={firstNameValue}
+                onChange={(event): void => {
+                  setFirstNameValue(event.target.value);
+                }}
+                required
+              />
+            </label>
+            <label>
+              Note
+              <textarea
+                value={noteValue}
+                onChange={(event): void => {
+                  setNoteValue(event.target.value);
+                }}
+              />
+            </label>
+            <button
+              type="button"
+              onClick={handleDeleteUserButtonClick}
+              data-testid="delete-button"
+            >
+              Delete User
+            </button>
+            <button
+              type="button"
+              onClick={overrideUserEditForm.bind(null, stagingUser)}
+            >
+              Reset
+            </button>
+            <button type="submit">Apply</button>
+          </form>
+          {!isNewUserStaged && (
+            <Container>
+              <Dropdown
+                placeholder="Select Book"
+                data-testid="history-combobox"
+                fluid
+                selection
+                clearable
+                value={historyInputValue ?? ""}
+                onChange={handleHistoryInputValueChange}
+                options={Array.from(appData.books.values()).map<
+                  DropdownItemProps
+                >(book => ({
+                  key: book.id.toString(),
+                  value: book.id,
+                  text: book.title
+                }))}
+                search={(options: DropdownItemProps[]): DropdownItemProps[] =>
+                  options
+                }
+                searchInput={{
+                  "data-testid": "history-search-input"
+                }}
+              />
+              <Button
+                data-testid="history-add-button"
+                disabled={!historyInputValue}
+                positive={!!historyInputValue}
+                onClick={handleHistoryAddButtonClick}
+                circular
+                icon="plus"
+              />
+              <List data-testid="history-list">
+                {Array.from(appData.views.values())
+                  .filter(view => view.userId === stagingUser.id)
+                  .map(view => {
+                    const book = appData.books.get(view.bookId);
+                    assertWrapper(!!book);
+                    return (
+                      <List.Item key={view.id.toString()}>
+                        {book.title} by {book.author}
+                      </List.Item>
+                    );
+                  })}
+              </List>
+            </Container>
+          )}
+        </div>
       )}
     </div>
   );

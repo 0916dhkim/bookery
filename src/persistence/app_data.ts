@@ -18,6 +18,17 @@ export class AppData {
   }
 
   /**
+   * Set given book into books map.
+   * @param book new book
+   * @returns new instance of this with set book.
+   */
+  setBook(book: Book): AppData {
+    return produce(this, (draft): void => {
+      draft.books.set(book.id, book);
+    });
+  }
+
+  /**
    * Set given user into users map.
    * @param user new user
    * @returns new instance of this with set user.
@@ -29,14 +40,59 @@ export class AppData {
   }
 
   /**
+   * Set given view into views map.
+   * @param view new view
+   * @returns new instance of this with set view.
+   */
+  setView(view: View): AppData {
+    return produce(this, (draft): void => {
+      draft.views.set(view.id, view);
+    });
+  }
+
+  /**
+   * Delete a book from books map.
+   * @param book book to be deleted.
+   * @returns a tuple.
+   *
+   * First element: new instance of this without deleted book.
+   *
+   * Second element: `true` if the given book has been removed. `false` otherwise.
+   */
+  deleteBook(book: Book): [AppData, boolean] {
+    let ret = false;
+    const nextAppData = produce(this, (draft): void => {
+      ret = draft.books.delete(book.id);
+    });
+    return [nextAppData, ret];
+  }
+
+  /**
    * Delete a user from users map.
    * @param user user to be deleted.
-   * @returns new instance of this without deleted user and the return value of the delete call.
+   * @returns a tuple.\
+   * First element: new instance of this without deleted user.\
+   * Second element: `true` if the given user has been removed. `false` otherwise.
    */
   deleteUser(user: User): [AppData, boolean] {
     let ret = false;
     const nextAppData = produce(this, (draft): void => {
       ret = draft.users.delete(user.id);
+    });
+    return [nextAppData, ret];
+  }
+
+  /**
+   * Delete a view from views map.
+   * @param view view to be deleted.
+   * @returns a tuple.\
+   * First element: new instance of this without deleted view.\
+   * Second element: `true` if the given view has been removed. `false` otherwise.
+   */
+  deleteView(view: View): [AppData, boolean] {
+    let ret = false;
+    const nextAppData = produce(this, (draft): void => {
+      ret = draft.views.delete(view.id);
     });
     return [nextAppData, ret];
   }
@@ -54,8 +110,31 @@ export class AppData {
    * This method does NOT alter any app data.
    * @returns generated user.
    */
-  generateUser(): User {
-    return new User(this.getNextId(this.users.values()), "", "");
+  generateUser(lastName: string, firstName: string, note?: string): User {
+    return new User(
+      this.getNextId(this.users.values()),
+      lastName,
+      firstName,
+      note
+    );
+  }
+
+  /**
+   * Generate a new book.
+   * This method does NOT alter any app data.
+   * @returns generated book.
+   */
+  generateBook(title: string, author: string, isbn?: string): Book {
+    return new Book(this.getNextId(this.books.values()), title, author, isbn);
+  }
+
+  /**
+   * Generate a new view.
+   * This method does NOT alter any app data.
+   * @returns generated view.
+   */
+  generateView(userId: number, bookId: number, date: number): View {
+    return new View(this.getNextId(this.views.values()), userId, bookId, date);
   }
 }
 

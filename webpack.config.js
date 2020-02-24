@@ -1,5 +1,6 @@
 const webpack = require("webpack");
 const merge = require("webpack-merge");
+const HardSourceWebpackPlugin = require("hard-source-webpack-plugin");
 const path = require("path");
 
 /**
@@ -8,12 +9,14 @@ const path = require("path");
  */
 const PRODUCTION = process.env.NODE_ENV === "production";
 
+const OUTDIR = "dist/";
+
 /** @type {import("webpack").Configuration} */
 const baseConfig = {
   mode: PRODUCTION ? "production" : "development",
   devtool: PRODUCTION ? false : "source-map",
   resolve: {
-    extensions: [".ts", ".tsx", ".js"]
+    extensions: [".ts", ".tsx", ".js", "css"]
   },
   module: {
     rules: [
@@ -23,18 +26,36 @@ const baseConfig = {
           {
             loader: "ts-loader",
             options: {
-              onlyCompileBundledFiles: true,
-              transpileOnly: !PRODUCTION // For fast development builds.
+              onlyCompileBundledFiles: true
             }
           }
         ]
+      },
+      {
+        test: /\.css$/,
+        use: ["style-loader", "css-loader"]
+      },
+      {
+        test: [
+          /\.bmp$/,
+          /\.gif$/,
+          /\.jpe?g$/,
+          /\.png$/,
+          /\.eot$/,
+          /\.ttf$/,
+          /\.svg$/,
+          /\.woff$/,
+          /\.woff2$/
+        ],
+        use: ["file-loader"]
       }
     ]
   },
   output: {
-    path: path.join(__dirname, "./dist")
+    path: path.resolve(OUTDIR),
+    publicPath: OUTDIR
   },
-  plugins: []
+  plugins: [new HardSourceWebpackPlugin()]
 };
 
 // Settings specific to development mode.

@@ -1,11 +1,6 @@
 import { describe, it, afterEach, beforeEach } from "mocha";
-import {
-  fireEvent,
-  render,
-  within,
-  cleanup,
-  RenderResult
-} from "@testing-library/react";
+import { render, within, cleanup, RenderResult } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import * as React from "react";
 import { UsersView, UsersViewProps } from "../../src/ui/users_view";
 import { AppData } from "../../src/persistence/app_data";
@@ -14,6 +9,7 @@ import { AppDataContext } from "../../src/ui/app_data_context";
 import { act } from "react-dom/test-utils";
 import { ModifiedDialogOption } from "../../src/ui/modified_dialog";
 import { DeleteUserDialogOption } from "../../src/ui/delete_user_dialog";
+import { assertWrapper } from "../../src/assert_wrapper";
 
 interface TesterState extends UsersViewProps {
   appData: AppData;
@@ -49,28 +45,35 @@ class Tester extends React.Component<{}, TesterState> {
 }
 
 const emptyAppData = new AppData();
-const userJenny = emptyAppData
-  .generateUser()
-  .setFirstName("Jenny")
-  .setLastName("Doe")
-  .setNote("Dummy");
+const userJenny = emptyAppData.generateUser("Doe", "Jenny", "Dummy");
 const singleUserAppData = emptyAppData.setUser(userJenny);
-const userJohn = singleUserAppData
-  .generateUser()
-  .setFirstName("John")
-  .setLastName("Doe")
-  .setNote("The greatest name in the world!");
+const userJohn = singleUserAppData.generateUser(
+  "Doe",
+  "John",
+  "The greatest name in the world!"
+);
 const doubleUserAppData = singleUserAppData.setUser(userJohn);
 
 const testerRef = React.createRef<Tester>();
 let renderResult: RenderResult;
 function getAppData(): AppData {
+  assertWrapper(testerRef.current?.state.appData);
   return testerRef.current.state.appData;
 }
 
 function setAppData(x: AppData): void {
   act(() => {
+    assertWrapper(testerRef.current);
     testerRef.current.setState({ appData: x });
+  });
+}
+
+function setShowDeleteUserDialogSync(f: () => DeleteUserDialogOption): void {
+  act(() => {
+    assertWrapper(testerRef.current);
+    testerRef.current.setState({
+      showDeleteUserDialogSync: f
+    });
   });
 }
 
@@ -101,7 +104,7 @@ describe("UsersView", function() {
       const firstSuggestion = within(
         renderResult.getByTestId("suggestions-list")
       ).getAllByRole("option")[0];
-      fireEvent.click(firstSuggestion);
+      userEvent.click(firstSuggestion);
       renderResult.getByTestId("delete-button");
     });
 
@@ -109,21 +112,17 @@ describe("UsersView", function() {
       setAppData(doubleUserAppData);
 
       let count = 0;
-      act(() => {
-        testerRef.current.setState({
-          showDeleteUserDialogSync: () => {
-            count++;
-            return DeleteUserDialogOption.CANCEL;
-          }
-        });
+      setShowDeleteUserDialogSync(() => {
+        count++;
+        return DeleteUserDialogOption.CANCEL;
       });
 
       const firstSuggestion = within(
         renderResult.getByTestId("suggestions-list")
       ).getAllByRole("option")[0];
-      fireEvent.click(firstSuggestion);
+      userEvent.click(firstSuggestion);
       const deleteButton = renderResult.getByTestId("delete-button");
-      fireEvent.click(deleteButton);
+      userEvent.click(deleteButton);
 
       assert.strictEqual(count, 1);
     });
@@ -132,21 +131,17 @@ describe("UsersView", function() {
       setAppData(doubleUserAppData);
 
       // Represent pressing cancel option.
-      act(() => {
-        testerRef.current.setState({
-          showDeleteUserDialogSync: () => DeleteUserDialogOption.CANCEL
-        });
-      });
+      setShowDeleteUserDialogSync(() => DeleteUserDialogOption.CANCEL);
 
       const firstSuggestion = within(
         renderResult.getByTestId("suggestions-list")
       ).getAllByRole("option")[0];
-      fireEvent.click(firstSuggestion);
+      userEvent.click(firstSuggestion);
 
       assert.strictEqual(getAppData().users.size, 2);
 
       const deleteButton = renderResult.getByTestId("delete-button");
-      fireEvent.click(deleteButton);
+      userEvent.click(deleteButton);
 
       // Number of users should be unchanged.
       assert.strictEqual(getAppData().users.size, 2);
@@ -160,11 +155,11 @@ describe("UsersView", function() {
       const firstSuggestion = within(
         renderResult.getByTestId("suggestions-list")
       ).getAllByRole("option")[0];
-      fireEvent.click(firstSuggestion);
+      userEvent.click(firstSuggestion);
 
       // Click the delete button.
       const button = renderResult.getByTestId("delete-button");
-      fireEvent.click(button);
+      userEvent.click(button);
 
       assert.strictEqual(getAppData().users.size, 0);
     });
@@ -175,12 +170,260 @@ describe("UsersView", function() {
       const option = within(
         renderResult.getByTestId("suggestions-list")
       ).getAllByRole("option")[0];
-      fireEvent.click(option);
+      userEvent.click(option);
 
       const deleteButton = renderResult.getByTestId("delete-button");
-      fireEvent.click(deleteButton);
+      userEvent.click(deleteButton);
 
       assert.strictEqual(renderResult.queryByTestId("user-edit-form"), null);
+    });
+  });
+
+  describe("User History Edit Form", function() {
+    describe("User History List Length", function() {
+      it("Exists", function() {
+        let x = new AppData();
+        x = x.setBook(x.generateBook("SDFLKA", "Tom Black"));
+        x = x.setUser(x.generateUser("Blue", "Gerald"));
+        setAppData(x);
+
+        userEvent.click(
+          within(renderResult.getByTestId("suggestions-list")).getByRole(
+            "option"
+          )
+        );
+
+        assert.strictEqual(
+          renderResult.queryAllByTestId("history-combobox").length,
+          1
+        );
+
+        assert.strictEqual(
+          renderResult.queryAllByTestId("history-add-button").length,
+          1
+        );
+
+        assert.strictEqual(
+          renderResult.queryAllByTestId("history-list").length,
+          1
+        );
+      });
+
+      it("No History View For New User", function() {
+        let x = new AppData();
+        x = x.setBook(x.generateBook("Pink", "Jace Tuna"));
+        setAppData(x);
+
+        userEvent.click(renderResult.getByTestId("new-user-button"));
+
+        assert.strictEqual(
+          renderResult.queryAllByTestId("history-combobox").length,
+          0
+        );
+
+        assert.strictEqual(
+          renderResult.queryAllByTestId("history-add-button").length,
+          0
+        );
+
+        assert.strictEqual(
+          renderResult.queryAllByTestId("history-list").length,
+          0
+        );
+      });
+
+      it("1 User 3 Books 2 Views", function() {
+        let appData = new AppData();
+        appData = appData.setUser(appData.generateUser("A", "K"));
+        appData = appData.setBook(appData.generateBook("LSDKFK", "LSKQWE"));
+        appData = appData.setBook(appData.generateBook("RIELWWL", "OQWI#KDS"));
+        appData = appData.setBook(appData.generateBook("RWOIVV", "PIOPWERU"));
+        const user = Array.from(appData.users.values())[0];
+        const twoBooks = Array.from(appData.books.values()).slice(0, 2);
+        twoBooks.forEach(book => {
+          appData = appData.setView(
+            appData.generateView(user.id, book.id, 1318781875826)
+          );
+        });
+        setAppData(appData);
+
+        // Select user.
+        const userOption = within(
+          renderResult.getByTestId("suggestions-list")
+        ).getByRole("option");
+        userEvent.click(userOption);
+
+        const historyCount = within(
+          renderResult.getByTestId("history-list")
+        ).queryAllByRole("listitem").length;
+        assert.strictEqual(historyCount, 2);
+      });
+
+      it("2 Users 2 Books 1 View Each (2 Total)", function() {
+        let appData = new AppData();
+        appData = appData.setUser(
+          appData.generateUser("SDL", "SLKD", "QWLELL")
+        );
+        appData = appData.setUser(appData.generateUser("WQks", "QLklwe"));
+        appData = appData.setBook(appData.generateBook("QWOIewr", "CLK"));
+        appData = appData.setBook(appData.generateBook("VLKD", "EWL"));
+        const users = Array.from(appData.users.values());
+        const books = Array.from(appData.books.values());
+        users.forEach((user, i) => {
+          appData = appData.setView(
+            appData.generateView(user.id, books[i].id, 1318781875426)
+          );
+        });
+        setAppData(appData);
+
+        // Select user.
+        const firstUserOption = within(
+          renderResult.getByTestId("suggestions-list")
+        ).getAllByRole("option")[0];
+        userEvent.click(firstUserOption);
+
+        const historyCount = within(
+          renderResult.getByTestId("history-list")
+        ).queryAllByRole("listitem").length;
+        assert.strictEqual(historyCount, 1);
+      });
+
+      it("1 User 0 Book 0 View", function() {
+        let appData = new AppData();
+        appData = appData.setUser(
+          appData.generateUser(
+            "The Great",
+            "Alexander",
+            "I don't know his last name."
+          )
+        );
+        setAppData(appData);
+
+        // Select Alexander the Great.
+        const alexanderOption = within(
+          renderResult.getByTestId("suggestions-list")
+        ).getByRole("option");
+        userEvent.click(alexanderOption);
+
+        const historyCount = within(
+          renderResult.getByTestId("history-list")
+        ).queryAllByRole("listitem").length;
+
+        assert.strictEqual(historyCount, 0);
+      });
+    });
+
+    describe("Adding Views", function() {
+      it("1 User 1 Book 0 View", async function() {
+        let x = new AppData();
+        x = x.setBook(x.generateBook("Diary", "You Know Who"));
+        x = x.setUser(x.generateUser("Last", "First", "Nothing in particular"));
+        setAppData(x);
+
+        // Select user.
+        const userOption = within(
+          renderResult.getByTestId("suggestions-list")
+        ).getByRole("option");
+        userEvent.click(userOption);
+
+        renderResult.getByTestId("history-search-input").focus();
+        assertWrapper(!!document.activeElement);
+        await userEvent.type(document.activeElement, "Diary");
+
+        const firstSuggestion = within(
+          renderResult.getByTestId("history-combobox")
+        ).getByRole("option");
+        userEvent.click(firstSuggestion);
+
+        userEvent.click(renderResult.getByTestId("history-add-button"));
+
+        assert.strictEqual(getAppData().views.size, 1);
+        const historyCount = within(
+          renderResult.getByTestId("history-list")
+        ).queryAllByRole("listitem").length;
+        assert.strictEqual(historyCount, 1);
+      });
+
+      it("History Add Button Should Be Disabled Before Selecting A Book", async function() {
+        let x = new AppData();
+        x = x.setUser(x.generateUser("Host", "Jack"));
+        setAppData(x);
+
+        // Select user.
+        const userOption = within(
+          renderResult.getByTestId("suggestions-list")
+        ).getByRole("option");
+        userEvent.click(userOption);
+
+        assert(
+          renderResult
+            .getByTestId("history-add-button")
+            .closest("button")
+            ?.hasAttribute("disabled")
+        );
+      });
+    });
+
+    describe("Fuzzy Search", function() {
+      it("Query A With [ABC, XYZ]", async function() {
+        let x = new AppData();
+        x = x.setBook(x.generateBook("ABC", "No One"));
+        x = x.setBook(x.generateBook("XYZ", "No One"));
+        x = x.setUser(
+          x.generateUser("Drake", "Timothy", "Just finished reading ABC")
+        );
+        setAppData(x);
+
+        userEvent.click(
+          within(renderResult.getByTestId("suggestions-list")).getByText(
+            /Timothy/
+          )
+        );
+
+        renderResult.getByTestId("history-search-input").focus();
+
+        assertWrapper(document.activeElement);
+        await userEvent.type(document.activeElement, "A");
+
+        assert.strictEqual(
+          within(renderResult.getByTestId("history-combobox")).queryAllByRole(
+            "option"
+          ).length,
+          1
+        );
+
+        assert.strictEqual(
+          within(renderResult.getByTestId("history-combobox")).queryAllByText(
+            /A/
+          ).length,
+          1
+        );
+      });
+
+      it("Query Title And Author", async function() {
+        let x = new AppData();
+        x = x.setBook(x.generateBook("ABC", "DEF"));
+        x = x.setUser(x.generateUser("Bloodwing", "Dennis"));
+        setAppData(x);
+
+        userEvent.click(
+          within(renderResult.getByTestId("suggestions-list")).getByText(
+            /Bloodwing/
+          )
+        );
+
+        renderResult.getByTestId("history-search-input").focus();
+
+        assertWrapper(document.activeElement);
+        await userEvent.type(document.activeElement, "AF");
+
+        assert.strictEqual(
+          within(renderResult.getByTestId("history-combobox")).queryAllByRole(
+            "option"
+          ).length,
+          1
+        );
+      });
     });
   });
 });
