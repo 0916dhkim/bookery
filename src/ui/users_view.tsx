@@ -9,6 +9,7 @@ import {
 } from "./delete_user_dialog";
 import { showFormValidityErrorMessage } from "./form_validity_error_message";
 import * as Fuse from "fuse.js";
+import { Book } from "../persistence/book";
 import { User } from "../persistence/user";
 import { AppDataContext } from "./app_data_context";
 import {
@@ -49,6 +50,19 @@ export function UsersView({
   const isNewUserStaged = React.useMemo<boolean>(() => {
     return !!stagingUser && !appData.users.has(stagingUser.id);
   }, [appData, stagingUser]);
+
+  const bookFuse = React.useMemo<Fuse<Book, Fuse.FuseOptions<Book>>>(() => {
+    const fuseOptions: Fuse.FuseOptions<Book> = {
+      shouldSort: true,
+      includeMatches: false,
+      includeScore: false,
+      keys: ["title", "author", "isbn"]
+    };
+    return new Fuse<Book, Fuse.FuseOptions<Book>>(
+      Array.from(appData.books.values()),
+      fuseOptions
+    );
+  }, [appData]);
 
   /**
    * Override user edit form fields by given user.
@@ -210,6 +224,21 @@ export function UsersView({
     }
   }
 
+  /**
+   * Handle history dropdown search event.
+   */
+  function handelHistoryDropDownSearch(
+    options: Array<DropdownItemProps>,
+    query: string
+  ): Array<DropdownItemProps> {
+    const books = bookFuse.search(query) as Array<Book>;
+    return books.map(book => ({
+      key: book.id.toString(),
+      text: book.title,
+      value: book.id
+    }));
+  }
+
   return (
     <div className="js-users-view">
       Users View
@@ -314,16 +343,7 @@ export function UsersView({
                 clearable
                 value={historyInputValue ?? ""}
                 onChange={handleHistoryInputValueChange}
-                options={Array.from(appData.books.values()).map<
-                  DropdownItemProps
-                >(book => ({
-                  key: book.id.toString(),
-                  value: book.id,
-                  text: book.title
-                }))}
-                search={(options: DropdownItemProps[]): DropdownItemProps[] =>
-                  options
-                }
+                search={handelHistoryDropDownSearch}
                 searchInput={{
                   "data-testid": "history-search-input"
                 }}

@@ -385,18 +385,17 @@ describe("UsersView", function() {
         assertWrapper(document.activeElement);
         await userEvent.type(document.activeElement, "A");
 
-        assert.strictEqual(
-          within(renderResult.getByTestId("history-combobox")).queryAllByRole(
-            "option"
-          ).length,
-          1
-        );
+        const dropDownOptions = within(
+          renderResult.getByTestId("history-combobox")
+        ).queryAllByRole("option");
+        assert.strictEqual(dropDownOptions.length, 1);
 
         assert.strictEqual(
           within(renderResult.getByTestId("history-combobox")).queryAllByText(
-            /A/
+            /XYZ/
           ).length,
-          1
+          0,
+          "XYZ should not be included in suggestion."
         );
       });
 
