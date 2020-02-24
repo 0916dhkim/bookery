@@ -16,9 +16,9 @@ import {
   Button,
   Dropdown,
   DropdownItemProps,
-  List,
   DropdownProps,
-  Container
+  Container,
+  Segment
 } from "semantic-ui-react";
 import { assertWrapper } from "../assert_wrapper";
 import moment = require("moment");
@@ -363,19 +363,19 @@ export function UsersView({
                 circular
                 icon="plus"
               />
-              <List data-testid="history-list">
+              <Segment.Group data-testid="history-list" size="small">
                 {Array.from(appData.views.values())
                   .filter(view => view.userId === stagingUser.id)
                   .map(view => {
                     const book = appData.books.get(view.bookId);
                     assertWrapper(!!book);
                     return (
-                      <List.Item key={view.id.toString()}>
+                      <Segment key={view.id.toString()}>
                         {book.title} by {book.author}
-                      </List.Item>
+                      </Segment>
                     );
                   })}
-              </List>
+              </Segment.Group>
             </Container>
           )}
         </div>
