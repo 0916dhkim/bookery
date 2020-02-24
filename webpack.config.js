@@ -22,6 +22,7 @@ const baseConfig = {
       {
         test: /\.tsx?$/,
         use: [
+          "cache-loader",
           {
             loader: "ts-loader",
             options: {
@@ -35,12 +36,18 @@ const baseConfig = {
         use: ["style-loader", "css-loader"]
       },
       {
-        test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/],
-        loader: "url-loader"
-      },
-      {
-        test: [/\.eot$/, /\.ttf$/, /\.svg$/, /\.woff$/, /\.woff2$/],
-        loader: "file-loader"
+        test: [
+          /\.bmp$/,
+          /\.gif$/,
+          /\.jpe?g$/,
+          /\.png$/,
+          /\.eot$/,
+          /\.ttf$/,
+          /\.svg$/,
+          /\.woff$/,
+          /\.woff2$/
+        ],
+        use: ["file-loader"]
       }
     ]
   },
@@ -53,7 +60,7 @@ const baseConfig = {
 
 // Settings specific to development mode.
 if (!PRODUCTION) {
-  baseConfig.devtool = "source-map";
+  baseConfig.devtool = "eval-source-map";
   baseConfig.plugins.push(new webpack.ProgressPlugin());
 }
 
