@@ -363,5 +363,67 @@ describe("UsersView", function() {
         );
       });
     });
+
+    describe("Fuzzy Search", function() {
+      it("Query A With [ABC, XYZ]", async function() {
+        let x = new AppData();
+        x = x.setBook(x.generateBook("ABC", "No One"));
+        x = x.setBook(x.generateBook("XYZ", "No One"));
+        x = x.setUser(
+          x.generateUser("Drake", "Timothy", "Just finished reading ABC")
+        );
+        setAppData(x);
+
+        userEvent.click(
+          within(renderResult.getByTestId("suggestions-list")).getByText(
+            /Timothy/
+          )
+        );
+
+        renderResult.getByTestId("history-search-input").focus();
+
+        assertWrapper(document.activeElement);
+        await userEvent.type(document.activeElement, "A");
+
+        assert.strictEqual(
+          within(renderResult.getByTestId("history-combobox")).queryAllByRole(
+            "option"
+          ).length,
+          1
+        );
+
+        assert.strictEqual(
+          within(renderResult.getByTestId("history-combobox")).queryAllByText(
+            /A/
+          ).length,
+          1
+        );
+      });
+
+      it("Query Title And Author", async function() {
+        let x = new AppData();
+        x = x.setBook(x.generateBook("ABC", "DEF"));
+        x = x.setUser(x.generateUser("Bloodwing", "Dennis"));
+        setAppData(x);
+
+        userEvent.click(
+          within(renderResult.getByTestId("suggestions-list")).getByText(
+            /Bloodwing/
+          )
+        );
+
+        renderResult.getByTestId("history-search-input").focus();
+
+        assertWrapper(document.activeElement);
+        await userEvent.type(document.activeElement, "AF");
+
+        assert.strictEqual(
+          within(renderResult.getByTestId("history-combobox")).queryAllByRole(
+            "option"
+          ).length,
+          1
+        );
+      });
+    });
   });
 });
