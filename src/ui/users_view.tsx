@@ -18,7 +18,8 @@ import {
   DropdownItemProps,
   DropdownProps,
   Container,
-  Segment
+  Segment,
+  Form
 } from "semantic-ui-react";
 import { assertWrapper } from "../assert_wrapper";
 import moment = require("moment");
@@ -258,11 +259,7 @@ export function UsersView({
             }}
           />
         </label>
-        <button
-          type="button"
-          data-testid="new-user-button"
-          onClick={handleNewUserButtonClick}
-        >
+        <button type="button" onClick={handleNewUserButtonClick}>
           New User
         </button>
         {/* Users List */}
@@ -322,11 +319,7 @@ export function UsersView({
                 }}
               />
             </label>
-            <button
-              type="button"
-              onClick={handleDeleteUserButtonClick}
-              data-testid="delete-button"
-            >
+            <button type="button" onClick={handleDeleteUserButtonClick}>
               Delete User
             </button>
             <button
@@ -338,10 +331,10 @@ export function UsersView({
             <button type="submit">Apply</button>
           </form>
           {!isNewUserStaged && (
-            <Container>
-              <Dropdown
-                placeholder="Select Book"
-                data-testid="history-combobox"
+            <Form data-testid="history-edit-form">
+              <Form.Dropdown
+                label="Book"
+                placeholder="Search..."
                 fluid
                 selection
                 clearable
@@ -351,18 +344,15 @@ export function UsersView({
                   bookToDropDownItemProps
                 )}
                 search={handelHistoryDropDownSearch}
-                searchInput={{
-                  "data-testid": "history-search-input"
-                }}
               />
               <Button
-                data-testid="history-add-button"
                 disabled={!historyInputValue}
                 positive={!!historyInputValue}
                 onClick={handleHistoryAddButtonClick}
-                circular
                 icon="plus"
-              />
+              >
+                Add
+              </Button>
               <Segment.Group data-testid="history-list" size="small">
                 {Array.from(appData.views.values())
                   .filter(view => view.userId === stagingUser.id)
@@ -376,7 +366,7 @@ export function UsersView({
                     );
                   })}
               </Segment.Group>
-            </Container>
+            </Form>
           )}
         </div>
       )}
