@@ -5,14 +5,11 @@ import moment = require("moment");
 import { assertWrapper } from "../../assert_wrapper";
 import {
   DropdownProps,
-  Form,
   DropdownItemProps,
   Segment,
   Button,
-  Grid,
   Dropdown,
   Container,
-  Menu,
   Input
 } from "semantic-ui-react";
 import { Book } from "../../persistence/book";
