@@ -1,6 +1,5 @@
 const webpack = require("webpack");
 const merge = require("webpack-merge");
-const HardSourceWebpackPlugin = require("hard-source-webpack-plugin");
 const path = require("path");
 
 /**
@@ -55,7 +54,7 @@ const baseConfig = {
     path: path.resolve(OUTDIR),
     publicPath: OUTDIR
   },
-  plugins: [new HardSourceWebpackPlugin()]
+  plugins: []
 };
 
 // Settings specific to development mode.

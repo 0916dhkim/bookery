@@ -156,10 +156,6 @@ describe("UsersView", function() {
 
       assert.strictEqual(getAppData().users.size, 1);
 
-      const firstSuggestion = within(
-        renderResult.getByTestId("suggestions-list")
-      ).getAllByRole("option")[0];
-      userEvent.click(firstSuggestion);
       userEvent.click(
         within(renderResult.getByTestId("suggestions-list")).getByText(/Solo/)
       );
