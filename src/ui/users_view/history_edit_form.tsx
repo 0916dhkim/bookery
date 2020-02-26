@@ -94,45 +94,50 @@ export function HistoryEditForm({
   }
   return (
     <Container data-testid="history-edit-form">
-      <Input
-        fluid
-        label={{ icon: "search" }}
-        input={
-          <Dropdown
-            label="Book"
+      <Segment.Group>
+        <Segment>
+          <Input
             fluid
-            selection
-            clearable
-            value={historyInputValue ?? ""}
-            onChange={handleHistoryInputValueChange}
-            options={Array.from(appData.books.values()).map(
-              bookToDropDownItemProps
-            )}
-            search={handelHistoryDropDownSearch}
+            label={{ icon: "book", basic: true }}
+            input={
+              <Dropdown
+                fluid
+                selection
+                clearable
+                selectOnBlur={false}
+                selectOnNavigation={false}
+                value={historyInputValue ?? ""}
+                onChange={handleHistoryInputValueChange}
+                options={Array.from(appData.books.values()).map(
+                  bookToDropDownItemProps
+                )}
+                search={handelHistoryDropDownSearch}
+              />
+            }
+            action={
+              <Button
+                disabled={!historyInputValue}
+                positive={!!historyInputValue}
+                onClick={handleHistoryAddButtonClick}
+              >
+                Add
+              </Button>
+            }
           />
-        }
-        action={
-          <Button
-            disabled={!historyInputValue}
-            positive={!!historyInputValue}
-            onClick={handleHistoryAddButtonClick}
-          >
-            Add
-          </Button>
-        }
-      />
-      <Segment.Group data-testid="history-list" size="small">
-        {Array.from(appData.views.values())
-          .filter(view => view.userId === user.id)
-          .map(view => {
-            const book = appData.books.get(view.bookId);
-            assertWrapper(!!book);
-            return (
-              <Segment key={view.id.toString()}>
-                {book.title} by {book.author}
-              </Segment>
-            );
-          })}
+        </Segment>
+        <Segment.Group piled data-testid="history-list" size="small">
+          {Array.from(appData.views.values())
+            .filter(view => view.userId === user.id)
+            .map(view => {
+              const book = appData.books.get(view.bookId);
+              assertWrapper(!!book);
+              return (
+                <Segment secondary key={view.id.toString()}>
+                  {book.title} by {book.author}
+                </Segment>
+              );
+            })}
+        </Segment.Group>
       </Segment.Group>
     </Container>
   );
