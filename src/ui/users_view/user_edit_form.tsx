@@ -1,6 +1,6 @@
 import * as React from "react";
 import { User } from "../../persistence/user";
-import { Form } from "semantic-ui-react";
+import { Form, Segment } from "semantic-ui-react";
 
 export interface UserEditFormProps {
   user: User;
@@ -76,51 +76,53 @@ export function UserEditForm({
   );
 
   return (
-    <Form
-      data-testid="user-edit-form"
-      onSubmit={(): void => onCommit(formUser)}
-    >
-      <Form.Input
-        label="Last Name"
-        type="text"
-        value={lastNameValue}
-        onChange={(event): void => {
-          setLastNameValue(event.target.value);
-        }}
-        required
-        error={lastNameError}
-      />
-      <Form.Input
-        label="First Name"
-        type="text"
-        value={firstNameValue}
-        onChange={(event): void => {
-          setFirstNameValue(event.target.value);
-        }}
-        required
-        error={firstNameError}
-      />
-      <Form.TextArea
-        label="Notes"
-        value={noteValue}
-        onChange={(event, { value }): void => {
-          const valueStr =
-            typeof value === "number"
-              ? value.toString()
-              : value === undefined
-              ? ""
-              : value;
-          setNoteValue(valueStr);
-        }}
-      />
-      <Form.Group>
-        <Form.Button type="button" onClick={overrideForm.bind(null, user)}>
-          Reset
-        </Form.Button>
-        <Form.Button type="submit" primary>
-          Apply
-        </Form.Button>
-      </Form.Group>
-    </Form>
+    <Segment>
+      <Form
+        data-testid="user-edit-form"
+        onSubmit={(): void => onCommit(formUser)}
+      >
+        <Form.Input
+          label="Last Name"
+          type="text"
+          value={lastNameValue}
+          onChange={(event): void => {
+            setLastNameValue(event.target.value);
+          }}
+          required
+          error={lastNameError}
+        />
+        <Form.Input
+          label="First Name"
+          type="text"
+          value={firstNameValue}
+          onChange={(event): void => {
+            setFirstNameValue(event.target.value);
+          }}
+          required
+          error={firstNameError}
+        />
+        <Form.TextArea
+          label="Notes"
+          value={noteValue}
+          onChange={(event, { value }): void => {
+            const valueStr =
+              typeof value === "number"
+                ? value.toString()
+                : value === undefined
+                ? ""
+                : value;
+            setNoteValue(valueStr);
+          }}
+        />
+        <Form.Group>
+          <Form.Button type="button" onClick={overrideForm.bind(null, user)}>
+            Reset
+          </Form.Button>
+          <Form.Button type="submit" primary>
+            Apply
+          </Form.Button>
+        </Form.Group>
+      </Form>
+    </Segment>
   );
 }

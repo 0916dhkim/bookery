@@ -14,7 +14,14 @@ import { assertWrapper } from "../../assert_wrapper";
 import { UsersList } from "./users_list";
 import { UserEditForm } from "./user_edit_form";
 import { HistoryEditForm } from "./history_edit_form";
-import { Container, Button, Form } from "semantic-ui-react";
+import {
+  Container,
+  Button,
+  Form,
+  Grid,
+  Segment,
+  Icon
+} from "semantic-ui-react";
 
 export interface UsersViewProps {
   showModifiedDialogSync?: () => ModifiedDialogOption;
@@ -123,38 +130,58 @@ export function UsersView({
   }
 
   return (
-    <Container className="js-users-view">
+    <Container fluid>
       Users View
-      {/* Search Bar */}
-      <Form onSubmit={(event): void => event.preventDefault()}>
-        <Form.Input
-          type="text"
-          icon="search"
-          value={filterValue}
-          onChange={(event): void => {
-            setFilterValue(event.target.value);
-          }}
-        />
-        <Button positive onClick={handleNewUserButtonClick}>
-          New User
-        </Button>
-      </Form>
-      {/* Users List */}
-      <UsersList filterQuery={filterValue} onSelect={handleUserClick} />
-      {/* User Edit Form */}
-      {selectedUser && (
-        <Container>
-          <UserEditForm
-            user={selectedUser}
-            onCommit={commitStagedUser}
-            onChange={setStagedUser}
+      <Segment>
+        {/* Search Bar */}
+        <Form onSubmit={(event): void => event.preventDefault()}>
+          <Form.Input
+            type="text"
+            icon="search"
+            value={filterValue}
+            onChange={(event): void => {
+              setFilterValue(event.target.value);
+            }}
           />
-          {!isNewUser && <HistoryEditForm user={selectedUser} />}
-          <Button negative onClick={handleDeleteUserButtonClick}>
-            Delete User
+          <Button
+            positive
+            icon
+            labelPosition="left"
+            onClick={handleNewUserButtonClick}
+          >
+            <Icon name="plus circle" />
+            New User
           </Button>
-        </Container>
-      )}
+        </Form>
+      </Segment>
+      <Grid divided="vertically">
+        <Grid.Column width={8}>
+          {/* Users List */}
+          <UsersList filterQuery={filterValue} onSelect={handleUserClick} />
+        </Grid.Column>
+        {selectedUser && (
+          <Grid.Column width={8}>
+            {/* User Edit Form */}
+            <UserEditForm
+              user={selectedUser}
+              onCommit={commitStagedUser}
+              onChange={setStagedUser}
+            />
+            {!isNewUser && <HistoryEditForm user={selectedUser} />}
+            <Segment basic>
+              <Button
+                negative
+                icon
+                labelPosition="left"
+                onClick={handleDeleteUserButtonClick}
+              >
+                <Icon name="exclamation triangle" />
+                Delete User
+              </Button>
+            </Segment>
+          </Grid.Column>
+        )}
+      </Grid>
     </Container>
   );
 }
