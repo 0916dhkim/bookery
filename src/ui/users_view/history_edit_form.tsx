@@ -10,10 +10,12 @@ import {
   Button,
   Dropdown,
   Container,
-  Input
+  Input,
+  Icon
 } from "semantic-ui-react";
 import { Book } from "../../persistence/book";
 import * as Fuse from "fuse.js";
+import { View } from "../../persistence/view";
 
 /**
  * Convert a book to be presented inside dropdown menu.
@@ -92,6 +94,7 @@ export function HistoryEditForm({
     const books = bookFuse.search(query) as Array<Book>;
     return books.map(bookToDropDownItemProps);
   }
+
   return (
     <Container data-testid="history-edit-form">
       <Segment.Group>
@@ -132,7 +135,15 @@ export function HistoryEditForm({
               const book = appData.books.get(view.bookId);
               assertWrapper(!!book);
               return (
-                <Segment secondary key={view.id.toString()}>
+                <Segment secondary clearing key={view.id.toString()}>
+                  <Icon
+                    name="x"
+                    link
+                    color="red"
+                    onClick={(): void => {
+                      setAppData(appData.deleteView(view)[0]);
+                    }}
+                  />
                   {book.title} by {book.author}
                 </Segment>
               );
