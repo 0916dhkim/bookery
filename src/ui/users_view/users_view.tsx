@@ -135,7 +135,9 @@ export function UsersView({
             setFilterValue(event.target.value);
           }}
         />
-        <Button onClick={handleNewUserButtonClick}>New User</Button>
+        <Button positive onClick={handleNewUserButtonClick}>
+          New User
+        </Button>
       </Form>
       {/* Users List */}
       <UsersList filterQuery={filterValue} onSelect={handleUserClick} />
