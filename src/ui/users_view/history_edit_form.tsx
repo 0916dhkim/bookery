@@ -11,11 +11,11 @@ import {
   Dropdown,
   Container,
   Input,
-  Icon
+  Icon,
+  Header
 } from "semantic-ui-react";
 import { Book } from "../../persistence/book";
 import * as Fuse from "fuse.js";
-import { View } from "../../persistence/view";
 
 /**
  * Convert a book to be presented inside dropdown menu.
@@ -98,6 +98,9 @@ export function HistoryEditForm({
   return (
     <Container data-testid="history-edit-form">
       <Segment.Group>
+        <Segment compact tertiary>
+          <Header>History</Header>
+        </Segment>
         <Segment>
           <Input
             fluid
