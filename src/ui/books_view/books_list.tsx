@@ -6,9 +6,13 @@ import * as Fuse from "fuse.js";
 
 export interface BooksListProps {
   filterQuery: string;
+  onSelect: (book: Book) => void;
 }
 
-export function BooksList({ filterQuery }: BooksListProps): React.ReactElement {
+export function BooksList({
+  filterQuery,
+  onSelect
+}: BooksListProps): React.ReactElement {
   const { appData } = React.useContext(AppDataContext);
   /**
    * Filtered array of books by search term.
@@ -36,7 +40,7 @@ export function BooksList({ filterQuery }: BooksListProps): React.ReactElement {
   return (
     <Menu fluid vertical>
       {filteredBooks.map(book => (
-        <Menu.Item key={book.id.toString()}>
+        <Menu.Item key={book.id.toString()} onClick={onSelect.bind(null, book)}>
           {book.title} by {book.author}
         </Menu.Item>
       ))}
