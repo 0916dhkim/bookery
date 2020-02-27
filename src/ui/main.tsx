@@ -39,7 +39,7 @@ function wrap(
 const contentViews: ContentViewElementInterface[] = [
   {
     name: "Books",
-    viewType: wrap(BooksView)
+    viewType: BooksView
   },
   {
     name: "Users",
