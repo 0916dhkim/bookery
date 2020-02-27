@@ -1,5 +1,12 @@
 import * as React from "react";
-import { Container, Grid, Input } from "semantic-ui-react";
+import {
+  Container,
+  Grid,
+  Input,
+  Button,
+  Icon,
+  Segment
+} from "semantic-ui-react";
 import { BooksList } from "./books_list";
 import { BookEditForm } from "./book_edit_form";
 import { showFormValidityErrorMessage } from "../form_validity_error_message";
@@ -8,14 +15,23 @@ import { Book } from "../../persistence/book";
 import { assertWrapper } from "../../assert_wrapper";
 import {
   ModifiedDialogOption,
-  showModifiedDialogSync
+  showModifiedDialogSync as defaultShowModifiedDialogSync
 } from "../modified_dialog";
+import {
+  DeleteBookDialogOption,
+  showDeleteBookDialogSync as defaultShowDeleteBookDialogSync
+} from "./delete_book_dialog";
 
 export interface BooksViewProps {
+  showModifiedDialogSync?: () => ModifiedDialogOption;
+  showDeleteBookDialogSync?: () => DeleteBookDialogOption;
   children?: React.ReactNode;
 }
 
-export function BooksView(): React.ReactElement<BooksViewProps> {
+export function BooksView({
+  showModifiedDialogSync = defaultShowModifiedDialogSync,
+  showDeleteBookDialogSync = defaultShowDeleteBookDialogSync
+}: BooksViewProps): React.ReactElement<BooksViewProps> {
   const { appData, setAppData } = React.useContext(AppDataContext);
   const [selectedBook, setSelectedBook] = React.useState<Book | null>(null);
   const [stagedBook, setStagedBook] = React.useState<Book | null>(null);
@@ -82,18 +98,60 @@ export function BooksView(): React.ReactElement<BooksViewProps> {
     }
   }
 
+  /**
+   * Handle new book button click event.
+   */
+  function handleNewBookButtonClick(): void {
+    if (checkIfSafeToOverrideUserEditForm()) {
+      const generatedBook = appData.generateBook("", "");
+      setSelectedBook(generatedBook);
+    }
+  }
+
+  /**
+   * Handle delete book button click event.
+   */
+  function handleDeleteBookButtonClick(): void {
+    assertWrapper(selectedBook);
+    const response = showDeleteBookDialogSync();
+    switch (response) {
+      case DeleteBookDialogOption.CANCEL:
+        return;
+      case DeleteBookDialogOption.OK:
+        setAppData(appData.deleteBook(selectedBook)[0]);
+        setSelectedBook(null);
+        return;
+    }
+  }
+
   return (
     <Container fluid>
       Books View
-      <Input
-        type="text"
-        icon="search"
-        value={filterValue}
-        onChange={(event): void => {
-          setFilterValue(event.target.value);
-        }}
-        style={{ flexGrow: 1 }}
-      />
+      <div style={{ display: "flex", margin: "1em 0" }}>
+        {/* Search Bar */}
+        <Input
+          type="text"
+          icon="search"
+          value={filterValue}
+          onChange={(event): void => {
+            setFilterValue(event.target.value);
+          }}
+          style={{ flexGrow: 1 }}
+        />
+        <Button
+          positive
+          icon
+          labelPosition="left"
+          onClick={handleNewBookButtonClick}
+          style={{
+            marginLeft: "1em",
+            flexGrow: 0
+          }}
+        >
+          <Icon name="plus circle" />
+          New Book
+        </Button>
+      </div>
       <Grid divided="vertically">
         <Grid.Column width={8}>
           {/* Books List */}
@@ -107,6 +165,17 @@ export function BooksView(): React.ReactElement<BooksViewProps> {
               onCommit={commitStagedBook}
               onChange={setStagedBook}
             />
+            <Segment basic>
+              <Button
+                negative
+                icon
+                labelPosition="left"
+                onClick={handleDeleteBookButtonClick}
+              >
+                <Icon name="exclamation triangle" />
+                Delete Book
+              </Button>
+            </Segment>
           </Grid.Column>
         )}
       </Grid>

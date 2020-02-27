@@ -99,6 +99,14 @@ export function BookEditForm({
             value={isbnValue}
             onChange={(event): void => setIsbnValue(event.target.value)}
           />
+          <Form.Group>
+            <Form.Button type="button" onClick={overrideForm.bind(null, book)}>
+              Reset
+            </Form.Button>
+            <Form.Button type="submit" primary>
+              Apply
+            </Form.Button>
+          </Form.Group>
         </Form>
       </Segment>
     </Segment.Group>
