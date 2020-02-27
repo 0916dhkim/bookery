@@ -1,7 +1,7 @@
 import * as React from "react";
 import { SideMenu } from "./side_menu";
 import { AppData } from "../persistence/app_data";
-import { BooksView } from "./books_view";
+import { BooksView } from "./books_view/books_view";
 import { UsersView } from "./users_view";
 import { QueryView } from "./query_view";
 import { AppDataContext } from "./app_data_context";

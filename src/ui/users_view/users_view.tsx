@@ -17,10 +17,10 @@ import { HistoryEditForm } from "./history_edit_form";
 import {
   Container,
   Button,
-  Form,
   Grid,
   Segment,
-  Icon
+  Icon,
+  Input
 } from "semantic-ui-react";
 
 export interface UsersViewProps {
@@ -132,28 +132,33 @@ export function UsersView({
   return (
     <Container fluid>
       Users View
-      <Segment>
+      <div style={{ display: "flex", margin: "1em 0" }}>
         {/* Search Bar */}
-        <Form onSubmit={(event): void => event.preventDefault()}>
-          <Form.Input
-            type="text"
-            icon="search"
-            value={filterValue}
-            onChange={(event): void => {
-              setFilterValue(event.target.value);
-            }}
-          />
-          <Button
-            positive
-            icon
-            labelPosition="left"
-            onClick={handleNewUserButtonClick}
-          >
-            <Icon name="plus circle" />
-            New User
-          </Button>
-        </Form>
-      </Segment>
+        <Input
+          type="text"
+          icon="search"
+          value={filterValue}
+          onChange={(event): void => {
+            setFilterValue(event.target.value);
+          }}
+          style={{
+            flexGrow: 1
+          }}
+        />
+        <Button
+          positive
+          icon
+          labelPosition="left"
+          onClick={handleNewUserButtonClick}
+          style={{
+            marginLeft: "1em",
+            flexGrow: 0
+          }}
+        >
+          <Icon name="plus circle" />
+          New User
+        </Button>
+      </div>
       <Grid divided="vertically">
         <Grid.Column width={8}>
           {/* Users List */}
