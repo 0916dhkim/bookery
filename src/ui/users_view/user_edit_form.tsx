@@ -16,7 +16,26 @@ export function UserEditForm({
   const [firstNameValue, setFirstNameValue] = React.useState<string>("");
   const [lastNameValue, setLastNameValue] = React.useState<string>("");
   const [noteValue, setNoteValue] = React.useState<string>("");
-  const [isValid, setIsValid] = React.useState<boolean>(true);
+
+  // Validate First Name.
+  const firstNameError = React.useMemo<string | null>(() => {
+    if (firstNameValue.length === 0) {
+      return "Please enter first name";
+    }
+    return null;
+  }, [firstNameValue]);
+
+  // Validate Last Name.
+  const lastNameError = React.useMemo<string | null>(() => {
+    if (lastNameValue.length === 0) {
+      return "Please enter last name";
+    }
+    return null;
+  }, [lastNameValue]);
+
+  const isValid = React.useMemo<boolean>(() => {
+    return firstNameError === null && lastNameError === null;
+  }, [firstNameError, lastNameError]);
 
   const formUser = React.useMemo<User | null>(() => {
     if (!isValid) {
@@ -36,22 +55,6 @@ export function UserEditForm({
     [onChange, formUser] // When formUser is changed.
   );
 
-  // Validate First Name.
-  const firstNameError = React.useMemo<string | null>(() => {
-    if (firstNameValue.length === 0) {
-      return "Please enter first name";
-    }
-    return null;
-  }, [firstNameValue]);
-
-  // Validate Last Name.
-  const lastNameError = React.useMemo<string | null>(() => {
-    if (lastNameValue.length === 0) {
-      return "Please enter last name";
-    }
-    return null;
-  }, [lastNameValue]);
-
   /**
    * Override user edit form fields by given user.
    * @param targetUser override target.
@@ -61,13 +64,6 @@ export function UserEditForm({
     setLastNameValue(targetUser.lastName);
     setNoteValue(targetUser.note ? targetUser.note : "");
   }
-
-  const formRef = React.useRef<HTMLFormElement>(null);
-  React.useEffect(() => {
-    if (formRef.current) {
-      setIsValid(formRef.current.checkValidity());
-    }
-  }, [firstNameValue, lastNameValue, noteValue]);
 
   // Synchronize staging user to the user edit form.
   React.useEffect(
