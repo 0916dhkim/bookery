@@ -175,6 +175,7 @@ export function UsersView({
             {!isNewUser && <HistoryEditForm user={selectedUser} />}
             <Segment basic>
               <Button
+                data-testid="user-delete-button"
                 negative
                 icon
                 labelPosition="left"
