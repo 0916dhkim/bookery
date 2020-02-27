@@ -17,7 +17,8 @@ import {
   ModifiedDialogOption,
   showModifiedDialogSync as defaultShowModifiedDialogSync
 } from "../modified_dialog";
-import { DeleteBookDialogOption, 
+import {
+  DeleteBookDialogOption,
   showDeleteBookDialogSync as defaultShowDeleteBookDialogSync
 } from "./delete_book_dialog";
 
@@ -26,7 +27,6 @@ export interface BooksViewProps {
   showDeleteBookDialogSync?: () => DeleteBookDialogOption;
   children?: React.ReactNode;
 }
-
 
 export function BooksView({
   showModifiedDialogSync = defaultShowModifiedDialogSync,

@@ -6,7 +6,7 @@ export enum DeleteBookDialogOption {
 }
 
 export function showDeleteBookDialogSync(): DeleteBookDialogOption {
-  const buttons =[];
+  const buttons = [];
   buttons[DeleteBookDialogOption.OK] = "OK";
   buttons[DeleteBookDialogOption.CANCEL] = "Cancel";
 
