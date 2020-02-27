@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Container, Grid, Input } from "semantic-ui-react";
+import { Container, Grid, Input, Button, Icon } from "semantic-ui-react";
 import { BooksList } from "./books_list";
 import { BookEditForm } from "./book_edit_form";
 import { showFormValidityErrorMessage } from "../form_validity_error_message";
@@ -82,18 +82,44 @@ export function BooksView(): React.ReactElement<BooksViewProps> {
     }
   }
 
+  /**
+   * Handle new book button click event.
+   */
+  function handleNewBookButtonClick(): void {
+    if (checkIfSafeToOverrideUserEditForm()) {
+      const generatedBook = appData.generateBook("", "");
+      setSelectedBook(generatedBook);
+    }
+  }
+
   return (
     <Container fluid>
       Books View
-      <Input
-        type="text"
-        icon="search"
-        value={filterValue}
-        onChange={(event): void => {
-          setFilterValue(event.target.value);
-        }}
-        style={{ flexGrow: 1 }}
-      />
+      <div style={{ display: "flex", margin: "1em 0" }}>
+        {/* Search Bar */}
+        <Input
+          type="text"
+          icon="search"
+          value={filterValue}
+          onChange={(event): void => {
+            setFilterValue(event.target.value);
+          }}
+          style={{ flexGrow: 1 }}
+        />
+        <Button
+          positive
+          icon
+          labelPosition="left"
+          onClick={handleNewBookButtonClick}
+          style={{
+            marginLeft: "1em",
+            flexGrow: 0
+          }}
+        >
+          <Icon name="plus circle" />
+          New Book
+        </Button>
+      </div>
       <Grid divided="vertically">
         <Grid.Column width={8}>
           {/* Books List */}
