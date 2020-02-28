@@ -88,6 +88,10 @@ export function UsersView({
           return commitStagedUser();
         case ModifiedDialogOption.DONTSAVE:
           return true;
+        default: {
+          const exhaust: never = response;
+          throw `${exhaust}`;
+        }
       }
     }
     return true;
@@ -119,24 +123,25 @@ export function UsersView({
   function handleDeleteUserButtonClick(): void {
     assertWrapper(selectedUser);
     const response = showDeleteUserDialogSync();
-    const handleResponse = (response: DeleteUserDialogOption): boolean => {
-      let nextAppData = appData;
-      switch (response) {
-        case DeleteUserDialogOption.CANCEL:
-          return true;
-        case DeleteUserDialogOption.OK:
-          nextAppData = appData.deleteUser(selectedUser)[0];
-          Array.from(appData.views.values())
-            .filter(view => view.userId === selectedUser.id)
-            .forEach(view => {
-              nextAppData = nextAppData.deleteView(view)[0];
-            });
-          setAppData(nextAppData);
-          setSelectedUser(null);
-          return true;
+    let nextAppData = appData;
+    switch (response) {
+      case DeleteUserDialogOption.CANCEL:
+        return;
+      case DeleteUserDialogOption.OK:
+        nextAppData = appData.deleteUser(selectedUser)[0];
+        Array.from(appData.views.values())
+          .filter(view => view.userId === selectedUser.id)
+          .forEach(view => {
+            nextAppData = nextAppData.deleteView(view)[0];
+          });
+        setAppData(nextAppData);
+        setSelectedUser(null);
+        return;
+      default: {
+        const exhaust: never = response;
+        throw `${exhaust}`;
       }
-    };
-    handleResponse(response);
+    }
   }
 
   return (
