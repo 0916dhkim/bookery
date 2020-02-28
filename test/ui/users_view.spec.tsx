@@ -68,19 +68,19 @@ function setShowDeleteUserDialogSync(f: () => DeleteUserDialogOption): void {
   });
 }
 
-beforeEach(function() {
-  renderResult = render(
-    <Tester ref={testerRef}>
-      <UsersView />
-    </Tester>
-  );
-});
-
-afterEach(function() {
-  cleanup();
-});
-
 describe("UsersView", function() {
+  beforeEach(function() {
+    renderResult = render(
+      <Tester ref={testerRef}>
+        <UsersView />
+      </Tester>
+    );
+  });
+
+  afterEach(function() {
+    cleanup();
+  });
+
   describe("Suggestions List", function() {
     it("Exists", function() {
       let x = new AppData();
@@ -181,6 +181,49 @@ describe("UsersView", function() {
       userEvent.click(renderResult.getByText(/Delete User/i));
 
       assert.strictEqual(renderResult.queryByTestId("user-edit-form"), null);
+    });
+
+    it("Deleting A User Should Cascade", async function() {
+      let x = new AppData();
+      const bookA = x.generateBook("ABC", "noname");
+      x = x.setBook(bookA);
+      const bookB = x.generateBook("DEF", "noname");
+      x = x.setBook(bookB);
+      const userDan = x.generateUser("Smith", "Dan");
+      x = x.setUser(userDan);
+      const userFrank = x.generateUser("Kennedy", "Frank");
+      x = x.setUser(userFrank);
+      x = x.setView(
+        x.generateView(userDan.id, bookA.id, moment.utc("20100517").valueOf())
+      );
+      x = x.setView(
+        x.generateView(userFrank.id, bookA.id, moment.utc("20111203").valueOf())
+      );
+      x = x.setView(
+        x.generateView(userFrank.id, bookB.id, moment.utc("20120109").valueOf())
+      );
+      setAppData(x);
+
+      userEvent.click(
+        within(renderResult.getByTestId("suggestions-list")).getByText(
+          /Kennedy/
+        )
+      );
+
+      setShowDeleteUserDialogSync(() => DeleteUserDialogOption.OK);
+      userEvent.click(renderResult.getByTestId("user-delete-button"));
+
+      assert.strictEqual(
+        getAppData().books.size,
+        2,
+        "Number of books should remain the same"
+      );
+      assert.strictEqual(getAppData().users.size, 1, "Only Dan remains");
+      assert.strictEqual(
+        getAppData().views.size,
+        1,
+        "Frank's views should be deleted along with Frank"
+      );
     });
   });
 

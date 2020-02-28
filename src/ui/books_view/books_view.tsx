@@ -117,10 +117,21 @@ export function BooksView({
     switch (response) {
       case DeleteBookDialogOption.CANCEL:
         return;
-      case DeleteBookDialogOption.OK:
-        setAppData(appData.deleteBook(selectedBook)[0]);
+      case DeleteBookDialogOption.OK: {
+        let nextAppData = appData.deleteBook(selectedBook)[0];
+        Array.from(appData.views.values())
+          .filter(view => view.bookId === selectedBook.id)
+          .forEach(view => {
+            nextAppData = nextAppData.deleteView(view)[0];
+          });
+        setAppData(nextAppData);
         setSelectedBook(null);
         return;
+      }
+      default: {
+        const exhaust: never = response;
+        throw `${exhaust}`;
+      }
     }
   }
 
@@ -167,6 +178,7 @@ export function BooksView({
             />
             <Segment basic>
               <Button
+                data-testid="book-delete-button"
                 negative
                 icon
                 labelPosition="left"

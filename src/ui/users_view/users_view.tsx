@@ -88,6 +88,10 @@ export function UsersView({
           return commitStagedUser();
         case ModifiedDialogOption.DONTSAVE:
           return true;
+        default: {
+          const exhaust: never = response;
+          throw `${exhaust}`;
+        }
       }
     }
     return true;
@@ -122,10 +126,21 @@ export function UsersView({
     switch (response) {
       case DeleteUserDialogOption.CANCEL:
         return;
-      case DeleteUserDialogOption.OK:
-        setAppData(appData.deleteUser(selectedUser)[0]);
+      case DeleteUserDialogOption.OK: {
+        let nextAppData = appData.deleteUser(selectedUser)[0];
+        Array.from(appData.views.values())
+          .filter(view => view.userId === selectedUser.id)
+          .forEach(view => {
+            nextAppData = nextAppData.deleteView(view)[0];
+          });
+        setAppData(nextAppData);
         setSelectedUser(null);
         return;
+      }
+      default: {
+        const exhaust: never = response;
+        throw `${exhaust}`;
+      }
     }
   }
 
@@ -175,6 +190,7 @@ export function UsersView({
             {!isNewUser && <HistoryEditForm user={selectedUser} />}
             <Segment basic>
               <Button
+                data-testid="user-delete-button"
                 negative
                 icon
                 labelPosition="left"
