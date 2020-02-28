@@ -68,19 +68,19 @@ function setShowDeleteUserDialogSync(f: () => DeleteUserDialogOption): void {
   });
 }
 
-beforeEach(function() {
-  renderResult = render(
-    <Tester ref={testerRef}>
-      <UsersView />
-    </Tester>
-  );
-});
-
-afterEach(function() {
-  cleanup();
-});
-
 describe("UsersView", function() {
+  beforeEach(function() {
+    renderResult = render(
+      <Tester ref={testerRef}>
+        <UsersView />
+      </Tester>
+    );
+  });
+
+  afterEach(function() {
+    cleanup();
+  });
+
   describe("Suggestions List", function() {
     it("Exists", function() {
       let x = new AppData();

@@ -123,12 +123,11 @@ export function UsersView({
   function handleDeleteUserButtonClick(): void {
     assertWrapper(selectedUser);
     const response = showDeleteUserDialogSync();
-    let nextAppData = appData;
     switch (response) {
       case DeleteUserDialogOption.CANCEL:
         return;
-      case DeleteUserDialogOption.OK:
-        nextAppData = appData.deleteUser(selectedUser)[0];
+      case DeleteUserDialogOption.OK: {
+        let nextAppData = appData.deleteUser(selectedUser)[0];
         Array.from(appData.views.values())
           .filter(view => view.userId === selectedUser.id)
           .forEach(view => {
@@ -137,6 +136,7 @@ export function UsersView({
         setAppData(nextAppData);
         setSelectedUser(null);
         return;
+      }
       default: {
         const exhaust: never = response;
         throw `${exhaust}`;

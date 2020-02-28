@@ -38,7 +38,7 @@ export function BooksList({
   }, [filterQuery, appData]);
 
   return (
-    <Menu fluid vertical>
+    <Menu data-testid="suggestions-list" fluid vertical>
       {filteredBooks.map(book => (
         <Menu.Item key={book.id.toString()} onClick={onSelect.bind(null, book)}>
           {book.title} by {book.author}
