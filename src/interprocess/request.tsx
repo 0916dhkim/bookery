@@ -1,14 +1,14 @@
 import { AppData } from "../persistence/app_data";
 
-type RequestType = "GET-APPDATA" | "SET-APPDATA" | "GET-ISMODIFIED";
+export type RequestType = "GET-APPDATA" | "SET-APPDATA" | "GET-ISMODIFIED";
 
-type RequestOption<T extends RequestType> = { type: T } & {
+export type RequestOption<T extends RequestType> = { type: T } & {
   "GET-APPDATA": {};
   "SET-APPDATA": { data: AppData };
   "GET-ISMODIFIED": {};
 }[T];
 
-type Response<T extends RequestType> = {
+export type Response<T extends RequestType> = {
   "GET-APPDATA": AppData;
   "SET-APPDATA": void;
   "GET-ISMODIFIED": boolean;
