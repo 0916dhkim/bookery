@@ -1,7 +1,7 @@
 import * as React from "react";
 import { remote } from "electron";
 import * as fs from "fs";
-import { Main } from "./main";
+import { Main } from "../renderer/main";
 import { AppData, AppDataSerializer } from "../persistence/app_data";
 
 function newFile(main: React.RefObject<Main>): void {

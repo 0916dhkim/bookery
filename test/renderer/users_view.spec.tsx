@@ -2,13 +2,13 @@ import { describe, it, afterEach, beforeEach } from "mocha";
 import { render, within, cleanup, RenderResult } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import * as React from "react";
-import { UsersView, UsersViewProps } from "../../src/ui/users_view";
+import { UsersView, UsersViewProps } from "../../src/renderer/users_view";
 import { AppData } from "../../src/persistence/app_data";
 import * as assert from "assert";
-import { AppDataContext } from "../../src/ui/app_data_context";
+import { AppDataContext } from "../../src/renderer/app_data_context";
 import { act } from "react-dom/test-utils";
-import { ModifiedDialogOption } from "../../src/ui/modified_dialog";
-import { DeleteUserDialogOption } from "../../src/ui/delete_user_dialog";
+import { ModifiedDialogOption } from "../../src/renderer/modified_dialog";
+import { DeleteUserDialogOption } from "../../src/renderer/users_view/delete_user_dialog";
 import { assertWrapper } from "../../src/assert_wrapper";
 import moment = require("moment");
 

@@ -1,10 +1,10 @@
 import { describe, it, afterEach } from "mocha";
 import { render, cleanup, within } from "@testing-library/react";
-import { BooksView } from "../../src/ui/books_view";
-import { DeleteBookDialogOption } from "../../src/ui/books_view/delete_book_dialog";
-import { ModifiedDialogOption } from "../../src/ui/modified_dialog";
+import { BooksView } from "../../src/renderer/books_view";
+import { DeleteBookDialogOption } from "../../src/renderer/books_view/delete_book_dialog";
+import { ModifiedDialogOption } from "../../src/renderer/modified_dialog";
 import * as React from "react";
-import { AppDataContext } from "../../src/ui/app_data_context";
+import { AppDataContext } from "../../src/renderer/app_data_context";
 import { AppData } from "../../src/persistence/app_data";
 import moment = require("moment");
 import userEvent from "@testing-library/user-event";

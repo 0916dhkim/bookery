@@ -65,7 +65,7 @@ if (!PRODUCTION) {
 
 /** @type {import("webpack").Configuration} */
 const mainConfig = {
-  entry: path.join(__dirname, "./src/electron.tsx"),
+  entry: path.join(__dirname, "./src/main/index.tsx"),
   target: "electron-main",
   output: {
     filename: "electron.js"
@@ -74,7 +74,7 @@ const mainConfig = {
 
 /** @type {import("webpack").Configuration} */
 const rendererConfig = {
-  entry: path.join(__dirname, "./src/renderer.tsx"),
+  entry: path.join(__dirname, "./src/renderer/index.tsx"),
   target: "electron-renderer",
   output: {
     filename: "renderer.js"

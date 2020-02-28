@@ -6,7 +6,7 @@ import {
 import {
   DeleteUserDialogOption,
   showDeleteUserDialogSync as defaultShowDeleteUserDialogSync
-} from "../delete_user_dialog";
+} from "./delete_user_dialog";
 import { showFormValidityErrorMessage } from "../form_validity_error_message";
 import { User } from "../../persistence/user";
 import { AppDataContext } from "../app_data_context";
