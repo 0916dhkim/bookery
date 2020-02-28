@@ -1,0 +1,23 @@
+import { AppData } from "../persistence/app_data";
+
+type RequestType = "GET-APPDATA" | "SET-APPDATA" | "GET-ISMODIFIED";
+
+type RequestOption<T extends RequestType> = { type: T } & {
+  "GET-APPDATA": {};
+  "SET-APPDATA": { data: AppData };
+  "GET-ISMODIFIED": {};
+}[T];
+
+type Response<T extends RequestType> = {
+  "GET-APPDATA": AppData;
+  "SET-APPDATA": void;
+  "GET-ISMODIFIED": boolean;
+}[T];
+
+export interface SendRequest {
+  <T extends RequestType>(options: RequestOption<T>): Promise<Response<T>>;
+}
+
+export interface RequestHandler {
+  <T extends RequestType>(options: RequestOption<T>): Response<T>;
+}
