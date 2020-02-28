@@ -119,14 +119,24 @@ export function UsersView({
   function handleDeleteUserButtonClick(): void {
     assertWrapper(selectedUser);
     const response = showDeleteUserDialogSync();
-    switch (response) {
-      case DeleteUserDialogOption.CANCEL:
-        return;
-      case DeleteUserDialogOption.OK:
-        setAppData(appData.deleteUser(selectedUser)[0]);
-        setSelectedUser(null);
-        return;
-    }
+    const handleResponse = (response: DeleteUserDialogOption): boolean => {
+      let nextAppData = appData;
+      switch (response) {
+        case DeleteUserDialogOption.CANCEL:
+          return true;
+        case DeleteUserDialogOption.OK:
+          nextAppData = appData.deleteUser(selectedUser)[0];
+          Array.from(appData.views.values())
+            .filter(view => view.userId === selectedUser.id)
+            .forEach(view => {
+              nextAppData = nextAppData.deleteView(view)[0];
+            });
+          setAppData(nextAppData);
+          setSelectedUser(null);
+          return true;
+      }
+    };
+    handleResponse(response);
   }
 
   return (
