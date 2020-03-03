@@ -1,16 +1,16 @@
 import * as React from "react";
 import { remote } from "electron";
 import * as fs from "fs";
-import { Main } from "../renderer/main";
+import { Root } from "../renderer/root";
 import { AppData, AppDataSerializer } from "../persistence/app_data";
 
-function newFile(main: React.RefObject<Main>): void {
-  main?.current?.setState({
+function newFile(root: React.RefObject<Root>): void {
+  root?.current?.setState({
     appData: new AppData()
   });
 }
 
-function openFile(main: React.RefObject<Main>): void {
+function openFile(root: React.RefObject<Root>): void {
   const result = remote.dialog.showOpenDialogSync({
     properties: ["openFile"]
   });
@@ -21,50 +21,50 @@ function openFile(main: React.RefObject<Main>): void {
       encoding: "utf8"
     });
     const appDataSerializer = new AppDataSerializer();
-    main?.current?.setState({
+    root?.current?.setState({
       currentFilePath: filePath,
       appData: appDataSerializer.deserialize(fileContent)
     });
   }
 }
 
-function saveAsFile(main: React.RefObject<Main>): void {
+function saveAsFile(root: React.RefObject<Root>): void {
   const result = remote.dialog.showSaveDialogSync({
     properties: ["createDirectory", "showOverwriteConfirmation"]
   });
-  if (result !== undefined && main?.current?.state.appData) {
+  if (result !== undefined && root?.current?.state.appData) {
     const appDataSerializer = new AppDataSerializer();
     const serializedAppData = appDataSerializer.serialize(
-      main.current.state.appData
+      root.current.state.appData
     );
     fs.writeFileSync(result, serializedAppData, {
       encoding: "utf8"
     });
-    main.current.setState({
+    root.current.setState({
       currentFilePath: result
     });
   }
 }
 
-function saveFile(main: React.RefObject<Main>): void {
-  if (main?.current?.state.appData) {
+function saveFile(root: React.RefObject<Root>): void {
+  if (root?.current?.state.appData) {
     const appDataSerializer = new AppDataSerializer();
     const stringifiedAppData = appDataSerializer.serialize(
-      main.current.state.appData
+      root.current.state.appData
     );
 
-    const targetPath = main.current.state.currentFilePath;
+    const targetPath = root.current.state.currentFilePath;
     if (targetPath) {
       fs.writeFileSync(targetPath, stringifiedAppData, {
         encoding: "utf8"
       });
     } else {
-      saveAsFile(main);
+      saveAsFile(root);
     }
   }
 }
 
-export function initializeApplicationMenu(main: React.RefObject<Main>): void {
+export function initializeApplicationMenu(root: React.RefObject<Root>): void {
   remote.Menu.setApplicationMenu(
     remote.Menu.buildFromTemplate([
       {
@@ -72,19 +72,19 @@ export function initializeApplicationMenu(main: React.RefObject<Main>): void {
         submenu: [
           {
             label: "New File",
-            click: newFile.bind(null, main)
+            click: newFile.bind(null, root)
           },
           {
             label: "Open File...",
-            click: openFile.bind(null, main)
+            click: openFile.bind(null, root)
           },
           {
             label: "Save",
-            click: saveFile.bind(null, main)
+            click: saveFile.bind(null, root)
           },
           {
             label: "Save As...",
-            click: saveAsFile.bind(null, main)
+            click: saveAsFile.bind(null, root)
           }
         ]
       },

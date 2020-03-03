@@ -57,7 +57,7 @@ export interface State {
   currentFilePath?: string;
 }
 
-export class Main extends React.Component<{}, State> {
+export class Root extends React.Component<{}, State> {
   constructor(props: {}) {
     super(props);
     this.state = {
