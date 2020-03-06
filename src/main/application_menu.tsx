@@ -1,5 +1,5 @@
 import * as React from "react";
-import { remote } from "electron";
+import { Menu } from "electron";
 import * as fs from "fs";
 import { Root } from "../renderer/root";
 import { AppData, AppDataSerializer } from "../persistence/app_data";
@@ -65,8 +65,8 @@ function saveFile(root: React.RefObject<Root>): void {
 }
 
 export function initializeApplicationMenu(root: React.RefObject<Root>): void {
-  remote.Menu.setApplicationMenu(
-    remote.Menu.buildFromTemplate([
+  Menu.setApplicationMenu(
+    Menu.buildFromTemplate([
       {
         label: "File",
         submenu: [
