@@ -11,6 +11,50 @@ import { Container } from "semantic-ui-react";
 import { Request } from "../request";
 import { RequestContext } from "./request_context";
 import { useEventHandler } from "./communication";
+import produce, { castDraft } from "immer";
+
+export interface RootProps {
+  request: Request;
+}
+
+export interface RootState {
+  appData: AppData | null;
+  contentViewIndex: number;
+  currentFilePath: string | null;
+}
+
+type RootAction =
+  | { type: "New File" }
+  | { type: "Open File"; fileData: AppData; filePath: string }
+  | { type: "Save As File"; filePath: string }
+  | { type: "Set AppData"; appData: AppData }
+  | { type: "Change Content View"; index: number };
+
+function rootReducer(state: RootState, action: RootAction): RootState {
+  switch (action.type) {
+    case "New File":
+      return produce(state, draft => {
+        draft.appData = castDraft(new AppData());
+      });
+    case "Open File":
+      return produce(state, draft => {
+        draft.appData = castDraft(action.fileData);
+        draft.currentFilePath = action.filePath;
+      });
+    case "Save As File":
+      return produce(state, draft => {
+        draft.currentFilePath = action.filePath;
+      });
+    case "Set AppData":
+      return produce(state, draft => {
+        draft.appData = castDraft(action.appData);
+      });
+    case "Change Content View":
+      return produce(state, draft => {
+        draft.contentViewIndex = castDraft(action.index);
+      });
+  }
+}
 
 /**
  * Interface for view type array elements.
@@ -55,16 +99,13 @@ const contentViews: ContentViewElementInterface[] = [
   }
 ];
 
-function newFileMenuHandler(
-  setAppData: React.Dispatch<React.SetStateAction<AppData | null>>
-): void {
-  setAppData(new AppData());
+function newFileMenuHandler(dispatch: React.Dispatch<RootAction>): void {
+  dispatch({ type: "New File" });
 }
 
 async function openFileMenuHandler(
   request: Request,
-  setCurrentFilePath: React.Dispatch<React.SetStateAction<string | null>>,
-  setAppData: React.Dispatch<React.SetStateAction<AppData | null>>
+  dispatch: React.Dispatch<RootAction>
 ): Promise<void> {
   try {
     const file = await request({ type: "SHOW-OPEN-DIALOG" });
@@ -72,8 +113,11 @@ async function openFileMenuHandler(
       const fileContent = fs.readFileSync(file, { encoding: "utf8" });
       const appSerializer = new AppDataSerializer();
       const appDataFromFile = appSerializer.deserialize(fileContent);
-      setCurrentFilePath(file);
-      setAppData(appDataFromFile);
+      dispatch({
+        type: "Open File",
+        fileData: appDataFromFile,
+        filePath: file
+      });
     }
   } catch {
     throw "Failed to handle open file menu event.";
@@ -82,16 +126,16 @@ async function openFileMenuHandler(
 
 async function saveAsFileMenuHandler(
   request: Request,
-  appData: AppData | null,
-  setCurrentFilePath: React.Dispatch<React.SetStateAction<string | null>>
+  dispatch: React.Dispatch<RootAction>,
+  state: RootState
 ): Promise<void> {
   try {
     const file = await request({ type: "SHOW-SAVE-DIALOG" });
-    if (file !== null && appData !== null) {
+    if (file !== null && state.appData !== null) {
       const appDataSerializer = new AppDataSerializer();
-      const serializedAppData = appDataSerializer.serialize(appData);
+      const serializedAppData = appDataSerializer.serialize(state.appData);
       fs.writeFileSync(file, serializedAppData, { encoding: "utf8" });
-      setCurrentFilePath(file);
+      dispatch({ type: "Save As File", filePath: file });
     }
   } catch {
     throw "Failed to handle save as menu event.";
@@ -100,18 +144,17 @@ async function saveAsFileMenuHandler(
 
 async function saveFileMenuHandler(
   request: Request,
-  appData: AppData | null,
-  currentFilePath: string | null,
-  setCurrentFilePath: React.Dispatch<React.SetStateAction<string | null>>
+  dispatch: React.Dispatch<RootAction>,
+  state: RootState
 ): Promise<void> {
   try {
-    if (appData !== null) {
-      if (currentFilePath === null) {
-        return saveAsFileMenuHandler(request, appData, setCurrentFilePath);
+    if (state.appData !== null) {
+      if (state.currentFilePath === null) {
+        return saveAsFileMenuHandler(request, dispatch, state);
       }
       const appDataSerializer = new AppDataSerializer();
-      const serializedAppData = appDataSerializer.serialize(appData);
-      fs.writeFileSync(currentFilePath, serializedAppData, {
+      const serializedAppData = appDataSerializer.serialize(state.appData);
+      fs.writeFileSync(state.currentFilePath, serializedAppData, {
         encoding: "utf8"
       });
     }
@@ -120,51 +163,42 @@ async function saveFileMenuHandler(
   }
 }
 
-export interface RootProps {
-  request: Request;
-}
-
 export function Root({ request }: RootProps): React.ReactElement<RootProps> {
-  const [appData, setAppData] = React.useState<AppData | null>(null);
-  const [contentViewIndex, setContentViewIndex] = React.useState<number>(0);
-  const [currentFilePath, setCurrentFilePath] = React.useState<string | null>(
-    null
-  );
-  useEventHandler(
-    "ON-NEW-FILE-MENU",
-    newFileMenuHandler.bind(null, setAppData)
-  );
+  const [state, dispatch] = React.useReducer(rootReducer, {
+    appData: null,
+    contentViewIndex: 0,
+    currentFilePath: null
+  });
+  useEventHandler("ON-NEW-FILE-MENU", newFileMenuHandler.bind(null, dispatch));
   useEventHandler(
     "ON-OPEN-FILE-MENU",
-    openFileMenuHandler.bind(null, request, setCurrentFilePath, setAppData)
+    openFileMenuHandler.bind(null, request, dispatch)
   );
   useEventHandler(
     "ON-SAVE-AS-MENU",
-    saveAsFileMenuHandler.bind(null, request, appData, setCurrentFilePath)
+    saveAsFileMenuHandler.bind(null, request, dispatch, state)
   );
   useEventHandler(
     "ON-SAVE-MENU",
-    saveFileMenuHandler.bind(
-      null,
-      request,
-      appData,
-      currentFilePath,
-      setCurrentFilePath
-    )
+    saveFileMenuHandler.bind(null, request, dispatch, state)
   );
-  if (!appData) {
+  if (!state.appData) {
     return <p>Welcome Screen</p>;
   } else {
     return (
       <Container fluid>
         <SideMenu
           contentViewNames={contentViews.map(contentView => contentView.name)}
-          onMenuClick={setContentViewIndex}
+          onMenuClick={(menuIndex: number): void => {
+            dispatch({ type: "Change Content View", index: menuIndex });
+          }}
         />
         <AppDataContext.Provider
           value={{
-            appData: appData,
-            setAppData: setAppData
+            appData: state.appData,
+            setAppData: (x: AppData): void => {
+              dispatch({ type: "Set AppData", appData: x });
+            }
           }}
         >
           <RequestContext.Provider
@@ -172,7 +206,7 @@ export function Root({ request }: RootProps): React.ReactElement<RootProps> {
               request: request
             }}
           >
-            {React.createElement(contentViews[contentViewIndex].viewType)}
+            {React.createElement(contentViews[state.contentViewIndex].viewType)}
           </RequestContext.Provider>
         </AppDataContext.Provider>
       </Container>
