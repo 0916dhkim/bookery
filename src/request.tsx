@@ -2,7 +2,8 @@ export type RequestType =
   | "SHOW-OPEN-DIALOG"
   | "SHOW-SAVE-DIALOG"
   | "SHOW-OVERRIDE-WARNING"
-  | "SHOW-DELETE-WARNING";
+  | "SHOW-WARNING-MESSAGE"
+  | "SHOW-ERROR-MESSAGE";
 
 export type RequestOptions<T extends RequestType> = { type: T } & {
   "SHOW-OPEN-DIALOG": {};
@@ -10,19 +11,24 @@ export type RequestOptions<T extends RequestType> = { type: T } & {
   "SHOW-OVERRIDE-WARNING": {
     message: string;
   };
-  "SHOW-DELETE-WARNING": {
+  "SHOW-WARNING-MESSAGE": {
+    message: string;
+  };
+  "SHOW-ERROR-MESSAGE": {
+    title: string;
     message: string;
   };
 }[T];
 
-export type DeleteWarningOption = "OK" | "Cancel";
+export type WarningMessageOption = "OK" | "Cancel";
 export type OverrideWarningOption = "Save" | "Don't Save" | "Cancel";
 
 export type Response<T extends RequestType> = {
   "SHOW-OPEN-DIALOG": string | null;
   "SHOW-SAVE-DIALOG": string | null;
   "SHOW-OVERRIDE-WARNING": OverrideWarningOption;
-  "SHOW-DELETE-WARNING": DeleteWarningOption;
+  "SHOW-WARNING-MESSAGE": WarningMessageOption;
+  "SHOW-ERROR-MESSAGE": null;
 }[T];
 
 export type Request = {
@@ -31,4 +37,4 @@ export type Request = {
 
 export type RequestHandler<T extends RequestType> = (
   options: RequestOptions<T>
-) => Response<T>;
+) => Promise<Response<T>>;

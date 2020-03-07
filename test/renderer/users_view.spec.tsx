@@ -1,29 +1,35 @@
 import { describe, it, afterEach, beforeEach } from "mocha";
-import { render, within, cleanup, RenderResult } from "@testing-library/react";
+import {
+  render,
+  within,
+  cleanup,
+  RenderResult,
+  waitForDomChange,
+  wait
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import * as React from "react";
-import { UsersView, UsersViewProps } from "../../src/renderer/users_view";
+import { UsersView } from "../../src/renderer/users_view";
 import { AppData } from "../../src/persistence/app_data";
 import * as assert from "assert";
 import { AppDataContext } from "../../src/renderer/app_data_context";
 import { act } from "react-dom/test-utils";
-import { ModifiedDialogOption } from "../../src/renderer/modified_dialog";
-import { DeleteUserDialogOption } from "../../src/renderer/users_view/delete_user_dialog";
 import { assertWrapper } from "../../src/assert_wrapper";
 import moment = require("moment");
+import { RequestContext } from "../../src/renderer/request_context";
+import * as sinon from "sinon";
 
-interface TesterState extends UsersViewProps {
+const fakeRequest = sinon.stub();
+
+interface TesterState {
   appData: AppData;
 }
+
 class Tester extends React.Component<{}, TesterState> {
   constructor(props: { children: React.ReactElement }) {
     super(props);
     this.state = {
-      appData: new AppData(),
-      showModifiedDialogSync: (): ModifiedDialogOption =>
-        ModifiedDialogOption.SAVE,
-      showDeleteUserDialogSync: (): DeleteUserDialogOption =>
-        DeleteUserDialogOption.OK
+      appData: new AppData()
     };
   }
   render(): React.ReactNode {
@@ -36,10 +42,9 @@ class Tester extends React.Component<{}, TesterState> {
           }
         }}
       >
-        <UsersView
-          showModifiedDialogSync={this.state.showModifiedDialogSync}
-          showDeleteUserDialogSync={this.state.showDeleteUserDialogSync}
-        />
+        <RequestContext.Provider value={{ request: fakeRequest }}>
+          <UsersView />
+        </RequestContext.Provider>
       </AppDataContext.Provider>
     );
   }
@@ -59,15 +64,6 @@ function setAppData(x: AppData): void {
   });
 }
 
-function setShowDeleteUserDialogSync(f: () => DeleteUserDialogOption): void {
-  act(() => {
-    assertWrapper(testerRef.current);
-    testerRef.current.setState({
-      showDeleteUserDialogSync: f
-    });
-  });
-}
-
 describe("UsersView", function() {
   beforeEach(function() {
     renderResult = render(
@@ -75,6 +71,13 @@ describe("UsersView", function() {
         <UsersView />
       </Tester>
     );
+    fakeRequest.reset();
+    fakeRequest
+      .withArgs(sinon.match.has("type", "SHOW-OVERRIDE-WARNING"))
+      .returns("Save");
+    fakeRequest
+      .withArgs(sinon.match.has("type", "SHOW-WARNING-MESSAGE"))
+      .returns("OK");
   });
 
   afterEach(function() {
@@ -93,7 +96,7 @@ describe("UsersView", function() {
   });
 
   describe("Delete Button", function() {
-    it("Exists", function() {
+    it("Exists", async function() {
       let x = new AppData();
       x = x.setUser(
         x.generateUser("Dwarf", "Gnome", "Not a real good name, I know.")
@@ -103,51 +106,59 @@ describe("UsersView", function() {
       userEvent.click(
         within(renderResult.getByTestId("suggestions-list")).getByText(/King/)
       );
+      await waitForDomChange();
+
       assert(renderResult.getByText(/Delete User/i));
     });
 
-    it("Warns When Deleting A User", function() {
+    it("Warns When Deleting A User", async function() {
       let x = new AppData();
       x = x.setUser(x.generateUser("De Blasio", "Paul"));
       x = x.setUser(x.generateUser("Panza", "Sancho"));
       setAppData(x);
 
-      let count = 0;
-      setShowDeleteUserDialogSync(() => {
-        count++;
-        return DeleteUserDialogOption.CANCEL;
-      });
+      fakeRequest.reset();
+      fakeRequest
+        .withArgs(sinon.match.has("type", "SHOW-WARNING-MESSAGE"))
+        .returns("Cancel");
 
       userEvent.click(
         within(renderResult.getByTestId("suggestions-list")).getByText(/Sancho/)
       );
+      await waitForDomChange();
       userEvent.click(renderResult.getByText(/Delete User/i));
-
-      assert.strictEqual(count, 1);
+      await wait(() => {
+        assert(fakeRequest.calledOnce);
+      });
     });
 
-    it("Abort Deleting When Requested", function() {
+    it("Abort Deleting When Requested", async function() {
       let x = new AppData();
       x = x.setUser(x.generateUser("Raider", "Trev"));
       x = x.setUser(x.generateUser("Parker", "Fred"));
       setAppData(x);
 
       // Represent pressing cancel option.
-      setShowDeleteUserDialogSync(() => DeleteUserDialogOption.CANCEL);
+      fakeRequest.reset();
+      fakeRequest
+        .withArgs(sinon.match.has("type", "SHOW-WARNING-MESSAGE"))
+        .returns("Cancel");
 
       userEvent.click(
         within(renderResult.getByTestId("suggestions-list")).getByText(/Raider/)
       );
+      await waitForDomChange();
 
       assert.strictEqual(getAppData().users.size, 2);
 
       userEvent.click(renderResult.getByText(/Delete User/i));
-
-      // Number of users should be unchanged.
-      assert.strictEqual(getAppData().users.size, 2);
+      await wait(() => {
+        // Number of users should be unchanged.
+        assert.strictEqual(getAppData().users.size, 2);
+      });
     });
 
-    it("Delete Single User", function() {
+    it("Delete Single User", async function() {
       let x = new AppData();
       x = x.setUser(
         x.generateUser("Solo", "Han", "Totally not from Start Wars")
@@ -159,14 +170,16 @@ describe("UsersView", function() {
       userEvent.click(
         within(renderResult.getByTestId("suggestions-list")).getByText(/Solo/)
       );
+      await waitForDomChange();
 
       // Click the delete button.
       userEvent.click(renderResult.getByText(/Delete User/i));
+      await waitForDomChange();
 
       assert.strictEqual(getAppData().users.size, 0);
     });
 
-    it("Deleting A User Hides The Edit Form", function() {
+    it("Deleting A User Hides The Edit Form", async function() {
       let x = new AppData();
       x = x.setUser(x.generateUser("Fury", "Neal"));
       x = x.setUser(x.generateUser("Jackson", "Dan"));
@@ -177,8 +190,10 @@ describe("UsersView", function() {
           /Jackson/
         )
       );
+      await waitForDomChange();
 
       userEvent.click(renderResult.getByText(/Delete User/i));
+      await waitForDomChange();
 
       assert.strictEqual(renderResult.queryByTestId("user-edit-form"), null);
     });
@@ -209,9 +224,15 @@ describe("UsersView", function() {
           /Kennedy/
         )
       );
+      await waitForDomChange();
 
-      setShowDeleteUserDialogSync(() => DeleteUserDialogOption.OK);
+      fakeRequest.reset();
+      fakeRequest
+        .withArgs(sinon.match.has("type", "SHOW-WARNING-MESSAGE"))
+        .returns("OK");
+
       userEvent.click(renderResult.getByTestId("user-delete-button"));
+      await waitForDomChange();
 
       assert.strictEqual(
         getAppData().books.size,
@@ -229,7 +250,7 @@ describe("UsersView", function() {
 
   describe("User History Edit Form", function() {
     describe("User History List Length", function() {
-      it("Exists", function() {
+      it("Exists", async function() {
         let x = new AppData();
         x = x.setBook(x.generateBook("SDFLKA", "Tom Black"));
         x = x.setUser(x.generateUser("Blue", "Gerald"));
@@ -240,22 +261,24 @@ describe("UsersView", function() {
             /Gerald/
           )
         );
+        await waitForDomChange();
 
         assert(renderResult.getByTestId("history-edit-form"));
       });
 
-      it("No History View For New User", function() {
+      it("No History View For New User", async function() {
         let x = new AppData();
         x = x.setBook(x.generateBook("Pink", "Jace Tuna"));
         setAppData(x);
 
         userEvent.click(renderResult.getByText(/New User/i));
+        await waitForDomChange();
 
         assert(!renderResult.queryByTestId("history-edit-form"));
         assert(!renderResult.queryByTestId("history-list"));
       });
 
-      it("1 User 3 Books 2 Views", function() {
+      it("1 User 3 Books 2 Views", async function() {
         let x = new AppData();
         const onlyUser = x.generateUser("A", "K");
         x = x.setUser(onlyUser);
@@ -275,6 +298,7 @@ describe("UsersView", function() {
         userEvent.click(
           within(renderResult.getByTestId("suggestions-list")).getByText(/A/)
         );
+        await waitForDomChange();
 
         assert(
           within(renderResult.getByTestId("history-list")).queryByText(/LSDKFK/)
@@ -286,7 +310,7 @@ describe("UsersView", function() {
         );
       });
 
-      it("2 Users 2 Books 1 View Each (2 Total)", function() {
+      it("2 Users 2 Books 1 View Each (2 Total)", async function() {
         let x = new AppData();
         const userAlpha = x.generateUser(
           "Tempest",
@@ -322,6 +346,7 @@ describe("UsersView", function() {
             /Alpha/
           )
         );
+        await waitForDomChange();
 
         assert(
           within(renderResult.getByTestId("history-list")).queryByText(
@@ -333,6 +358,7 @@ describe("UsersView", function() {
         userEvent.click(
           within(renderResult.getByTestId("suggestions-list")).getByText(/Beta/)
         );
+        await waitForDomChange();
 
         assert(
           within(renderResult.getByTestId("history-list")).queryByText(
@@ -341,7 +367,7 @@ describe("UsersView", function() {
         );
       });
 
-      it("1 User 1 Book 0 View", function() {
+      it("1 User 1 Book 0 View", async function() {
         let x = new AppData();
         x = x.setUser(
           x.generateUser(
@@ -359,6 +385,7 @@ describe("UsersView", function() {
             /Alexander/
           )
         );
+        await waitForDomChange();
 
         assert(
           !within(renderResult.getByTestId("history-list")).queryByText(
@@ -368,7 +395,7 @@ describe("UsersView", function() {
       });
     });
 
-    describe("Adding Views", function() {
+    describe("Adding Views", async function() {
       it("1 User 1 Book 0 View", async function() {
         let x = new AppData();
         x = x.setBook(x.generateBook("Diary", "You Know Who"));
@@ -379,6 +406,7 @@ describe("UsersView", function() {
         userEvent.click(
           within(renderResult.getByTestId("suggestions-list")).getByText(/Last/)
         );
+        await waitForDomChange();
 
         // Type search query.
         const historySearchInput = renderResult
@@ -418,6 +446,7 @@ describe("UsersView", function() {
         userEvent.click(
           within(renderResult.getByTestId("suggestions-list")).getByText(/Jack/)
         );
+        await waitForDomChange();
 
         assert(
           within(renderResult.getByTestId("history-edit-form"))
@@ -437,6 +466,7 @@ describe("UsersView", function() {
             /Charlie/
           )
         );
+        await waitForDomChange();
 
         const historySearchInput = renderResult
           .getByTestId("history-edit-form")
@@ -450,11 +480,13 @@ describe("UsersView", function() {
           ).getByText(/Github/, { selector: "[role=option] *" })
         );
 
-        assert(
-          renderResult
-            .getByTestId("history-edit-form")
-            .textContent?.includes("Github Guide")
-        );
+        await wait(() => {
+          assert(
+            renderResult
+              .getByTestId("history-edit-form")
+              .textContent?.includes("Github Guide")
+          );
+        });
       });
     });
 
@@ -473,6 +505,7 @@ describe("UsersView", function() {
             /Timothy/
           )
         );
+        await waitForDomChange();
 
         const historySearchInput = renderResult
           .getByTestId("history-edit-form")
@@ -508,6 +541,7 @@ describe("UsersView", function() {
             /Bloodwing/
           )
         );
+        await waitForDomChange();
 
         const historySearchInput = renderResult
           .getByTestId("history-edit-form")

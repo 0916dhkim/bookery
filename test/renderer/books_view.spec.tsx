@@ -1,8 +1,6 @@
 import { describe, it, afterEach } from "mocha";
-import { render, cleanup, within } from "@testing-library/react";
+import { render, cleanup, within, waitForDomChange } from "@testing-library/react";
 import { BooksView } from "../../src/renderer/books_view";
-import { DeleteBookDialogOption } from "../../src/renderer/books_view/delete_book_dialog";
-import { ModifiedDialogOption } from "../../src/renderer/modified_dialog";
 import * as React from "react";
 import { AppDataContext } from "../../src/renderer/app_data_context";
 import { AppData } from "../../src/persistence/app_data";
@@ -10,6 +8,7 @@ import moment = require("moment");
 import userEvent from "@testing-library/user-event";
 import * as sinon from "sinon";
 import * as assert from "assert";
+import { RequestContext } from "../../src/renderer/request_context";
 
 const sandbox = sinon.createSandbox();
 
@@ -41,6 +40,13 @@ describe("BooksView", function() {
       );
 
       const fakeSetAppData = sandbox.stub<[AppData], void>();
+      const fakeRequest = sandbox.stub();
+      fakeRequest
+        .withArgs(sinon.match.has("type", "SHOW-OVERRIDE-WARNING"))
+        .returns("Save");
+      fakeRequest
+        .withArgs(sinon.match.has("type", "SHOW-WARNING-MESSAGE"))
+        .returns("OK");
       const { getByTestId } = render(
         <AppDataContext.Provider
           value={{
@@ -48,19 +54,20 @@ describe("BooksView", function() {
             setAppData: fakeSetAppData
           }}
         >
-          <BooksView
-            showDeleteBookDialogSync={(): DeleteBookDialogOption =>
-              DeleteBookDialogOption.OK
-            }
-            showModifiedDialogSync={(): ModifiedDialogOption =>
-              ModifiedDialogOption.SAVE
-            }
-          />
+          <RequestContext.Provider
+            value={{
+              request: fakeRequest
+            }}
+          >
+            <BooksView />
+          </RequestContext.Provider>
         </AppDataContext.Provider>
       );
 
       userEvent.click(within(getByTestId("suggestions-list")).getByText(/DEF/));
+      await waitForDomChange();
       userEvent.click(getByTestId("book-delete-button"));
+      await waitForDomChange();
 
       assert(fakeSetAppData.calledOnce);
       const nextAppData = fakeSetAppData.firstCall.args[0];

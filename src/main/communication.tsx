@@ -1,5 +1,5 @@
 import { RequestType, Response, RequestHandler } from "../request";
-import { EventType, EventOptions } from "../event";
+import { EventType, EventOptions, EventEmitter } from "../event";
 import { ipcMain, BrowserWindow, IpcMainInvokeEvent } from "electron";
 
 /**
@@ -13,15 +13,11 @@ export function registerRequestHandler<T extends RequestType>(
   const ipcHandler = (
     event: IpcMainInvokeEvent,
     ...args: any[] // eslint-disable-line @typescript-eslint/no-explicit-any
-  ): Response<T> => {
+  ): Promise<Response<T>> => {
     return handler(args[0]);
   };
   ipcMain.handle(requestType, ipcHandler);
 }
-
-export type EventEmitter = <T extends EventType>(
-  options: EventOptions<T>
-) => void;
 
 /**
  * @param browserWindow Renderer to receive events
