@@ -17,12 +17,12 @@ import { RequestContext } from "../../src/renderer/request_context";
 
 const sandbox = sinon.createSandbox();
 
-afterEach(function() {
-  sandbox.restore();
-  cleanup();
-});
-
 describe("BooksView", function() {
+  afterEach(function() {
+    sandbox.restore();
+    cleanup();
+  });
+
   describe("Delete Button", function() {
     it("Deleting A Book Should Cascade", async function() {
       let x = new AppData();
