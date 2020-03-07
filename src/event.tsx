@@ -18,3 +18,7 @@ export type EventEmitter = {
 export type EventHandler<T extends EventType> = {
   (options: EventOptions<T>): void;
 };
+
+export type UseEventHandler = {
+  <T extends EventType>(eventType: T, handler: EventHandler<T>): void;
+};

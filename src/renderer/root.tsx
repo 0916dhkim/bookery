@@ -10,11 +10,12 @@ import { ContentViewProps } from "./content_view";
 import { Container } from "semantic-ui-react";
 import { Request } from "../request";
 import { RequestContext } from "./request_context";
-import { useEventHandler } from "./communication";
 import produce, { castDraft } from "immer";
+import { UseEventHandler } from "../event";
 
 export interface RootProps {
   request: Request;
+  useEventHandler: UseEventHandler;
 }
 
 export interface RootState {
@@ -30,7 +31,7 @@ type RootAction =
   | { type: "Set AppData"; appData: AppData }
   | { type: "Change Content View"; index: number };
 
-function rootReducer(state: RootState, action: RootAction): RootState {
+function reducer(state: RootState, action: RootAction): RootState {
   switch (action.type) {
     case "New File":
       return produce(state, draft => {
@@ -163,8 +164,11 @@ async function saveFileMenuHandler(
   }
 }
 
-export function Root({ request }: RootProps): React.ReactElement<RootProps> {
-  const [state, dispatch] = React.useReducer(rootReducer, {
+export function Root({
+  request,
+  useEventHandler
+}: RootProps): React.ReactElement<RootProps> {
+  const [state, dispatch] = React.useReducer(reducer, {
     appData: null,
     contentViewIndex: 0,
     currentFilePath: null
