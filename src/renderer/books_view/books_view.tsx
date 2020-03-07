@@ -9,30 +9,14 @@ import {
 } from "semantic-ui-react";
 import { BooksList } from "./books_list";
 import { BookEditForm } from "./book_edit_form";
-import { showFormValidityErrorMessage } from "../form_validity_error_message";
 import { AppDataContext } from "../app_data_context";
 import { Book } from "../../persistence/book";
 import { assertWrapper } from "../../assert_wrapper";
-import {
-  ModifiedDialogOption,
-  showModifiedDialogSync as defaultShowModifiedDialogSync
-} from "../modified_dialog";
-import {
-  DeleteBookDialogOption,
-  showDeleteBookDialogSync as defaultShowDeleteBookDialogSync
-} from "./delete_book_dialog";
+import { RequestContext } from "../request_context";
 
-export interface BooksViewProps {
-  showModifiedDialogSync?: () => ModifiedDialogOption;
-  showDeleteBookDialogSync?: () => DeleteBookDialogOption;
-  children?: React.ReactNode;
-}
-
-export function BooksView({
-  showModifiedDialogSync = defaultShowModifiedDialogSync,
-  showDeleteBookDialogSync = defaultShowDeleteBookDialogSync
-}: BooksViewProps): React.ReactElement<BooksViewProps> {
+export function BooksView(): React.ReactElement<{}> {
   const { appData, setAppData } = React.useContext(AppDataContext);
+  const { request } = React.useContext(RequestContext);
   const [selectedBook, setSelectedBook] = React.useState<Book | null>(null);
   const [stagedBook, setStagedBook] = React.useState<Book | null>(null);
   const [filterValue, setFilterValue] = React.useState<string>("");
@@ -41,9 +25,13 @@ export function BooksView({
    * Commit staged user into app data.
    * @returns `true` if user is commited. `false` otherwise.
    */
-  function commitStagedBook(): boolean {
+  async function commitStagedBook(): Promise<boolean> {
     if (!stagedBook) {
-      showFormValidityErrorMessage();
+      await request({
+        type: "SHOW-ERROR-MESSAGE",
+        title: "Forms Error",
+        message: "Cannot save invalid forms."
+      });
       return false;
     }
 
@@ -55,7 +43,7 @@ export function BooksView({
   /**
    * @returns true if the form can be discarded without worrying about book modifications. False otherwise.
    */
-  function checkIfSafeToOverrideUserEditForm(): boolean {
+  async function checkIfSafeToOverrideUserEditForm(): Promise<boolean> {
     if (!selectedBook) {
       return true;
     }
@@ -75,25 +63,28 @@ export function BooksView({
     }
 
     if (needToAsk) {
-      const response: ModifiedDialogOption = showModifiedDialogSync();
-      switch (response) {
-        case ModifiedDialogOption.CANCEL:
-          return false;
-        case ModifiedDialogOption.SAVE:
-          return commitStagedBook();
-        case ModifiedDialogOption.DONTSAVE:
-          return true;
-      }
+      const warningResponse = await request({
+        type: "SHOW-OVERRIDE-WARNING",
+        message: "Do you want to save changes?"
+      });
+      return await {
+        Cancel: (): boolean => false,
+        "Don't Save": (): boolean => true,
+        Save: async (): Promise<boolean> => {
+          return await commitStagedBook();
+        }
+      }[warningResponse]();
+    } else {
+      return true;
     }
-    return true;
   }
 
   /**
    * Handle user list element click event.
    * @param user Clicked user.
    */
-  function handleBookClick(book: Book): void {
-    if (checkIfSafeToOverrideUserEditForm()) {
+  async function handleBookClick(book: Book): Promise<void> {
+    if (await checkIfSafeToOverrideUserEditForm()) {
       setSelectedBook(book);
     }
   }
@@ -101,8 +92,8 @@ export function BooksView({
   /**
    * Handle new book button click event.
    */
-  function handleNewBookButtonClick(): void {
-    if (checkIfSafeToOverrideUserEditForm()) {
+  async function handleNewBookButtonClick(): Promise<void> {
+    if (await checkIfSafeToOverrideUserEditForm()) {
       const generatedBook = appData.generateBook("", "");
       setSelectedBook(generatedBook);
     }
@@ -111,13 +102,17 @@ export function BooksView({
   /**
    * Handle delete book button click event.
    */
-  function handleDeleteBookButtonClick(): void {
-    assertWrapper(selectedBook);
-    const response = showDeleteBookDialogSync();
-    switch (response) {
-      case DeleteBookDialogOption.CANCEL:
-        return;
-      case DeleteBookDialogOption.OK: {
+  async function handleDeleteBookButtonClick(): Promise<void> {
+    const warningResponse = await request({
+      type: "SHOW-WARNING-MESSAGE",
+      message: "Do you really want to delete this book?"
+    });
+    ({
+      get Cancel(): null {
+        return null;
+      },
+      get OK(): null {
+        assertWrapper(selectedBook);
         let nextAppData = appData.deleteBook(selectedBook)[0];
         Array.from(appData.views.values())
           .filter(view => view.bookId === selectedBook.id)
@@ -126,13 +121,9 @@ export function BooksView({
           });
         setAppData(nextAppData);
         setSelectedBook(null);
-        return;
+        return null;
       }
-      default: {
-        const exhaust: never = response;
-        throw `${exhaust}`;
-      }
-    }
+    }[warningResponse]);
   }
 
   return (

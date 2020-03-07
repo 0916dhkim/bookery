@@ -1,13 +1,4 @@
 import * as React from "react";
-import {
-  ModifiedDialogOption,
-  showModifiedDialogSync as defaultShowModifiedDialogSync
-} from "../modified_dialog";
-import {
-  DeleteUserDialogOption,
-  showDeleteUserDialogSync as defaultShowDeleteUserDialogSync
-} from "./delete_user_dialog";
-import { showFormValidityErrorMessage } from "../form_validity_error_message";
 import { User } from "../../persistence/user";
 import { AppDataContext } from "../app_data_context";
 import { assertWrapper } from "../../assert_wrapper";
@@ -22,18 +13,11 @@ import {
   Icon,
   Input
 } from "semantic-ui-react";
+import { RequestContext } from "../request_context";
 
-export interface UsersViewProps {
-  showModifiedDialogSync?: () => ModifiedDialogOption;
-  showDeleteUserDialogSync?: () => DeleteUserDialogOption;
-  children?: React.ReactNode;
-}
-
-export function UsersView({
-  showModifiedDialogSync = defaultShowModifiedDialogSync,
-  showDeleteUserDialogSync = defaultShowDeleteUserDialogSync
-}: UsersViewProps): React.ReactElement<UsersViewProps> {
+export function UsersView(): React.ReactElement<{}> {
   const { appData, setAppData } = React.useContext(AppDataContext);
+  const { request } = React.useContext(RequestContext);
   const [selectedUser, setSelectedUser] = React.useState<User | null>(null);
   const [stagedUser, setStagedUser] = React.useState<User | null>(null);
   const [filterValue, setFilterValue] = React.useState<string>("");
@@ -46,9 +30,13 @@ export function UsersView({
    * Commit staged user into app data.
    * @returns `true` if user is commited. `false` otherwise.
    */
-  function commitStagedUser(): boolean {
+  async function commitStagedUser(): Promise<boolean> {
     if (!stagedUser) {
-      showFormValidityErrorMessage();
+      await request({
+        type: "SHOW-ERROR-MESSAGE",
+        title: "Forms Error",
+        message: "Cannot save invalid forms."
+      });
       return false;
     }
 
@@ -60,7 +48,7 @@ export function UsersView({
   /**
    * @returns true if the form can be discarded without worrying about user modifications. False otherwise.
    */
-  function checkIfSafeToOverrideUserEditForm(): boolean {
+  async function checkIfSafeToOverrideUserEditForm(): Promise<boolean> {
     if (!selectedUser) {
       return true;
     }
@@ -80,29 +68,28 @@ export function UsersView({
     }
 
     if (needToAsk) {
-      const response: ModifiedDialogOption = showModifiedDialogSync();
-      switch (response) {
-        case ModifiedDialogOption.CANCEL:
-          return false;
-        case ModifiedDialogOption.SAVE:
+      const warningResponse = await request({
+        type: "SHOW-OVERRIDE-WARNING",
+        message: "Do you want to save changes?"
+      });
+      return await {
+        Cancel: (): boolean => false,
+        "Don't Save": (): boolean => true,
+        Save: async (): Promise<boolean> => {
           return commitStagedUser();
-        case ModifiedDialogOption.DONTSAVE:
-          return true;
-        default: {
-          const exhaust: never = response;
-          throw `${exhaust}`;
         }
-      }
+      }[warningResponse]();
+    } else {
+      return true;
     }
-    return true;
   }
 
   /**
    * Handle user list element click event.
    * @param user Clicked user.
    */
-  function handleUserClick(user: User): void {
-    if (checkIfSafeToOverrideUserEditForm()) {
+  async function handleUserClick(user: User): Promise<void> {
+    if (await checkIfSafeToOverrideUserEditForm()) {
       setSelectedUser(user);
     }
   }
@@ -110,8 +97,8 @@ export function UsersView({
   /**
    * Handle new user button click event.
    */
-  function handleNewUserButtonClick(): void {
-    if (checkIfSafeToOverrideUserEditForm()) {
+  async function handleNewUserButtonClick(): Promise<void> {
+    if (await checkIfSafeToOverrideUserEditForm()) {
       const generatedUser = appData.generateUser("", "");
       setSelectedUser(generatedUser);
     }
@@ -120,13 +107,17 @@ export function UsersView({
   /**
    * Handle delete user button click event.
    */
-  function handleDeleteUserButtonClick(): void {
-    assertWrapper(selectedUser);
-    const response = showDeleteUserDialogSync();
-    switch (response) {
-      case DeleteUserDialogOption.CANCEL:
-        return;
-      case DeleteUserDialogOption.OK: {
+  async function handleDeleteUserButtonClick(): Promise<void> {
+    const warningResponse = await request({
+      type: "SHOW-WARNING-MESSAGE",
+      message: "Do you really want to delete this user?"
+    });
+    ({
+      get Cancel(): null {
+        return null;
+      },
+      get OK(): null {
+        assertWrapper(selectedUser);
         let nextAppData = appData.deleteUser(selectedUser)[0];
         Array.from(appData.views.values())
           .filter(view => view.userId === selectedUser.id)
@@ -135,13 +126,9 @@ export function UsersView({
           });
         setAppData(nextAppData);
         setSelectedUser(null);
-        return;
+        return null;
       }
-      default: {
-        const exhaust: never = response;
-        throw `${exhaust}`;
-      }
-    }
+    }[warningResponse]);
   }
 
   return (
