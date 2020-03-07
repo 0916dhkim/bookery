@@ -13,6 +13,15 @@ export class View {
      */
     readonly date: number
   ) {}
+
+  equals(other: View): boolean {
+    return (
+      this.id === other.id &&
+      this.userId === other.userId &&
+      this.bookId === other.bookId &&
+      this.date === other.date
+    );
+  }
 }
 
 export class ViewSerializer implements Serializer<View> {

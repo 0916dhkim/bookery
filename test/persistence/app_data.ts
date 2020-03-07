@@ -9,6 +9,7 @@ import { assertUserProperties } from "./user";
 import { assertViewProperties } from "./view";
 import produce from "immer";
 import { assertWrapper } from "../../src/assert_wrapper";
+import * as moment from "moment";
 
 function assertAppDataProperties(
   appData: AppData,
@@ -58,6 +59,44 @@ function assertAppDataProperties(
 }
 
 describe("App Data", function() {
+  describe("equals", function() {
+    it("Two Empty", async function() {
+      const a = new AppData();
+      const b = new AppData();
+      assert(a.equals(b));
+      assert(b.equals(a));
+    });
+    it("Simple Equality", async function() {
+      let a = new AppData();
+      a = a.setUser(new User(1, "Prague", "William", "test subject #123"));
+      a = a.setBook(new Book(809, "Memorable Essay", "Goodwill"));
+      a = a.setBook(new Book(405, "Script", "Kiddo", "79713294"));
+      a = a.setView(new View(10001, 1, 809, moment.utc("19990521").valueOf()));
+      let b = new AppData();
+      b = b.setBook(new Book(809, "Memorable Essay", "Goodwill"));
+      b = b.setBook(new Book(405, "Script", "Kiddo", "79713294"));
+      b = b.setUser(new User(1, "Prague", "William", "test subject #123"));
+      b = b.setView(new View(10001, 1, 809, moment.utc("19990521").valueOf()));
+
+      assert(a.equals(b));
+      assert(b.equals(a));
+    });
+    it("Simple Inequality", async function() {
+      let a = new AppData();
+      a = a.setUser(new User(1, "Prague", "William", "test subject #123"));
+      a = a.setBook(new Book(809, "Memorable Essay", "Goodwill"));
+      a = a.setBook(new Book(405, "Script", "Kiddo", "79713294"));
+      a = a.setView(new View(10001, 1, 809, moment.utc("19990521").valueOf()));
+      let b = new AppData();
+      b = b.setBook(new Book(809, "Memorable Novel", "Goodwick"));
+      b = b.setBook(new Book(405, "Script", "Kiddo", "75763294"));
+      b = b.setUser(new User(1, "Paris", "Bill", "test subject #456"));
+      b = b.setView(new View(10001, 1, 809, moment.utc("20000521").valueOf()));
+
+      assert(!a.equals(b));
+      assert(!b.equals(a));
+    });
+  });
   describe("AppDataSerializer", function() {
     it("Empty App Data Serialization and Deserialization", function() {
       const appData = new AppData();

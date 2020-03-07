@@ -17,6 +17,20 @@ export function assertViewProperties(
 }
 
 describe("View", function() {
+  describe("equals", function() {
+    it("Simple Equality", async function() {
+      const a = new View(10823, 35, 707, moment.utc("20200103").valueOf());
+      const b = new View(10823, 35, 707, moment.utc("20200103").valueOf());
+      assert(a.equals(b));
+      assert(b.equals(a));
+    });
+    it("Simple Inequality", async function() {
+      const a = new View(10823, 35, 707, moment.utc("20200103").valueOf());
+      const b = new View(20391, 45, 808, moment.utc("20181230").valueOf());
+      assert(!a.equals(b));
+      assert(!b.equals(a));
+    });
+  });
   describe("ViewSerializer", function() {
     it("Single View Serialization and Deserialization", function() {
       const view = new View(1, 2, 3, 1318781875806);

@@ -136,6 +136,37 @@ export class AppData {
   generateView(userId: number, bookId: number, date: number): View {
     return new View(this.getNextId(this.views.values()), userId, bookId, date);
   }
+
+  equals(other: AppData): boolean {
+    // Compare dimensions.
+    if (
+      this.books.size !== other.books.size ||
+      this.users.size !== other.users.size ||
+      this.views.size !== other.views.size
+    ) {
+      return false;
+    }
+    // Compare individual books.
+    for (const [bookId, book] of this.books) {
+      if (!other.books.get(bookId)?.equals(book)) {
+        return false;
+      }
+    }
+    // Compare individual users.
+    for (const [userId, user] of this.users) {
+      if (!other.users.get(userId)?.equals(user)) {
+        return false;
+      }
+    }
+    // Compare individual views.
+    for (const [viewId, view] of this.views) {
+      if (!other.views.get(viewId)?.equals(view)) {
+        return false;
+      }
+    }
+    // No difference found.
+    return true;
+  }
 }
 
 export class AppDataSerializer implements Serializer<AppData> {
