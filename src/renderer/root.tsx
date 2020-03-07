@@ -100,7 +100,9 @@ const contentViews: ContentViewElementInterface[] = [
   }
 ];
 
-function newFileMenuHandler(dispatch: React.Dispatch<RootAction>): void {
+async function newFileMenuHandler(
+  dispatch: React.Dispatch<RootAction>
+): Promise<void> {
   dispatch({ type: "New File" });
 }
 

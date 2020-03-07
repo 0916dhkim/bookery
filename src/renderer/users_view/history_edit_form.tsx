@@ -55,7 +55,7 @@ export function HistoryEditForm({
   /**
    * Handle history add button click event.
    */
-  function handleHistoryAddButtonClick(): void {
+  async function handleHistoryAddButtonClick(): Promise<void> {
     assertWrapper(historyInputValue);
     const selectedBook = appData.books.get(historyInputValue);
     assertWrapper(selectedBook);
@@ -71,10 +71,10 @@ export function HistoryEditForm({
   /**
    * Handle history addition candidate change.
    */
-  function handleHistoryInputValueChange(
+  async function handleHistoryInputValueChange(
     event: React.SyntheticEvent,
     data: DropdownProps
-  ): void {
+  ): Promise<void> {
     // When cleared.
     if (data.value === "") {
       setHistoryInputValue(null);
