@@ -4,59 +4,8 @@ import { Book } from "../../src/persistence/book";
 import { User } from "../../src/persistence/user";
 import { View } from "../../src/persistence/view";
 import { AppData, AppDataSerializer } from "../../src/persistence/app_data";
-import { assertBookProperties } from "./book";
-import { assertUserProperties } from "./user";
-import { assertViewProperties } from "./view";
 import produce from "immer";
-import { assertWrapper } from "../../src/assert_wrapper";
 import * as moment from "moment";
-
-function assertAppDataProperties(
-  appData: AppData,
-  books: ReadonlyMap<number, Book>,
-  users: ReadonlyMap<number, User>,
-  views: ReadonlyMap<number, View>
-): void {
-  assert.strictEqual(appData.books.size, books.size);
-  assert.strictEqual(appData.users.size, users.size);
-  assert.strictEqual(appData.views.size, views.size);
-
-  for (const [key, book] of books) {
-    const appDataBook = appData.books.get(key);
-    assertWrapper(!!appDataBook);
-    assertBookProperties(
-      appDataBook,
-      book.id,
-      book.title,
-      book.author,
-      book.isbn
-    );
-  }
-
-  for (const [key, user] of users) {
-    const appDataUser = appData.users.get(key);
-    assertWrapper(!!appDataUser);
-    assertUserProperties(
-      appDataUser,
-      user.id,
-      user.lastName,
-      user.firstName,
-      user.note
-    );
-  }
-
-  for (const [key, view] of views) {
-    const appDataView = appData.views.get(key);
-    assertWrapper(!!appDataView);
-    assertViewProperties(
-      appDataView,
-      view.id,
-      view.userId,
-      view.bookId,
-      view.date
-    );
-  }
-}
 
 describe("App Data", function() {
   describe("equals", function() {
@@ -103,12 +52,7 @@ describe("App Data", function() {
       const appDataSerializer = new AppDataSerializer();
       const str = appDataSerializer.serialize(appData);
       const deserialized = appDataSerializer.deserialize(str);
-      assertAppDataProperties(
-        deserialized,
-        appData.books,
-        appData.users,
-        appData.views
-      );
+      assert(deserialized.equals(appData));
     });
 
     it("Small App Data Serialization and Deserialization", function() {
@@ -135,12 +79,7 @@ describe("App Data", function() {
       const appDataSerializer = new AppDataSerializer();
       const str = appDataSerializer.serialize(appData);
       const deserialized = appDataSerializer.deserialize(str);
-      assertAppDataProperties(
-        deserialized,
-        appData.books,
-        appData.users,
-        appData.views
-      );
+      assert(deserialized.equals(appData));
     });
   });
 });

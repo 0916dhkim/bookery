@@ -2,19 +2,6 @@ import { describe, it } from "mocha";
 import * as assert from "assert";
 import { Book, BookSerializer } from "../../src/persistence/book";
 
-export function assertBookProperties(
-  book: Book,
-  id: number,
-  title: string,
-  author: string,
-  isbn?: string
-): void {
-  assert.strictEqual(book.id, id);
-  assert.strictEqual(book.title, title);
-  assert.strictEqual(book.author, author);
-  assert.strictEqual(book.isbn, isbn);
-}
-
 describe("Book", function() {
   describe("equals", function() {
     it("Simple Equality", async function() {
@@ -36,13 +23,7 @@ describe("Book", function() {
       const bookSerializer = new BookSerializer();
       const str = bookSerializer.serialize(book);
       const deserialized = bookSerializer.deserialize(str);
-      assertBookProperties(
-        deserialized,
-        book.id,
-        book.title,
-        book.author,
-        book.isbn
-      );
+      assert(deserialized.equals(book));
     });
 
     it("Serialize a Book Without ISBN", function() {
@@ -50,7 +31,7 @@ describe("Book", function() {
       const bookSerializer = new BookSerializer();
       const str = bookSerializer.serialize(book);
       const deserialized = bookSerializer.deserialize(str);
-      assertBookProperties(deserialized, book.id, book.title, book.author);
+      assert(deserialized.equals(book));
     });
   });
 });

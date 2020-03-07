@@ -3,19 +3,6 @@ import * as assert from "assert";
 import * as moment from "moment";
 import { View, ViewSerializer } from "../../src/persistence/view";
 
-export function assertViewProperties(
-  view: View,
-  id: number,
-  userId: number,
-  bookId: number,
-  date: number
-): void {
-  assert.strictEqual(view.id, id);
-  assert.strictEqual(view.userId, userId);
-  assert.strictEqual(view.bookId, bookId);
-  assert.strictEqual(view.date, date);
-}
-
 describe("View", function() {
   describe("equals", function() {
     it("Simple Equality", async function() {
@@ -37,13 +24,7 @@ describe("View", function() {
       const viewSerializer = new ViewSerializer();
       const str = viewSerializer.serialize(view);
       const deserialized = viewSerializer.deserialize(str);
-      assertViewProperties(
-        deserialized,
-        view.id,
-        view.userId,
-        view.bookId,
-        view.date
-      );
+      assert(deserialized.equals(view));
     });
 
     it("Date Serialization", function() {
