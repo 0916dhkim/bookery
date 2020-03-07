@@ -19,7 +19,14 @@ export interface RootProps {
 }
 
 export interface RootState {
+  /**
+   * In-memory application data.
+   */
   appData: AppData | null;
+  /**
+   * Persisted application data.
+   */
+  originalAppData: AppData | null;
   contentViewIndex: number;
   currentFilePath: string | null;
 }
@@ -36,14 +43,18 @@ function reducer(state: RootState, action: RootAction): RootState {
     case "New File":
       return produce(state, draft => {
         draft.appData = castDraft(new AppData());
+        draft.originalAppData = null;
+        draft.currentFilePath = null;
       });
     case "Open File":
       return produce(state, draft => {
         draft.appData = castDraft(action.fileData);
+        draft.originalAppData = castDraft(action.fileData);
         draft.currentFilePath = action.filePath;
       });
     case "Save As File":
       return produce(state, draft => {
+        draft.originalAppData = draft.appData;
         draft.currentFilePath = action.filePath;
       });
     case "Set AppData":
@@ -172,6 +183,7 @@ export function Root({
 }: RootProps): React.ReactElement<RootProps> {
   const [state, dispatch] = React.useReducer(reducer, {
     appData: null,
+    originalAppData: null,
     contentViewIndex: 0,
     currentFilePath: null
   });
