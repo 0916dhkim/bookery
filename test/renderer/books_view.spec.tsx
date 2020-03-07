@@ -1,5 +1,10 @@
 import { describe, it, afterEach } from "mocha";
-import { render, cleanup, within, waitForDomChange } from "@testing-library/react";
+import {
+  render,
+  cleanup,
+  within,
+  waitForDomChange
+} from "@testing-library/react";
 import { BooksView } from "../../src/renderer/books_view";
 import * as React from "react";
 import { AppDataContext } from "../../src/renderer/app_data_context";
