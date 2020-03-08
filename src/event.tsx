@@ -1,10 +1,12 @@
 export type EventType =
+  | "ON-CLOSE"
   | "ON-NEW-FILE-MENU"
   | "ON-OPEN-FILE-MENU"
   | "ON-SAVE-MENU"
   | "ON-SAVE-AS-MENU";
 
 export type EventOptions<T extends EventType> = { type: T } & {
+  "ON-CLOSE": {};
   "ON-NEW-FILE-MENU": {};
   "ON-OPEN-FILE-MENU": {};
   "ON-SAVE-MENU": {};
