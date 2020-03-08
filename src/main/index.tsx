@@ -96,7 +96,14 @@ function onAppReady(): void {
     }
   });
 
-  initializeApplicationMenu(createEventEmitter(win));
+  const emit = createEventEmitter(win);
+
+  // Create application menu bar.
+  initializeApplicationMenu(emit);
+
+  // Pass window close event to renderer.
+  win.on("close", () => emit({ type: "ON-CLOSE" }));
+
   registerRequestHandler("SHOW-OPEN-DIALOG", showOpenDialogRequestHandler);
   registerRequestHandler("SHOW-SAVE-DIALOG", showSaveDialogRequestHandler);
   registerRequestHandler(
