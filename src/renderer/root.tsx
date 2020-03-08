@@ -111,31 +111,23 @@ const contentViews: ContentViewElementInterface[] = [
   }
 ];
 
-async function newFileMenuHandler(
-  dispatch: React.Dispatch<RootAction>
-): Promise<void> {
-  dispatch({ type: "New File" });
-}
-
-async function openFileMenuHandler(
-  request: Request,
-  dispatch: React.Dispatch<RootAction>
-): Promise<void> {
-  try {
-    const file = await request({ type: "SHOW-OPEN-DIALOG" });
-    if (file !== null) {
-      const fileContent = fs.readFileSync(file, { encoding: "utf8" });
-      const appSerializer = new AppDataSerializer();
-      const appDataFromFile = appSerializer.deserialize(fileContent);
-      dispatch({
-        type: "Open File",
-        fileData: appDataFromFile,
-        filePath: file
-      });
+/**
+ * @param state Root component state.
+ * @returns `true` if there is any unsaved changes. `false` otherwise.
+ */
+function hasUnsavedChanges(state: RootState): boolean {
+  if (state.appData === null) {
+    if (state.originalAppData !== null) {
+      throw "Invalid Root State.";
     }
-  } catch {
-    throw "Failed to handle open file menu event.";
+    return false;
   }
+
+  if (state.originalAppData === null) {
+    return true;
+  }
+
+  return !state.appData.equals(state.originalAppData);
 }
 
 async function saveAsFileMenuHandler(
@@ -177,6 +169,97 @@ async function saveFileMenuHandler(
   }
 }
 
+/**
+ * Resolves to `true` when
+ * 1. There is no unsaved changes OR
+ * 2. User saves app data OR
+ * 3. User consents to discard unsaved changes.
+ *
+ * Resolves to `false` when
+ * 1. User wants to abort the override.
+ *
+ * Rejects otherwise.
+ */
+async function ensureSafeToOverrideAppData(
+  request: Request,
+  dispatch: React.Dispatch<RootAction>,
+  state: RootState
+): Promise<boolean> {
+  if (!hasUnsavedChanges(state)) {
+    // No unsaved change.
+    return true;
+  }
+  // Unsaved changes exist.
+  const warningResponse = await request({
+    type: "SHOW-OVERRIDE-WARNING",
+    message: `Do you want to save changes to ${state.currentFilePath ??
+      "a file"}?`
+  });
+  switch (warningResponse) {
+    case "Cancel": {
+      // User wants to stop the overriding operation.
+      // Unsafe to override app data.
+      return false;
+    }
+    case "Don't Save": {
+      // User consent given to override unsaved changes.
+      // Safe to override app data.
+      return true;
+    }
+    case "Save": {
+      // Save changes and continue.
+      try {
+        await saveFileMenuHandler(request, dispatch, state);
+      } catch {
+        // Failed to save.
+        // Unsafe to override app data.
+        return false;
+      }
+      // Successfully saved.
+      // Safe to override app data.
+      return true;
+    }
+  }
+}
+
+async function newFileMenuHandler(
+  request: Request,
+  state: RootState,
+  dispatch: React.Dispatch<RootAction>
+): Promise<void> {
+  try {
+    if (await ensureSafeToOverrideAppData(request, dispatch, state)) {
+      dispatch({ type: "New File" });
+    }
+  } catch {
+    throw "Failed to handle new file event.";
+  }
+}
+
+async function openFileMenuHandler(
+  request: Request,
+  dispatch: React.Dispatch<RootAction>,
+  state: RootState
+): Promise<void> {
+  try {
+    if (await ensureSafeToOverrideAppData(request, dispatch, state)) {
+      const file = await request({ type: "SHOW-OPEN-DIALOG" });
+      if (file !== null) {
+        const fileContent = fs.readFileSync(file, { encoding: "utf8" });
+        const appSerializer = new AppDataSerializer();
+        const appDataFromFile = appSerializer.deserialize(fileContent);
+        dispatch({
+          type: "Open File",
+          fileData: appDataFromFile,
+          filePath: file
+        });
+      }
+    }
+  } catch {
+    throw "Failed to handle open file menu event.";
+  }
+}
+
 export function Root({
   request,
   useEventHandler
@@ -187,10 +270,13 @@ export function Root({
     contentViewIndex: 0,
     currentFilePath: null
   });
-  useEventHandler("ON-NEW-FILE-MENU", newFileMenuHandler.bind(null, dispatch));
+  useEventHandler(
+    "ON-NEW-FILE-MENU",
+    newFileMenuHandler.bind(null, request, state, dispatch)
+  );
   useEventHandler(
     "ON-OPEN-FILE-MENU",
-    openFileMenuHandler.bind(null, request, dispatch)
+    openFileMenuHandler.bind(null, request, dispatch, state)
   );
   useEventHandler(
     "ON-SAVE-AS-MENU",

@@ -20,12 +20,14 @@ describe("Root", function() {
   describe("Unsaved File", function() {
     it("Open File Over New File", async function() {
       const fakeRequest = sandbox.stub();
-      fakeRequest
-        .withArgs(sinon.match.has("type", "SHOW-OVERRIDE-WARNING"))
-        .returns("Save");
-      fakeRequest
-        .withArgs(sinon.match.has("type", "SHOW-OPEN-DIALOG"))
-        .returns("");
+      const fakeOverrideRequest = fakeRequest.withArgs(
+        sinon.match.has("type", "SHOW-OVERRIDE-WARNING")
+      );
+      fakeOverrideRequest.resolves("Don't Save");
+      const fakeOpenRequest = fakeRequest.withArgs(
+        sinon.match.has("type", "SHOW-OPEN-DIALOG")
+      );
+      fakeOpenRequest.resolves("");
       const appDataSerializer = new AppDataSerializer();
       sandbox
         .stub(fs, "readFileSync")
@@ -44,20 +46,15 @@ describe("Root", function() {
 
       // Create new file.
       assertWrapper(eventHandlers["ON-NEW-FILE-MENU"]);
-      eventHandlers["ON-NEW-FILE-MENU"]({ type: "ON-NEW-FILE-MENU" });
+      await eventHandlers["ON-NEW-FILE-MENU"]({ type: "ON-NEW-FILE-MENU" });
       // Emit open file event.
       assertWrapper(eventHandlers["ON-OPEN-FILE-MENU"]);
-      eventHandlers["ON-OPEN-FILE-MENU"]({ type: "ON-OPEN-FILE-MENU" });
+      await eventHandlers["ON-OPEN-FILE-MENU"]({ type: "ON-OPEN-FILE-MENU" });
+
       // Expect file open dialog.
-      assert(
-        fakeRequest.withArgs(sinon.match.has("type", "SHOW-OPEN-DIALOG"))
-          .calledOnce
-      );
+      assert.strictEqual(fakeOpenRequest.callCount, 1);
       // Expect override warning.
-      assert(
-        fakeRequest.withArgs(sinon.match.has("type", "SHOW-OVERRIDE-WARNING"))
-          .calledOnce
-      );
+      assert.strictEqual(fakeOverrideRequest.callCount, 1);
     });
   });
 });
