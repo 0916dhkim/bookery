@@ -1,5 +1,5 @@
 export type RequestType =
-  | "QUIT-APPLICATION"
+  | "CLOSE-WINDOW"
   | "SHOW-OPEN-DIALOG"
   | "SHOW-SAVE-DIALOG"
   | "SHOW-OVERRIDE-WARNING"
@@ -7,7 +7,7 @@ export type RequestType =
   | "SHOW-ERROR-MESSAGE";
 
 export type RequestOptions<T extends RequestType> = { type: T } & {
-  "QUIT-APPLICATION": {};
+  "CLOSE-WINDOW": {};
   "SHOW-OPEN-DIALOG": {};
   "SHOW-SAVE-DIALOG": {};
   "SHOW-OVERRIDE-WARNING": {
@@ -26,7 +26,7 @@ export type WarningMessageOption = "OK" | "Cancel";
 export type OverrideWarningOption = "Save" | "Don't Save" | "Cancel";
 
 export type Response<T extends RequestType> = {
-  "QUIT-APPLICATION": void;
+  "CLOSE-WINDOW": void;
   "SHOW-OPEN-DIALOG": string | null;
   "SHOW-SAVE-DIALOG": string | null;
   "SHOW-OVERRIDE-WARNING": OverrideWarningOption;

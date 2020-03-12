@@ -1,7 +1,7 @@
 import { describe, it } from "mocha";
 import * as assert from "assert";
 import * as moment from "moment";
-import { View, ViewSerializer } from "../../src/persistence/view";
+import { View, ViewSerializer } from "../../../src/common/persistence/view";
 
 describe("View", function() {
   describe("equals", function() {

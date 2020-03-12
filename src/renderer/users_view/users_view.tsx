@@ -1,7 +1,7 @@
 import * as React from "react";
-import { User } from "../../persistence/user";
+import { User } from "../../common/persistence/user";
 import { AppDataContext } from "../app_data_context";
-import { assertWrapper } from "../../assert_wrapper";
+import { assertWrapper } from "../../common/assert_wrapper";
 import { UsersList } from "./users_list";
 import { UserEditForm } from "./user_edit_form";
 import { HistoryEditForm } from "./history_edit_form";

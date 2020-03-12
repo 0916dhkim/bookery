@@ -8,6 +8,6 @@ import { ipcRequest, useIpcEventHandler } from "./communication";
 $(function() {
   ReactDOM.render(
     <Root request={ipcRequest} useEventHandler={useIpcEventHandler} />,
-    $("#root").get(0)
+    $("#app").get(0)
   );
 });

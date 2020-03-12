@@ -1,11 +1,14 @@
 import { describe, it } from "mocha";
 import * as assert from "assert";
-import { Book } from "../../src/persistence/book";
-import { User } from "../../src/persistence/user";
-import { View } from "../../src/persistence/view";
-import { AppData, AppDataSerializer } from "../../src/persistence/app_data";
-import produce from "immer";
 import * as moment from "moment";
+import { Book } from "../../../src/common/persistence/book";
+import { User } from "../../../src/common/persistence/user";
+import { View } from "../../../src/common/persistence/view";
+import {
+  AppData,
+  AppDataSerializer
+} from "../../../src/common/persistence/app_data";
+import produce from "immer";
 
 describe("App Data", function() {
   describe("equals", function() {

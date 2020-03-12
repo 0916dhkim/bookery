@@ -1,6 +1,6 @@
 import { describe, it } from "mocha";
 import * as assert from "assert";
-import { Book, BookSerializer } from "../../src/persistence/book";
+import { Book, BookSerializer } from "../../../src/common/persistence/book";
 
 describe("Book", function() {
   describe("equals", function() {

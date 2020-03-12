@@ -1,7 +1,7 @@
 import * as React from "react";
 import { AppDataContext } from "../app_data_context";
 import { Menu } from "semantic-ui-react";
-import { Book } from "../../persistence/book";
+import { Book } from "../../common/persistence/book";
 import * as Fuse from "fuse.js";
 
 export interface BooksListProps {

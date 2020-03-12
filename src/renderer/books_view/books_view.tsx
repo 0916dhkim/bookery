@@ -10,8 +10,8 @@ import {
 import { BooksList } from "./books_list";
 import { BookEditForm } from "./book_edit_form";
 import { AppDataContext } from "../app_data_context";
-import { Book } from "../../persistence/book";
-import { assertWrapper } from "../../assert_wrapper";
+import { Book } from "../../common/persistence/book";
+import { assertWrapper } from "../../common/assert_wrapper";
 import { RequestContext } from "../request_context";
 
 export function BooksView(): React.ReactElement<{}> {

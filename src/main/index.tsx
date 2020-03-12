@@ -6,7 +6,20 @@ import {
   WarningMessageOption,
   RequestOptions,
   OverrideWarningOption
-} from "../request";
+} from "../common/request";
+import * as path from "path";
+import { format as formatUrl } from "url";
+
+const isDevelopment = process.env.NODE_ENV !== "production";
+
+// global reference to mainWindow (necessary to prevent window from being garbage collected)
+let mainWindow: BrowserWindow | null = null;
+let closeRequestReceived = false;
+
+async function closeRequestHandler(): Promise<Response<"CLOSE-WINDOW">> {
+  closeRequestReceived = true;
+  mainWindow?.close();
+}
 
 async function showOpenDialogRequestHandler(): Promise<
   Response<"SHOW-OPEN-DIALOG">
@@ -89,21 +102,56 @@ async function showErrorMessageRequestHandler(
   return null;
 }
 
-function onAppReady(): void {
-  const win = new BrowserWindow({
+function createMainWindow(): BrowserWindow {
+  const window = new BrowserWindow({
     webPreferences: {
       nodeIntegration: true
     }
   });
 
-  const emit = createEventEmitter(win);
+  const emit = createEventEmitter(window);
+
+  if (isDevelopment) {
+    window.webContents.openDevTools();
+  }
+
+  if (isDevelopment) {
+    window.loadURL(`http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}`);
+  } else {
+    window.loadURL(
+      formatUrl({
+        pathname: path.join(__dirname, "index.html"),
+        protocol: "file",
+        slashes: true
+      })
+    );
+  }
 
   // Create application menu bar.
   initializeApplicationMenu(emit);
 
   // Pass window close event to renderer.
-  win.on("close", () => emit({ type: "ON-CLOSE" }));
+  window.on("close", e => {
+    if (closeRequestReceived) {
+      closeRequestReceived = false;
+    } else {
+      e.preventDefault();
+      emit({ type: "ON-CLOSE" });
+    }
+  });
 
+  window.on("closed", () => {
+    mainWindow = null;
+  });
+
+  window.webContents.on("devtools-opened", () => {
+    window.focus();
+    setImmediate(() => {
+      window.focus();
+    });
+  });
+
+  registerRequestHandler("CLOSE-WINDOW", closeRequestHandler);
   registerRequestHandler("SHOW-OPEN-DIALOG", showOpenDialogRequestHandler);
   registerRequestHandler("SHOW-SAVE-DIALOG", showSaveDialogRequestHandler);
   registerRequestHandler(
@@ -115,7 +163,27 @@ function onAppReady(): void {
     showWarningMessageRequestHandler
   );
   registerRequestHandler("SHOW-ERROR-MESSAGE", showErrorMessageRequestHandler);
-  win.loadFile("index.html");
+  window.loadFile("index.html");
+
+  return window;
 }
 
-app.on("ready", onAppReady);
+// quit application when all windows are closed
+app.on("window-all-closed", () => {
+  // on macOS it is common for applications to stay open until the user explicitly quits
+  if (process.platform !== "darwin") {
+    app.quit();
+  }
+});
+
+app.on("activate", () => {
+  // on macOS it is common to re-create a window even after all windows have been closed
+  if (mainWindow === null) {
+    mainWindow = createMainWindow();
+  }
+});
+
+// create main BrowserWindow when electron is ready
+app.on("ready", () => {
+  mainWindow = createMainWindow();
+});

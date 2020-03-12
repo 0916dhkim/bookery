@@ -1,7 +1,12 @@
 import * as React from "react";
 import { ipcRenderer, IpcRendererEvent } from "electron";
-import { EventType, EventHandler, UseEventHandler } from "../event";
-import { Request, RequestType, RequestOptions, Response } from "../request";
+import { EventType, EventHandler, UseEventHandler } from "../common/event";
+import {
+  Request,
+  RequestType,
+  RequestOptions,
+  Response
+} from "../common/request";
 
 /**
  * React hook to register an event handler.

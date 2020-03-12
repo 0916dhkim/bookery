@@ -1,8 +1,8 @@
 import * as React from "react";
 import { AppDataContext } from "../app_data_context";
-import { User } from "../../persistence/user";
-import moment = require("moment");
-import { assertWrapper } from "../../assert_wrapper";
+import { User } from "../../common/persistence/user";
+import * as moment from "moment";
+import { assertWrapper } from "../../common/assert_wrapper";
 import {
   DropdownProps,
   DropdownItemProps,
@@ -14,7 +14,7 @@ import {
   Icon,
   Header
 } from "semantic-ui-react";
-import { Book } from "../../persistence/book";
+import { Book } from "../../common/persistence/book";
 import * as Fuse from "fuse.js";
 
 /**

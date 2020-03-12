@@ -1,17 +1,17 @@
 import * as React from "react";
 import * as fs from "fs";
 import { SideMenu } from "./side_menu";
-import { AppData, AppDataSerializer } from "../persistence/app_data";
+import { AppData, AppDataSerializer } from "../common/persistence/app_data";
 import { BooksView } from "./books_view/books_view";
 import { UsersView } from "./users_view";
 import { QueryView } from "./query_view";
 import { AppDataContext } from "./app_data_context";
 import { ContentViewProps } from "./content_view";
 import { Container } from "semantic-ui-react";
-import { Request } from "../request";
+import { Request } from "../common/request";
 import { RequestContext } from "./request_context";
 import produce, { castDraft } from "immer";
-import { UseEventHandler } from "../event";
+import { UseEventHandler } from "../common/event";
 
 export interface RootProps {
   request: Request;
