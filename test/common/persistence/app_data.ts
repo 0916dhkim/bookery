@@ -1,14 +1,17 @@
 import { describe, it } from "mocha";
 import * as assert from "assert";
-import { Book } from "../../src/persistence/book";
-import { User } from "../../src/persistence/user";
-import { View } from "../../src/persistence/view";
-import { AppData, AppDataSerializer } from "../../src/persistence/app_data";
+import { Book } from "../../../src/common/persistence/book";
+import { User } from "../../../src/common/persistence/user";
+import { View } from "../../../src/common/persistence/view";
+import {
+  AppData,
+  AppDataSerializer
+} from "../../../src/common/persistence/app_data";
 import { assertBookProperties } from "./book";
 import { assertUserProperties } from "./user";
 import { assertViewProperties } from "./view";
 import produce from "immer";
-import { assertWrapper } from "../../src/assert_wrapper";
+import { assertWrapper } from "../../../src/common/assert_wrapper";
 
 function assertAppDataProperties(
   appData: AppData,

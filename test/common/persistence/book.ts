@@ -1,6 +1,6 @@
 import { describe, it } from "mocha";
 import * as assert from "assert";
-import { Book, BookSerializer } from "../../src/persistence/book";
+import { Book, BookSerializer } from "../../../src/common/persistence/book";
 
 export function assertBookProperties(
   book: Book,

@@ -1,10 +1,10 @@
 import * as React from "react";
 import { ContentViewProps } from "./content_view";
-import { Book } from "../persistence/book";
-import { User } from "../persistence/user";
+import { Book } from "../common/persistence/book";
+import { User } from "../common/persistence/user";
 import * as Fuse from "fuse.js";
-import { AppData } from "../persistence/app_data";
-import { assertWrapper } from "../assert_wrapper";
+import { AppData } from "../common/persistence/app_data";
+import { assertWrapper } from "../common/assert_wrapper";
 
 interface State {
   bookSuggestions: Book[];

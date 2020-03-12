@@ -1,5 +1,5 @@
 import { Menu } from "electron";
-import { EventEmitter } from "../event";
+import { EventEmitter } from "../common/event";
 
 export function initializeApplicationMenu(emit: EventEmitter): void {
   Menu.setApplicationMenu(

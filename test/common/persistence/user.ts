@@ -1,6 +1,6 @@
 import { describe, it } from "mocha";
 import * as assert from "assert";
-import { User, UserSerializer } from "../../src/persistence/user";
+import { User, UserSerializer } from "../../../src/common/persistence/user";
 
 export function assertUserProperties(
   user: User,

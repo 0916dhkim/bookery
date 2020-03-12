@@ -1,5 +1,5 @@
-import { RequestType, Response, RequestHandler } from "../request";
-import { EventType, EventOptions, EventEmitter } from "../event";
+import { RequestType, Response, RequestHandler } from "../common/request";
+import { EventType, EventOptions, EventEmitter } from "../common/event";
 import { ipcMain, BrowserWindow, IpcMainInvokeEvent } from "electron";
 
 /**

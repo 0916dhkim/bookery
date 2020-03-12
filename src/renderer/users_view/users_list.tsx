@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as Fuse from "fuse.js";
-import { User } from "../../persistence/user";
+import { User } from "../../common/persistence/user";
 import { AppDataContext } from "../app_data_context";
 import { Menu } from "semantic-ui-react";
 

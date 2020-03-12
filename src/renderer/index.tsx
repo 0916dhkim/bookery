@@ -6,5 +6,5 @@ import "semantic-ui-css/semantic.min.css";
 import { ipcRequest } from "./communication";
 
 $(function() {
-  ReactDOM.render(<Root request={ipcRequest} />, $("#root").get(0));
+  ReactDOM.render(<Root request={ipcRequest} />, $("#app").get(0));
 });
