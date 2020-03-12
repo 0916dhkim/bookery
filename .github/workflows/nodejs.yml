@@ -23,8 +23,8 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - run: npm ci --no-optional
-    - run: npm run build
+      env:
+        NODE_ENV: development
+    - run: npm run dist
     - run: npm run lint
-      if: matrix.mode == 'development'
     - run: npm test
-      if: matrix.mode == 'development'
