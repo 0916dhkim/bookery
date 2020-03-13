@@ -2,7 +2,7 @@
   "name": "bookery",
   "version": "0.0.3",
   "description": "======= Bookery =======",
-  "main": "dist/electron.js",
+  "main": "dist/main/main.js",
   "scripts": {
     "test": "mocha",
     "lint": "eslint --ext=js,jsx,ts,tsx .",
