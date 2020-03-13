@@ -163,7 +163,6 @@ function createMainWindow(): BrowserWindow {
     showWarningMessageRequestHandler
   );
   registerRequestHandler("SHOW-ERROR-MESSAGE", showErrorMessageRequestHandler);
-  window.loadFile("index.html");
 
   return window;
 }
