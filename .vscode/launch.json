@@ -19,15 +19,12 @@
             "type": "node",
             "request": "launch",
             "name": "Electron Main",
-            "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
-            "cwd": "${workspaceFolder}",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "args": [
-                "--remote-debugging-port=9223",
-                "."
-            ]
+            "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron-webpack",
+            "runtimeArgs": ["dev"],
+            "autoAttachChildProcesses": true,
+            "internalConsoleOptions": "openOnFirstSessionStart",
+            "console": "integratedTerminal",
+            "timeout": 30000
         },
         {
             "name": "Electron Renderer",
