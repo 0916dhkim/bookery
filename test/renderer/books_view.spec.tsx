@@ -8,8 +8,8 @@ import {
 import { BooksView } from "../../src/renderer/books_view";
 import * as React from "react";
 import { AppDataContext } from "../../src/renderer/app_data_context";
-import { AppData } from "../../src/persistence/app_data";
-import moment = require("moment");
+import { AppData } from "../../src/common/persistence/app_data";
+import * as moment from "moment";
 import userEvent from "@testing-library/user-event";
 import * as sinon from "sinon";
 import * as assert from "assert";
@@ -17,12 +17,12 @@ import { RequestContext } from "../../src/renderer/request_context";
 
 const sandbox = sinon.createSandbox();
 
-afterEach(function() {
-  sandbox.restore();
-  cleanup();
-});
-
 describe("BooksView", function() {
+  afterEach(function() {
+    sandbox.restore();
+    cleanup();
+  });
+
   describe("Delete Button", function() {
     it("Deleting A Book Should Cascade", async function() {
       let x = new AppData();

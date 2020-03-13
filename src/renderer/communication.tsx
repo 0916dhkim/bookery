@@ -1,13 +1,18 @@
 import * as React from "react";
 import { ipcRenderer, IpcRendererEvent } from "electron";
-import { EventType, EventHandler } from "../event";
-import { Request, RequestType, RequestOptions, Response } from "../request";
+import { EventType, EventHandler, UseEventHandler } from "../common/event";
+import {
+  Request,
+  RequestType,
+  RequestOptions,
+  Response
+} from "../common/request";
 
 /**
  * React hook to register an event handler.
  * @param handlers an event handler to be registered
  */
-export function useEventHandler<T extends EventType>(
+function useIpcEventHandlerImplementation<T extends EventType>(
   eventType: T,
   handler: EventHandler<T>
 ): void {
@@ -33,3 +38,4 @@ async function ipcRequestImplementation<T extends RequestType>(
 }
 
 export const ipcRequest: Request = ipcRequestImplementation;
+export const useIpcEventHandler: UseEventHandler = useIpcEventHandlerImplementation;

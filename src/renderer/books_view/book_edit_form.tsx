@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Segment, Header, Form } from "semantic-ui-react";
-import { Book } from "../../persistence/book";
+import { Book } from "../../common/persistence/book";
 
 export interface BookEditFormProps {
   book: Book;

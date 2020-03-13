@@ -1,5 +1,5 @@
 import * as React from "react";
-import { AppData } from "../persistence/app_data";
+import { AppData } from "../common/persistence/app_data";
 
 export const AppDataContext = React.createContext<{
   appData: AppData;

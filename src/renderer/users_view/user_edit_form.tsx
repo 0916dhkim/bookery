@@ -1,5 +1,5 @@
 import * as React from "react";
-import { User } from "../../persistence/user";
+import { User } from "../../common/persistence/user";
 import { Form, Segment, Header } from "semantic-ui-react";
 
 export interface UserEditFormProps {

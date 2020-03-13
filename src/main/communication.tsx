@@ -1,5 +1,5 @@
-import { RequestType, Response, RequestHandler } from "../request";
-import { EventType, EventOptions, EventEmitter } from "../event";
+import { RequestType, Response, RequestHandler } from "../common/request";
+import { EventType, EventOptions, EventEmitter } from "../common/event";
 import { ipcMain, BrowserWindow, IpcMainInvokeEvent } from "electron";
 
 /**
@@ -25,7 +25,9 @@ export function registerRequestHandler<T extends RequestType>(
  */
 export function createEventEmitter(browserWindow: BrowserWindow): EventEmitter {
   const webContents = browserWindow.webContents;
-  function ret<T extends EventType>(options: EventOptions<T>): void {
+  async function ret<T extends EventType>(
+    options: EventOptions<T>
+  ): Promise<void> {
     webContents.send(options.type, options);
   }
   return ret;

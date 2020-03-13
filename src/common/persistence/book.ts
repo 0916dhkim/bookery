@@ -10,6 +10,15 @@ export class Book {
     readonly author: string,
     readonly isbn?: string
   ) {}
+
+  equals(other: Book): boolean {
+    return (
+      this.id === other.id &&
+      this.title === other.title &&
+      this.author === other.author &&
+      this.isbn === other.isbn
+    );
+  }
 }
 
 export class BookSerializer implements Serializer<Book> {

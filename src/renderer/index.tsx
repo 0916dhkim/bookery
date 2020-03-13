@@ -3,8 +3,11 @@ import * as ReactDOM from "react-dom";
 import * as $ from "jquery";
 import { Root } from "./root";
 import "semantic-ui-css/semantic.min.css";
-import { ipcRequest } from "./communication";
+import { ipcRequest, useIpcEventHandler } from "./communication";
 
 $(function() {
-  ReactDOM.render(<Root request={ipcRequest} />, $("#root").get(0));
+  ReactDOM.render(
+    <Root request={ipcRequest} useEventHandler={useIpcEventHandler} />,
+    $("#app").get(0)
+  );
 });

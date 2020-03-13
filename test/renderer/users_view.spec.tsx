@@ -10,12 +10,12 @@ import {
 import userEvent from "@testing-library/user-event";
 import * as React from "react";
 import { UsersView } from "../../src/renderer/users_view";
-import { AppData } from "../../src/persistence/app_data";
+import { AppData } from "../../src/common/persistence/app_data";
 import * as assert from "assert";
 import { AppDataContext } from "../../src/renderer/app_data_context";
 import { act } from "react-dom/test-utils";
-import { assertWrapper } from "../../src/assert_wrapper";
-import moment = require("moment");
+import { assertWrapper } from "../../src/common/assert_wrapper";
+import * as moment from "moment";
 import { RequestContext } from "../../src/renderer/request_context";
 import * as sinon from "sinon";
 

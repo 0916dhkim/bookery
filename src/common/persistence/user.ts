@@ -28,6 +28,15 @@ export class User {
       draft.note = note;
     });
   }
+
+  equals(other: User): boolean {
+    return (
+      this.id === other.id &&
+      this.lastName === other.lastName &&
+      this.firstName === other.firstName &&
+      this.note === other.note
+    );
+  }
 }
 
 export class UserSerializer implements Serializer<User> {
