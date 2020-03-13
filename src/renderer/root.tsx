@@ -222,6 +222,20 @@ async function ensureSafeToOverrideAppData(
   }
 }
 
+async function closeHandler(
+  request: Request,
+  dispatch: React.Dispatch<RootAction>,
+  state: RootState
+): Promise<void> {
+  try {
+    if (await ensureSafeToOverrideAppData(request, dispatch, state)) {
+      request({ type: "CLOSE-WINDOW" });
+    }
+  } catch {
+    throw "Failed to handle close event.";
+  }
+}
+
 async function newFileMenuHandler(
   request: Request,
   state: RootState,
@@ -270,6 +284,10 @@ export function Root({
     contentViewIndex: 0,
     currentFilePath: null
   });
+  useEventHandler(
+    "ON-CLOSE",
+    closeHandler.bind(null, request, dispatch, state)
+  );
   useEventHandler(
     "ON-NEW-FILE-MENU",
     newFileMenuHandler.bind(null, request, state, dispatch)
