@@ -1,6 +1,6 @@
 {
   "name": "bookery",
-  "version": "0.0.3",
+  "version": "0.9.0-alpha",
   "description": "======= Bookery =======",
   "main": "dist/main/main.js",
   "scripts": {
@@ -8,7 +8,7 @@
     "lint": "eslint --ext=js,jsx,ts,tsx .",
     "dev": "electron-webpack dev",
     "compile": "electron-webpack",
-    "dist": "npm run compile && electron-builder"
+    "dist": "npm run compile && electron-builder --publish onTagOrDraft"
   },
   "repository": {
     "type": "git",
