@@ -1,4 +1,5 @@
 import { app, BrowserWindow, dialog } from "electron";
+import { autoUpdater } from "electron-updater";
 import { initializeApplicationMenu } from "./application_menu";
 import { createEventEmitter, registerRequestHandler } from "./communication";
 import {
@@ -182,7 +183,8 @@ app.on("activate", () => {
   }
 });
 
-// create main BrowserWindow when electron is ready
+// Auto-update then create main window.
 app.on("ready", () => {
+  autoUpdater.checkForUpdatesAndNotify();
   mainWindow = createMainWindow();
 });

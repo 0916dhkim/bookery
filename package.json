@@ -1,6 +1,6 @@
 {
   "name": "bookery",
-  "version": "0.9.0-alpha",
+  "version": "0.10.0-alpha",
   "description": "======= Bookery =======",
   "main": "dist/main/main.js",
   "scripts": {
@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/0916dhkim/bookery#readme",
   "dependencies": {
+    "electron-updater": "^4.2.5",
     "fuse.js": "^3.6.1",
     "immer": "^5.3.6",
     "jquery": "^3.4.1",
