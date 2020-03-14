@@ -28,6 +28,7 @@ jobs:
     - run: npm run lint
     - run: npm test
   release:
+    if: github.ref == 'refs/heads/master'
     needs: test
     name: Release ${{ matrix.os }}
     strategy:
