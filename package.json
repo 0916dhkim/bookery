@@ -8,7 +8,7 @@
     "lint": "eslint --ext=js,jsx,ts,tsx .",
     "dev": "electron-webpack dev",
     "compile": "electron-webpack",
-    "dist": "npm run compile && electron-builder"
+    "dist": "npm run compile && electron-builder --publish onTagOrDraft"
   },
   "repository": {
     "type": "git",
