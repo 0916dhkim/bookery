@@ -42,3 +42,5 @@ jobs:
         node-version: 12
     - run: npm ci --no-optional
     - run: npm run dist
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
