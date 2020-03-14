@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/0916dhkim/bookery#readme",
   "dependencies": {
+    "electron-updater": "^4.2.5",
     "fuse.js": "^3.6.1",
     "immer": "^5.3.6",
     "jquery": "^3.4.1",
