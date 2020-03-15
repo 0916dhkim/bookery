@@ -10,7 +10,7 @@ export function WelcomeView({
   request
 }: WelcomeViewProps): React.ReactElement<WelcomeViewProps> {
   const [versionString, setVersionString] = React.useState<string>("");
-  request({ type: "GET-VERSION" }).then(setVersionString);
+  Promise.resolve(request({ type: "GET-VERSION" })).then(setVersionString);
   return (
     <Container fluid>
       <p>Welcome!</p>
