@@ -157,6 +157,8 @@ async function saveFileMenuHandler(
   try {
     if (state.appData !== null) {
       if (state.currentFilePath === null) {
+        // First time saving.
+        // Equivalent to "save as".
         return saveAsFileMenuHandler(request, dispatch, state);
       }
       const appDataSerializer = new AppDataSerializer();
@@ -164,6 +166,7 @@ async function saveFileMenuHandler(
       fs.writeFileSync(state.currentFilePath, serializedAppData, {
         encoding: "utf8"
       });
+      dispatch({ type: "Save As File", filePath: state.currentFilePath });
     }
   } catch {
     throw "Failed to handle save menu event.";
