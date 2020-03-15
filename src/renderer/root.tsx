@@ -6,8 +6,7 @@ import { BooksView } from "./books_view/books_view";
 import { UsersView } from "./users_view";
 import { QueryView } from "./query_view";
 import { AppDataContext } from "./app_data_context";
-import { ContentViewProps } from "./content_view";
-import { Container } from "semantic-ui-react";
+import { Container, Segment } from "semantic-ui-react";
 import { Request } from "../common/request";
 import { RequestContext } from "./request_context";
 import produce, { castDraft } from "immer";
@@ -78,23 +77,6 @@ interface ContentViewElementInterface {
 }
 
 /**
- * Wrap a component type that requires app data as its props and provide app data context instead.
- * @param T Component type to be wrapped
- */
-function wrap(
-  T: React.ComponentType<ContentViewProps>
-): React.FunctionComponent {
-  return (): React.ReactElement => {
-    const { appData, setAppData } = React.useContext(AppDataContext);
-    const wrappedComponent = React.createElement(T, {
-      appData: appData,
-      setAppData: setAppData
-    });
-    return wrappedComponent;
-  };
-}
-
-/**
  * List of Available View Types.
  */
 const contentViews: ContentViewElementInterface[] = [
@@ -108,7 +90,7 @@ const contentViews: ContentViewElementInterface[] = [
   },
   {
     name: "Query",
-    viewType: wrap(QueryView)
+    viewType: QueryView
   }
 ];
 
@@ -315,26 +297,32 @@ export function Root({
       <Container fluid>
         <SideMenu
           contentViewNames={contentViews.map(contentView => contentView.name)}
+          contentViewIndex={state.contentViewIndex}
           onMenuClick={(menuIndex: number): void => {
             dispatch({ type: "Change Content View", index: menuIndex });
           }}
         />
-        <AppDataContext.Provider
-          value={{
-            appData: state.appData,
-            setAppData: (x: AppData): void => {
-              dispatch({ type: "Set AppData", appData: x });
-            }
-          }}
-        >
-          <RequestContext.Provider
+
+        <Segment basic attached="bottom">
+          <AppDataContext.Provider
             value={{
-              request: request
+              appData: state.appData,
+              setAppData: (x: AppData): void => {
+                dispatch({ type: "Set AppData", appData: x });
+              }
             }}
           >
-            {React.createElement(contentViews[state.contentViewIndex].viewType)}
-          </RequestContext.Provider>
-        </AppDataContext.Provider>
+            <RequestContext.Provider
+              value={{
+                request: request
+              }}
+            >
+              {React.createElement(
+                contentViews[state.contentViewIndex].viewType
+              )}
+            </RequestContext.Provider>
+          </AppDataContext.Provider>
+        </Segment>
       </Container>
     );
   }

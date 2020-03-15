@@ -75,8 +75,8 @@ export function HistoryEditForm({
     event: React.SyntheticEvent,
     data: DropdownProps
   ): Promise<void> {
-    // When cleared.
     if (data.value === "") {
+      // When cleared.
       setHistoryInputValue(null);
     } else {
       assertWrapper(typeof data.value === "number");

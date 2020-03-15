@@ -1,28 +1,28 @@
 import * as React from "react";
+import { SidebarProps, Menu } from "semantic-ui-react";
 
-export interface Props {
+export interface SideMenuProps {
   contentViewNames: string[];
+  contentViewIndex: number;
   onMenuClick: (menuIndex: number) => void;
 }
 
-export class SideMenu extends React.Component<Props, {}> {
-  render(): React.ReactNode {
-    return (
-      <nav className="js-side-menu">
-        <a>Navigation</a>
-        <ul>
-          {this.props.contentViewNames.map((name, index) => (
-            <li key={index.toString()}>
-              <a
-                href="#"
-                onClick={(() => this.props.onMenuClick(index)) as () => void}
-              >
-                {name}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
-    );
-  }
+export function SideMenu({
+  contentViewNames,
+  contentViewIndex,
+  onMenuClick
+}: SideMenuProps): React.ReactElement<SidebarProps> {
+  return (
+    <Menu secondary pointing attached="top">
+      {contentViewNames.map((name, index) => (
+        <Menu.Item
+          key={index.toString()}
+          active={index === contentViewIndex}
+          onClick={(): void => onMenuClick(index)}
+        >
+          {name}
+        </Menu.Item>
+      ))}
+    </Menu>
+  );
 }
