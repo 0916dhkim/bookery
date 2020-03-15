@@ -2,7 +2,6 @@ import * as React from "react";
 import {
   Container,
   Dropdown,
-  Segment,
   DropdownItemProps,
   DropdownProps,
   Icon,
@@ -157,7 +156,6 @@ export function QueryView(): React.ReactElement<{}> {
 
   return (
     <Container fluid>
-      Query View
       <div style={{ display: "flex", margin: "1em 0" }}>
         <Icon name="users" size="big" style={{ flexGrow: 0 }} />
         <Dropdown

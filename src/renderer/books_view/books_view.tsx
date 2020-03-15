@@ -128,7 +128,6 @@ export function BooksView(): React.ReactElement<{}> {
 
   return (
     <Container fluid>
-      Books View
       <div style={{ display: "flex", margin: "1em 0" }}>
         {/* Search Bar */}
         <Input

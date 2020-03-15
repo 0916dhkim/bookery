@@ -133,7 +133,6 @@ export function UsersView(): React.ReactElement<{}> {
 
   return (
     <Container fluid>
-      Users View
       <div style={{ display: "flex", margin: "1em 0" }}>
         {/* Search Bar */}
         <Input
