@@ -30,7 +30,10 @@ async function showOpenDialogRequestHandler(): Promise<
   Response<"SHOW-OPEN-DIALOG">
 > {
   try {
-    const ret = await dialog.showOpenDialog({ properties: ["openFile"] });
+    const ret = await dialog.showOpenDialog({
+      filters: [{ name: "Bookery Data", extensions: ["bookery"] }],
+      properties: ["openFile"]
+    });
     if (ret.canceled || ret.filePaths.length === 0) {
       throw "Path not selected.";
     } else {
@@ -46,6 +49,7 @@ async function showSaveDialogRequestHandler(): Promise<
 > {
   try {
     const ret = await dialog.showSaveDialog({
+      filters: [{ name: "Bookery Data", extensions: ["bookery"] }],
       properties: ["createDirectory", "showOverwriteConfirmation"]
     });
     if (ret.canceled || ret.filePath === undefined) {
