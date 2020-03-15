@@ -1,6 +1,6 @@
 {
   "name": "bookery",
-  "version": "0.10.1-alpha",
+  "version": "0.10.2-alpha",
   "description": "======= Bookery =======",
   "main": "dist/main/main.js",
   "scripts": {
