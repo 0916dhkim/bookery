@@ -17,6 +17,10 @@ const isDevelopment = process.env.NODE_ENV !== "production";
 let mainWindow: BrowserWindow | null = null;
 let closeRequestReceived = false;
 
+async function getVersionRequestHandler(): Promise<Response<"GET-VERSION">> {
+  return app.getVersion();
+}
+
 async function closeRequestHandler(): Promise<Response<"CLOSE-WINDOW">> {
   closeRequestReceived = true;
   mainWindow?.close();
@@ -152,6 +156,7 @@ function createMainWindow(): BrowserWindow {
     });
   });
 
+  registerRequestHandler("GET-VERSION", getVersionRequestHandler);
   registerRequestHandler("CLOSE-WINDOW", closeRequestHandler);
   registerRequestHandler("SHOW-OPEN-DIALOG", showOpenDialogRequestHandler);
   registerRequestHandler("SHOW-SAVE-DIALOG", showSaveDialogRequestHandler);

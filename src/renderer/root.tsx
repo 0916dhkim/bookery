@@ -12,6 +12,7 @@ import { Request } from "../common/request";
 import { RequestContext } from "./request_context";
 import produce, { castDraft } from "immer";
 import { UseEventHandler } from "../common/event";
+import { WelcomeView } from "./welcome_view";
 
 export interface RootProps {
   request: Request;
@@ -305,7 +306,7 @@ export function Root({
     saveFileMenuHandler.bind(null, request, dispatch, state)
   );
   if (!state.appData) {
-    return <p>Welcome Screen</p>;
+    return <WelcomeView request={request} />;
   } else {
     return (
       <Container fluid>
