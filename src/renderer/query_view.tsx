@@ -1,153 +1,200 @@
 import * as React from "react";
-import { ContentViewProps } from "./content_view";
-import { Book } from "../common/persistence/book";
+import {
+  Container,
+  Dropdown,
+  Segment,
+  DropdownItemProps,
+  DropdownProps,
+  Icon,
+  Message
+} from "semantic-ui-react";
 import { User } from "../common/persistence/user";
+import { AppDataContext } from "./app_data_context";
 import * as Fuse from "fuse.js";
-import { AppData } from "../common/persistence/app_data";
+import { Book } from "../common/persistence/book";
 import { assertWrapper } from "../common/assert_wrapper";
+import { AppData } from "../common/persistence/app_data";
 
-interface State {
-  bookSuggestions: Book[];
-  userSuggestions: User[];
-  selectedBook?: Book;
-  selectedUser?: User;
+/**
+ * Convert a book to be presented inside dropdown menu.
+ */
+function bookToDropDownItemProps(book: Book): DropdownItemProps {
+  return {
+    key: book.id.toString(),
+    text: book.title,
+    value: book.id
+  };
 }
 
-function ResultView(props: {
-  bookId: number;
-  userId: number;
-  appData: AppData;
-}): React.ReactElement {
-  if (
-    Array.from(props.appData.views.values()).filter(
-      view => view.bookId === props.bookId && view.userId === props.userId
-    ).length === 0
-  ) {
-    return <p>Not Read</p>;
+/**
+ * Convert a book to be presented inside dropdown menu.
+ */
+function userToDropDownItemProps(user: User): DropdownItemProps {
+  return {
+    key: user.id.toString(),
+    text: `${user.lastName}, ${user.firstName}`,
+    value: user.id
+  };
+}
+
+/**
+ * @returns `true` if the user has read the book before. `false` otherwise.
+ */
+function hasUserReadBook(
+  appData: AppData,
+  userId: number,
+  bookId: number
+): boolean {
+  return (
+    Array.from(appData.views.values()).filter(
+      view => view.userId === userId && view.bookId === bookId
+    ).length !== 0
+  );
+}
+
+interface QueryResultProps {
+  hasRead: boolean;
+}
+
+function QueryResult({
+  hasRead
+}: QueryResultProps): React.ReactElement<QueryResultProps> {
+  if (hasRead) {
+    return (
+      <Message positive>
+        Read <Icon name="check" />
+      </Message>
+    );
   } else {
-    return <p>Read</p>;
+    return (
+      <Message negative>
+        Not Read <Icon name="x" />
+      </Message>
+    );
   }
 }
 
-export class QueryView extends React.Component<ContentViewProps, State> {
-  private bookInputRef: React.RefObject<HTMLInputElement>;
-  private userInputRef: React.RefObject<HTMLInputElement>;
-  private bookFuse: Fuse<Book, Fuse.FuseOptions<Book>>;
-  private userFuse: Fuse<User, Fuse.FuseOptions<User>>;
-
-  constructor(props: ContentViewProps) {
-    super(props);
-
-    this.bookInputRef = React.createRef();
-    this.userInputRef = React.createRef();
-
-    const bookFuseOptions: Fuse.FuseOptions<Book> = {
-      shouldSort: true,
-      includeMatches: false,
-      includeScore: false,
-      keys: ["title", "author", "isbn"]
-    };
-    const userFuseOptions: Fuse.FuseOptions<User> = {
+export function QueryView(): React.ReactElement<{}> {
+  const { appData } = React.useContext(AppDataContext);
+  const [userInputValue, setUserInputValue] = React.useState<number | null>(
+    null
+  );
+  const [bookInputValue, setBookInputValue] = React.useState<number | null>(
+    null
+  );
+  const userFuse = React.useMemo<Fuse<User, Fuse.FuseOptions<User>>>(() => {
+    const fuseOptions: Fuse.FuseOptions<User> = {
       shouldSort: true,
       includeMatches: false,
       includeScore: false,
       keys: ["lastName", "firstName", "note"]
     };
-    this.bookFuse = new Fuse(
-      Array.from(this.props.appData.books.values()),
-      bookFuseOptions
-    );
-    this.userFuse = new Fuse(
-      Array.from(this.props.appData.users.values()),
-      userFuseOptions
-    );
-
-    this.state = {
-      bookSuggestions: [],
-      userSuggestions: []
+    return new Fuse(Array.from(appData.users.values()), fuseOptions);
+  }, [appData]);
+  const bookFuse = React.useMemo<Fuse<Book, Fuse.FuseOptions<Book>>>(() => {
+    const fuseOptions: Fuse.FuseOptions<Book> = {
+      shouldSort: true,
+      includeMatches: false,
+      includeScore: false,
+      keys: ["title", "author", "isbn"]
     };
+    return new Fuse(Array.from(appData.books.values()), fuseOptions);
+  }, [appData]);
+
+  /**
+   * Handle user change.
+   */
+  function handleUserInputValueChange(
+    event: React.SyntheticEvent,
+    data: DropdownProps
+  ): void {
+    if (data.value === "") {
+      // When cleared.
+      setUserInputValue(null);
+    } else {
+      assertWrapper(typeof data.value === "number");
+      setUserInputValue(data.value);
+    }
   }
 
-  render(): React.ReactNode {
-    return (
-      <div className="js-query-view">
-        <form>
-          <div>
-            <label>
-              Member
-              <input
-                type="text"
-                ref={this.userInputRef}
-                onInput={this.provideUserSuggestions.bind(this)}
-              />
-              <ul>
-                {this.state.userSuggestions.map(user => (
-                  <li key={user.id.toString()}>
-                    <a href="#" onClick={this.selectUser.bind(this, user)}>
-                      {user.lastName}, {user.firstName}: {user.note}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </label>
-          </div>
-          <div>
-            <label>
-              Book
-              <input
-                type="text"
-                ref={this.bookInputRef}
-                onInput={this.provideBookSuggestions.bind(this)}
-              />
-              <ul>
-                {this.state.bookSuggestions.map(book => (
-                  <li key={book.id.toString()}>
-                    <a href="#" onClick={this.selectBook.bind(this, book)}>
-                      [{book.title}] by {book.author}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </label>
-          </div>
-        </form>
-        {this.state.selectedBook && this.state.selectedUser && (
-          <ResultView
-            bookId={this.state.selectedBook.id}
-            userId={this.state.selectedUser.id}
-            appData={this.props.appData}
-          />
-        )}
+  /**
+   * Handler book change.
+   */
+  function handleBookInputValueChange(
+    event: React.SyntheticEvent,
+    data: DropdownProps
+  ): void {
+    if (data.value === "") {
+      // When cleared.
+      setBookInputValue(null);
+    } else {
+      assertWrapper(typeof data.value === "number");
+      setBookInputValue(data.value);
+    }
+  }
+
+  /**
+   * Handle user dropdown search event.
+   */
+  function handleUserDropDownSearch(
+    options: Array<DropdownItemProps>,
+    query: string
+  ): Array<DropdownItemProps> {
+    const users = userFuse.search(query) as Array<User>;
+    return users.map(userToDropDownItemProps);
+  }
+
+  /**
+   * Handle book dropdown search event.
+   */
+  function handleBookDropDownSearch(
+    options: Array<DropdownItemProps>,
+    query: string
+  ): Array<DropdownItemProps> {
+    const books = bookFuse.search(query) as Array<Book>;
+    return books.map(bookToDropDownItemProps);
+  }
+
+  return (
+    <Container fluid>
+      Query View
+      <div style={{ display: "flex", margin: "1em 0" }}>
+        <Icon name="users" size="big" style={{ flexGrow: 0 }} />
+        <Dropdown
+          style={{ flexGrow: 1 }}
+          selection
+          clearable
+          selectOnBlur={false}
+          selectOnNavigation={false}
+          value={userInputValue ?? ""}
+          onChange={handleUserInputValueChange}
+          options={Array.from(appData.users.values()).map(
+            userToDropDownItemProps
+          )}
+          search={handleUserDropDownSearch}
+        />
       </div>
-    );
-  }
-
-  provideBookSuggestions(event: React.FormEvent<HTMLInputElement>): void {
-    this.setState({
-      bookSuggestions: this.bookFuse.search(event.currentTarget.value) as Book[]
-    });
-  }
-  provideUserSuggestions(event: React.FormEvent<HTMLInputElement>): void {
-    this.setState({
-      userSuggestions: this.userFuse.search(event.currentTarget.value) as User[]
-    });
-  }
-  selectBook(book: Book): void {
-    this.setState({
-      bookSuggestions: [],
-      selectedBook: book
-    });
-    assertWrapper(!!this.bookInputRef.current);
-    this.bookInputRef.current.value = `[${book.title}] by ${book.author}`;
-    this.bookInputRef.current.disabled = true;
-  }
-  selectUser(user: User): void {
-    this.setState({
-      userSuggestions: [],
-      selectedUser: user
-    });
-    assertWrapper(!!this.userInputRef.current);
-    this.userInputRef.current.value = `${user.lastName}, ${user.firstName}`;
-    this.userInputRef.current.disabled = true;
-  }
+      <div style={{ display: "flex", margin: "1em 0" }}>
+        <Icon name="book" size="big" style={{ flexGrow: 0 }} />
+        <Dropdown
+          fluid
+          selection
+          clearable
+          selectOnBlur={false}
+          selectOnNavigation={false}
+          value={bookInputValue ?? ""}
+          onChange={handleBookInputValueChange}
+          options={Array.from(appData.books.values()).map(
+            bookToDropDownItemProps
+          )}
+          search={handleBookDropDownSearch}
+        />
+      </div>
+      {bookInputValue !== null && userInputValue !== null && (
+        <QueryResult
+          hasRead={hasUserReadBook(appData, userInputValue, bookInputValue)}
+        />
+      )}
+    </Container>
+  );
 }
