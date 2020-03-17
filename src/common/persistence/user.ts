@@ -1,5 +1,5 @@
 import { Serializer } from "./serializable";
-import produce, { immerable } from "immer";
+import { immerable, produce } from "./immer-initialized";
 
 export class User {
   [immerable] = true;

@@ -8,7 +8,7 @@ import {
   AppData,
   AppDataSerializer
 } from "../../../src/common/persistence/app_data";
-import produce from "immer";
+import { produce } from "../../../src/common/persistence/immer-initialized";
 
 describe("App Data", function() {
   describe("equals", function() {

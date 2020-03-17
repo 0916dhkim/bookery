@@ -1,5 +1,5 @@
 import { Serializer } from "./serializable";
-import { immerable } from "immer";
+import { immerable } from "./immer-initialized";
 
 export class Book {
   [immerable] = true;

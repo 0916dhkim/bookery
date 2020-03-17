@@ -2,7 +2,7 @@ import { Serializer } from "./serializable";
 import { Book, BookSerializer } from "./book";
 import { User, UserSerializer } from "./user";
 import { View, ViewSerializer } from "./view";
-import produce, { immerable } from "immer";
+import { immerable, produce } from "./immer-initialized";
 
 export class AppData {
   [immerable] = true;
