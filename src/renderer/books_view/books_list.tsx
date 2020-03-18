@@ -2,7 +2,8 @@ import * as React from "react";
 import { AppDataContext } from "../app_data_context";
 import { Menu } from "semantic-ui-react";
 import { Book } from "../../common/persistence/book";
-import * as Fuse from "fuse.js";
+import { Filter } from "../../common/persistence/filter";
+import { BookFilter } from "../../common/persistence/book_filter";
 
 export interface BooksListProps {
   filterQuery: string;
@@ -14,28 +15,12 @@ export function BooksList({
   onSelect
 }: BooksListProps): React.ReactElement {
   const { appData } = React.useContext(AppDataContext);
-  /**
-   * Filtered array of books by search term.
-   * When there is no search term input by user, no filter is applied.
-   */
-  const filteredBooks = React.useMemo<ReadonlyArray<Book>>((): ReadonlyArray<
-    Book
-  > => {
-    if (filterQuery.length === 0) {
-      return Array.from(appData.books.values());
-    }
-    const fuseOptions: Fuse.FuseOptions<Book> = {
-      shouldSort: true,
-      includeMatches: false,
-      includeScore: false,
-      keys: ["title", "author", "isbn"]
-    };
-    const filterFuse: Fuse<Book, Fuse.FuseOptions<Book>> = new Fuse(
-      Array.from(appData.books.values()),
-      fuseOptions
-    );
-    return filterFuse.search(filterQuery) as Book[];
-  }, [filterQuery, appData]);
+  const bookFilter = React.useMemo<Filter<Book>>(() => {
+    return new BookFilter(appData.books.values());
+  }, [appData.books]);
+  const filteredBooks = React.useMemo<Array<Book>>(() => {
+    return Array.from(bookFilter.filter(filterQuery));
+  }, [bookFilter, filterQuery]);
 
   return (
     <Menu data-testid="suggestions-list" fluid vertical>

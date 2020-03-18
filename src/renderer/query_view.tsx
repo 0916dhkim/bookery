@@ -8,11 +8,13 @@ import {
   Message
 } from "semantic-ui-react";
 import { User } from "../common/persistence/user";
+import { Filter } from "../common/persistence/filter";
 import { AppDataContext } from "./app_data_context";
-import * as Fuse from "fuse.js";
 import { Book } from "../common/persistence/book";
 import { assertWrapper } from "../common/assert_wrapper";
 import { AppData } from "../common/persistence/app_data";
+import { UserFilter } from "../common/persistence/user_filter";
+import { BookFilter } from "../common/persistence/book_filter";
 
 /**
  * Convert a book to be presented inside dropdown menu.
@@ -81,24 +83,12 @@ export function QueryView(): React.ReactElement<{}> {
   const [bookInputValue, setBookInputValue] = React.useState<number | null>(
     null
   );
-  const userFuse = React.useMemo<Fuse<User, Fuse.FuseOptions<User>>>(() => {
-    const fuseOptions: Fuse.FuseOptions<User> = {
-      shouldSort: true,
-      includeMatches: false,
-      includeScore: false,
-      keys: ["lastName", "firstName", "note"]
-    };
-    return new Fuse(Array.from(appData.users.values()), fuseOptions);
-  }, [appData]);
-  const bookFuse = React.useMemo<Fuse<Book, Fuse.FuseOptions<Book>>>(() => {
-    const fuseOptions: Fuse.FuseOptions<Book> = {
-      shouldSort: true,
-      includeMatches: false,
-      includeScore: false,
-      keys: ["title", "author", "isbn"]
-    };
-    return new Fuse(Array.from(appData.books.values()), fuseOptions);
-  }, [appData]);
+  const userFilter = React.useMemo<Filter<User>>(() => {
+    return new UserFilter(appData.users.values());
+  }, [appData.users]);
+  const bookFilter = React.useMemo<Filter<Book>>(() => {
+    return new BookFilter(appData.books.values());
+  }, [appData.books]);
 
   /**
    * Handle user change.
@@ -139,7 +129,7 @@ export function QueryView(): React.ReactElement<{}> {
     options: Array<DropdownItemProps>,
     query: string
   ): Array<DropdownItemProps> {
-    const users = userFuse.search(query) as Array<User>;
+    const users = userFilter.filter(query) as Array<User>;
     return users.map(userToDropDownItemProps);
   }
 
@@ -150,7 +140,7 @@ export function QueryView(): React.ReactElement<{}> {
     options: Array<DropdownItemProps>,
     query: string
   ): Array<DropdownItemProps> {
-    const books = bookFuse.search(query) as Array<Book>;
+    const books = bookFilter.filter(query) as Array<Book>;
     return books.map(bookToDropDownItemProps);
   }
 

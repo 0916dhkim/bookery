@@ -9,7 +9,7 @@ import { AppDataContext } from "./app_data_context";
 import { Container, Segment } from "semantic-ui-react";
 import { Request } from "../common/request";
 import { RequestContext } from "./request_context";
-import produce, { castDraft } from "immer";
+import { castDraft, produce } from "../common/persistence/immer-initialized";
 import { UseEventHandler } from "../common/event";
 import { WelcomeView } from "./welcome_view";
 

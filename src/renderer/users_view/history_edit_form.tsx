@@ -15,7 +15,8 @@ import {
   Header
 } from "semantic-ui-react";
 import { Book } from "../../common/persistence/book";
-import * as Fuse from "fuse.js";
+import { Filter } from "../../common/persistence/filter";
+import { BookFilter } from "../../common/persistence/book_filter";
 
 /**
  * Convert a book to be presented inside dropdown menu.
@@ -39,18 +40,9 @@ export function HistoryEditForm({
   const [historyInputValue, setHistoryInputValue] = React.useState<
     number | null
   >(null);
-  const bookFuse = React.useMemo<Fuse<Book, Fuse.FuseOptions<Book>>>(() => {
-    const fuseOptions: Fuse.FuseOptions<Book> = {
-      shouldSort: true,
-      includeMatches: false,
-      includeScore: false,
-      keys: ["title", "author", "isbn"]
-    };
-    return new Fuse<Book, Fuse.FuseOptions<Book>>(
-      Array.from(appData.books.values()),
-      fuseOptions
-    );
-  }, [appData]);
+  const bookFilter = React.useMemo<Filter<Book>>(() => {
+    return new BookFilter(appData.books.values());
+  }, [appData.books]);
 
   /**
    * Handle history add button click event.
@@ -91,7 +83,7 @@ export function HistoryEditForm({
     options: Array<DropdownItemProps>,
     query: string
   ): Array<DropdownItemProps> {
-    const books = bookFuse.search(query) as Array<Book>;
+    const books = bookFilter.filter(query) as Array<Book>;
     return books.map(bookToDropDownItemProps);
   }
 
