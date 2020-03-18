@@ -14,6 +14,7 @@ export class BookFilter implements Filter<Book> {
   private fuse: Fuse<Book, Fuse.FuseOptions<Book>>;
   constructor(data: Iterable<Book>) {
     this.books = Array.from(data);
+    this.books.sort((a, b) => b.id - a.id);
     this.fuse = new Fuse(this.books, bookFuseOptions);
   }
 

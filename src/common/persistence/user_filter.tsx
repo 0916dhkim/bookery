@@ -14,6 +14,7 @@ export class UserFilter implements Filter<User> {
   private fuse: Fuse<User, Fuse.FuseOptions<User>>;
   constructor(data: Iterable<User>) {
     this.users = Array.from(data);
+    this.users.sort((a, b) => b.id - a.id);
     this.fuse = new Fuse(this.users, userFuseOptions);
   }
 
