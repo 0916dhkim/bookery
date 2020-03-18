@@ -5,7 +5,8 @@ import {
   Input,
   Button,
   Icon,
-  Segment
+  Segment,
+  Message
 } from "semantic-ui-react";
 import { BooksList } from "./books_list";
 import { BookEditForm } from "./book_edit_form";
@@ -20,6 +21,20 @@ export function BooksView(): React.ReactElement<{}> {
   const [selectedBook, setSelectedBook] = React.useState<Book | null>(null);
   const [stagedBook, setStagedBook] = React.useState<Book | null>(null);
   const [filterValue, setFilterValue] = React.useState<string>("");
+
+  /**
+   * `true` if there is any existing book in app data that has
+   * the same title as the book being edited.
+   * `false` otherwise.
+   */
+  const hasExistingBookWithSameTitle = React.useMemo<boolean>(() => {
+    for (const b of appData.books.values()) {
+      if (stagedBook?.title === b.title && stagedBook?.id !== b.id) {
+        return true;
+      }
+    }
+    return false;
+  }, [appData.books, stagedBook]);
 
   /**
    * Commit staged user into app data.
@@ -160,6 +175,13 @@ export function BooksView(): React.ReactElement<{}> {
         </Grid.Column>
         {selectedBook && (
           <Grid.Column width={8}>
+            {/* Existing Book Warning */}
+            {hasExistingBookWithSameTitle && (
+              <Message warning>
+                There is a book with the same title with the book that is being
+                edited.
+              </Message>
+            )}
             {/* Book Edit Form */}
             <BookEditForm
               book={selectedBook}
