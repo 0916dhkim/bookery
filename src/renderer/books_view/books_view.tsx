@@ -13,20 +13,169 @@ import { AppDataContext } from "../app_data_context";
 import { Book } from "../../common/persistence/book";
 import { assertWrapper } from "../../common/assert_wrapper";
 import { RequestContext } from "../request_context";
+import {
+  addBook,
+  updateBook,
+  deleteBook
+} from "../../common/persistence/app_data";
+import { produce } from "../../common/persistence/immer-initialized";
+
+interface BooksViewState {
+  /**
+   * A copy of a book from app data
+   * that is being edited.
+   */
+  selectedBook: Book | null;
+  /**
+   * If this editor is editing a book that is
+   * not inside app data yet.
+   */
+  editingNewBook: boolean;
+  titleField: string;
+  authorField: string;
+  isbnField: string;
+  filterValue: string;
+}
+
+type BooksViewAction =
+  | { type: "New Book" }
+  | { type: "Close Book Editor" }
+  | { type: "Select Book"; book: Book }
+  | { type: "Change Title"; title: string }
+  | { type: "Change Author"; author: string }
+  | { type: "Change ISBN"; isbn: string }
+  | { type: "Change Filter"; filter: string };
+
+function reducer(
+  state: BooksViewState,
+  action: BooksViewAction
+): BooksViewState {
+  switch (action.type) {
+    case "New Book":
+      return produce(state, draft => {
+        draft.selectedBook = null;
+        draft.editingNewBook = true;
+        draft.titleField = "";
+        draft.authorField = "";
+        draft.isbnField = "";
+      });
+    case "Close Book Editor":
+      return produce(state, draft => {
+        draft.selectedBook = null;
+        draft.editingNewBook = false;
+      });
+    case "Select Book":
+      return produce(state, draft => {
+        draft.selectedBook = action.book;
+        draft.editingNewBook = false;
+        draft.titleField = action.book.title;
+        draft.authorField = action.book.author;
+        draft.isbnField = action.book.isbn ?? "";
+      });
+    case "Change Title":
+      return produce(state, draft => {
+        draft.titleField = action.title;
+      });
+    case "Change Author":
+      return produce(state, draft => {
+        draft.authorField = action.author;
+      });
+    case "Change ISBN":
+      return produce(state, draft => {
+        draft.isbnField = action.isbn;
+      });
+    case "Change Filter":
+      return produce(state, draft => {
+        draft.filterValue = action.filter;
+      });
+  }
+}
 
 export function BooksView(): React.ReactElement<{}> {
   const { appData, setAppData } = React.useContext(AppDataContext);
   const { request } = React.useContext(RequestContext);
-  const [selectedBook, setSelectedBook] = React.useState<Book | null>(null);
-  const [stagedBook, setStagedBook] = React.useState<Book | null>(null);
-  const [filterValue, setFilterValue] = React.useState<string>("");
+  const [state, dispatch] = React.useReducer(reducer, {
+    selectedBook: null,
+    editingNewBook: false,
+    titleField: "",
+    authorField: "",
+    isbnField: "",
+    filterValue: ""
+  });
+
+  // Validate title.
+  const titleFieldError = React.useMemo<string | null>(() => {
+    if (state.titleField.length === 0) {
+      return "Please enter title";
+    }
+    return null;
+  }, [state.titleField]);
+
+  // Validate author.
+  const authorFieldError = React.useMemo<string | null>(() => {
+    if (state.authorField.length === 0) {
+      return "Please enter author";
+    }
+    return null;
+  }, [state.authorField]);
+
+  const isValid = React.useMemo<boolean>(() => {
+    return titleFieldError === null && authorFieldError === null;
+  }, [titleFieldError, authorFieldError]);
+
+  /**
+   * `true` if form fields are modified.
+   * `false` otherwise.
+   */
+  const isModified = React.useMemo<boolean>(() => {
+    if (!state.selectedBook) {
+      return state.editingNewBook;
+    }
+
+    if (
+      state.titleField !== state.selectedBook.title ||
+      state.authorField !== state.selectedBook.author ||
+      state.isbnField !== (state.selectedBook.isbn ?? "")
+    ) {
+      return true;
+    }
+    return false;
+  }, [
+    state.selectedBook,
+    state.editingNewBook,
+    state.titleField,
+    state.authorField,
+    state.isbnField
+  ]);
+
+  /**
+   * `true` if there is any existing book in app data that has
+   * the same title as the book being edited.
+   * `false` otherwise.
+   */
+  const hasExistingBookWithSameTitle = React.useMemo<boolean>(() => {
+    for (const b of appData.books.values()) {
+      if (
+        state.titleField === b.title &&
+        (state.editingNewBook || state.selectedBook?.id !== b.id)
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }, [
+    appData.books,
+    state.titleField,
+    state.editingNewBook,
+    state.selectedBook
+  ]);
 
   /**
    * Commit staged user into app data.
    * @returns `true` if user is commited. `false` otherwise.
    */
   async function commitStagedBook(): Promise<boolean> {
-    if (!stagedBook) {
+    if (!isValid) {
       await request({
         type: "SHOW-ERROR-MESSAGE",
         title: "Forms Error",
@@ -35,8 +184,31 @@ export function BooksView(): React.ReactElement<{}> {
       return false;
     }
 
-    setSelectedBook(stagedBook);
-    setAppData(appData.setBook(stagedBook));
+    const formValues = {
+      title: state.titleField,
+      author: state.authorField,
+      isbn: state.isbnField
+    };
+
+    if (state.selectedBook) {
+      // Committing an existing book.
+      const nextSelectedBook: Book = {
+        id: state.selectedBook.id,
+        ...formValues
+      };
+      setAppData(updateBook(appData, nextSelectedBook));
+      dispatch({ type: "Select Book", book: nextSelectedBook });
+    } else {
+      // Committing a new book.
+      const [nextAppData, nextSelectedBook] = addBook(
+        appData,
+        formValues.title,
+        formValues.author,
+        formValues.isbn === "" ? undefined : formValues.isbn
+      );
+      setAppData(nextAppData);
+      dispatch({ type: "Select Book", book: nextSelectedBook });
+    }
     return true;
   }
 
@@ -44,25 +216,9 @@ export function BooksView(): React.ReactElement<{}> {
    * @returns true if the form can be discarded without worrying about book modifications. False otherwise.
    */
   async function checkIfSafeToOverrideUserEditForm(): Promise<boolean> {
-    if (!selectedBook) {
-      return true;
-    }
-    let needToAsk = false;
-    if (!stagedBook) {
-      needToAsk = true;
-    } else {
-      assertWrapper(selectedBook.id === stagedBook.id);
-      if (
-        selectedBook.title !== stagedBook.title ||
-        selectedBook.author !== stagedBook.author ||
-        selectedBook.isbn !== stagedBook.isbn
-      ) {
-        // Book form modified.
-        needToAsk = true;
-      }
-    }
-
-    if (needToAsk) {
+    if (isModified) {
+      // Book form modified.
+      // Ask for user permission.
       const warningResponse = await request({
         type: "SHOW-OVERRIDE-WARNING",
         message: "Do you want to save changes?"
@@ -85,7 +241,7 @@ export function BooksView(): React.ReactElement<{}> {
    */
   async function handleBookClick(book: Book): Promise<void> {
     if (await checkIfSafeToOverrideUserEditForm()) {
-      setSelectedBook(book);
+      dispatch({ type: "Select Book", book: book });
     }
   }
 
@@ -94,8 +250,7 @@ export function BooksView(): React.ReactElement<{}> {
    */
   async function handleNewBookButtonClick(): Promise<void> {
     if (await checkIfSafeToOverrideUserEditForm()) {
-      const generatedBook = appData.generateBook("", "");
-      setSelectedBook(generatedBook);
+      dispatch({ type: "New Book" });
     }
   }
 
@@ -112,18 +267,26 @@ export function BooksView(): React.ReactElement<{}> {
         return null;
       },
       get OK(): null {
-        assertWrapper(selectedBook);
-        let nextAppData = appData.deleteBook(selectedBook)[0];
-        Array.from(appData.views.values())
-          .filter(view => view.bookId === selectedBook.id)
-          .forEach(view => {
-            nextAppData = nextAppData.deleteView(view)[0];
-          });
-        setAppData(nextAppData);
-        setSelectedBook(null);
+        if (state.selectedBook) {
+          const [nextAppData] = deleteBook(appData, state.selectedBook.id);
+          setAppData(nextAppData);
+        }
+        dispatch({ type: "Close Book Editor" });
         return null;
       }
     }[warningResponse]);
+  }
+
+  /**
+   * Handle reset button click event.
+   */
+  function handleResetButtonClick(): void {
+    if (state.editingNewBook) {
+      dispatch({ type: "New Book" });
+    } else {
+      assertWrapper(state.selectedBook);
+      dispatch({ type: "Select Book", book: state.selectedBook });
+    }
   }
 
   return (
@@ -133,9 +296,9 @@ export function BooksView(): React.ReactElement<{}> {
         <Input
           type="text"
           icon="search"
-          value={filterValue}
+          value={state.filterValue}
           onChange={(event): void => {
-            setFilterValue(event.target.value);
+            dispatch({ type: "Change Filter", filter: event.target.value });
           }}
           style={{ flexGrow: 1 }}
         />
@@ -156,15 +319,41 @@ export function BooksView(): React.ReactElement<{}> {
       <Grid divided="vertically">
         <Grid.Column width={8}>
           {/* Books List */}
-          <BooksList filterQuery={filterValue} onSelect={handleBookClick} />
+          <BooksList
+            filterQuery={state.filterValue}
+            onSelect={handleBookClick}
+          />
         </Grid.Column>
-        {selectedBook && (
+        {(state.selectedBook || state.editingNewBook) && (
           <Grid.Column width={8}>
             {/* Book Edit Form */}
             <BookEditForm
-              book={selectedBook}
+              title={state.titleField}
+              onTitleChange={(title): void =>
+                dispatch({ type: "Change Title", title: title })
+              }
+              titleError={titleFieldError}
+              author={state.authorField}
+              onAuthorChange={(author): void =>
+                dispatch({ type: "Change Author", author: author })
+              }
+              authorError={authorFieldError}
+              isbn={state.isbnField}
+              onIsbnChange={(isbn): void =>
+                dispatch({
+                  type: "Change ISBN",
+                  isbn: isbn
+                })
+              }
               onCommit={commitStagedBook}
-              onChange={setStagedBook}
+              onReset={handleResetButtonClick}
+              warnings={
+                hasExistingBookWithSameTitle
+                  ? [
+                      "There is a book with the same title as the book that is being edited."
+                    ]
+                  : []
+              }
             />
             <Segment basic>
               <Button

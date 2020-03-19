@@ -10,7 +10,7 @@ import {
 import userEvent from "@testing-library/user-event";
 import * as React from "react";
 import { UsersView } from "../../src/renderer/users_view";
-import { AppData } from "../../src/common/persistence/app_data";
+import { AppData, createAppData } from "../../src/common/persistence/app_data";
 import * as assert from "assert";
 import { AppDataContext } from "../../src/renderer/app_data_context";
 import { act } from "react-dom/test-utils";
@@ -29,7 +29,7 @@ class Tester extends React.Component<{}, TesterState> {
   constructor(props: { children: React.ReactElement }) {
     super(props);
     this.state = {
-      appData: new AppData()
+      appData: createAppData()
     };
   }
   render(): React.ReactNode {
@@ -86,8 +86,14 @@ describe("UsersView", function() {
 
   describe("Suggestions List", function() {
     it("Exists", function() {
-      let x = new AppData();
-      x = x.setUser(x.generateUser("Kid", "Derek", "Invincible."));
+      const x = createAppData({
+        books: [],
+        users: [
+          { id: 1000, lastName: "Kid", firstName: "Derek", note: "Invincible." }
+        ],
+        views: []
+      });
+      assertWrapper(x);
       setAppData(x);
       assert(
         within(renderResult.getByTestId("suggestions-list")).getByText(/Kid/)
@@ -97,11 +103,25 @@ describe("UsersView", function() {
 
   describe("Delete Button", function() {
     it("Exists", async function() {
-      let x = new AppData();
-      x = x.setUser(
-        x.generateUser("Dwarf", "Gnome", "Not a real good name, I know.")
-      );
-      x = x.setUser(x.generateUser("King", "Arthur", "A great name, I know."));
+      const x = createAppData({
+        books: [],
+        users: [
+          {
+            id: 120,
+            lastName: "Dwarf",
+            firstName: "Gnome",
+            note: "Not a real good name, I know."
+          },
+          {
+            id: 192,
+            lastName: "King",
+            firstName: "Arthur",
+            note: "A great name, I know."
+          }
+        ],
+        views: []
+      });
+      assertWrapper(x);
       setAppData(x);
       userEvent.click(
         within(renderResult.getByTestId("suggestions-list")).getByText(/King/)
@@ -112,9 +132,15 @@ describe("UsersView", function() {
     });
 
     it("Warns When Deleting A User", async function() {
-      let x = new AppData();
-      x = x.setUser(x.generateUser("De Blasio", "Paul"));
-      x = x.setUser(x.generateUser("Panza", "Sancho"));
+      const x = createAppData({
+        books: [],
+        views: [],
+        users: [
+          { id: 532, lastName: "De Blasio", firstName: "Paul" },
+          { id: 1124, lastName: "Panza", firstName: "Sancho" }
+        ]
+      });
+      assertWrapper(x);
       setAppData(x);
 
       fakeRequest.reset();
@@ -133,9 +159,15 @@ describe("UsersView", function() {
     });
 
     it("Abort Deleting When Requested", async function() {
-      let x = new AppData();
-      x = x.setUser(x.generateUser("Raider", "Trev"));
-      x = x.setUser(x.generateUser("Parker", "Fred"));
+      const x = createAppData({
+        books: [],
+        views: [],
+        users: [
+          { id: 3421, lastName: "Raider", firstName: "Trev" },
+          { id: 9192, lastName: "Parker", firstName: "Fred" }
+        ]
+      });
+      assertWrapper(x);
       setAppData(x);
 
       // Represent pressing cancel option.
@@ -159,10 +191,19 @@ describe("UsersView", function() {
     });
 
     it("Delete Single User", async function() {
-      let x = new AppData();
-      x = x.setUser(
-        x.generateUser("Solo", "Han", "Totally not from Start Wars")
-      );
+      const x = createAppData({
+        books: [],
+        views: [],
+        users: [
+          {
+            id: 582,
+            lastName: "Solo",
+            firstName: "Han",
+            note: "Totally not from Star Wars"
+          }
+        ]
+      });
+      assertWrapper(x);
       setAppData(x);
 
       assert.strictEqual(getAppData().users.size, 1);
@@ -180,9 +221,19 @@ describe("UsersView", function() {
     });
 
     it("Deleting A User Hides The Edit Form", async function() {
-      let x = new AppData();
-      x = x.setUser(x.generateUser("Fury", "Neal"));
-      x = x.setUser(x.generateUser("Jackson", "Dan"));
+      const x = createAppData({
+        books: [],
+        views: [],
+        users: [
+          { id: 5292, lastName: "Fury", firstName: "Neal" },
+          {
+            id: 1122,
+            lastName: "Jackson",
+            firstName: "Dan"
+          }
+        ]
+      });
+      assertWrapper(x);
       setAppData(x);
 
       userEvent.click(
@@ -199,24 +250,37 @@ describe("UsersView", function() {
     });
 
     it("Deleting A User Should Cascade", async function() {
-      let x = new AppData();
-      const bookA = x.generateBook("ABC", "noname");
-      x = x.setBook(bookA);
-      const bookB = x.generateBook("DEF", "noname");
-      x = x.setBook(bookB);
-      const userDan = x.generateUser("Smith", "Dan");
-      x = x.setUser(userDan);
-      const userFrank = x.generateUser("Kennedy", "Frank");
-      x = x.setUser(userFrank);
-      x = x.setView(
-        x.generateView(userDan.id, bookA.id, moment.utc("20100517").valueOf())
-      );
-      x = x.setView(
-        x.generateView(userFrank.id, bookA.id, moment.utc("20111203").valueOf())
-      );
-      x = x.setView(
-        x.generateView(userFrank.id, bookB.id, moment.utc("20120109").valueOf())
-      );
+      const x = createAppData({
+        books: [
+          { id: 522, title: "ABC", author: "noname" },
+          { id: 1231, title: "DEF", author: "noname" }
+        ],
+        users: [
+          { id: 9919, lastName: "Smith", firstName: "Dan" },
+          { id: 3333, lastName: "Kennedy", firstName: "Frank" }
+        ],
+        views: [
+          {
+            id: 13,
+            userId: 9919,
+            bookId: 522,
+            date: moment.utc("20100517").valueOf()
+          },
+          {
+            id: 14,
+            userId: 3333,
+            bookId: 522,
+            date: moment.utc("20111203").valueOf()
+          },
+          {
+            id: 15,
+            userId: 3333,
+            bookId: 1231,
+            date: moment.utc("20120109").valueOf()
+          }
+        ]
+      });
+      assertWrapper(x);
       setAppData(x);
 
       userEvent.click(
@@ -251,9 +315,12 @@ describe("UsersView", function() {
   describe("User History Edit Form", function() {
     describe("User History List Length", function() {
       it("Exists", async function() {
-        let x = new AppData();
-        x = x.setBook(x.generateBook("SDFLKA", "Tom Black"));
-        x = x.setUser(x.generateUser("Blue", "Gerald"));
+        const x = createAppData({
+          books: [{ id: 874, title: "SDFLKA", author: "Tom Black" }],
+          users: [{ id: 532, lastName: "Blue", firstName: "Gerald" }],
+          views: []
+        });
+        assertWrapper(x);
         setAppData(x);
 
         userEvent.click(
@@ -267,8 +334,12 @@ describe("UsersView", function() {
       });
 
       it("No History View For New User", async function() {
-        let x = new AppData();
-        x = x.setBook(x.generateBook("Pink", "Jace Tuna"));
+        const x = createAppData({
+          books: [{ id: 42901, title: "Pink", author: "Jace Tuna" }],
+          users: [],
+          views: []
+        });
+        assertWrapper(x);
         setAppData(x);
 
         userEvent.click(renderResult.getByText(/New User/i));
@@ -279,19 +350,29 @@ describe("UsersView", function() {
       });
 
       it("1 User 3 Books 2 Views", async function() {
-        let x = new AppData();
-        const onlyUser = x.generateUser("A", "K");
-        x = x.setUser(onlyUser);
-        const firstBook = x.generateBook("LSDKFK", "LSKQWE");
-        x = x.setBook(firstBook);
-        const secondBook = x.generateBook("RIELWWL", "OQWI#KDS");
-        x = x.setBook(secondBook);
-        const thirdBook = x.generateBook("RWOIVV", "PIOPWERU");
-        x = x.setBook(thirdBook);
-        x = x.setView(x.generateView(onlyUser.id, firstBook.id, 1318781875826));
-        x = x.setView(
-          x.generateView(onlyUser.id, secondBook.id, 1318781875826)
-        );
+        const x = createAppData({
+          users: [{ id: 777, lastName: "A", firstName: "K" }],
+          books: [
+            { id: 1, title: "LSDKFK", author: "LSKQWE" },
+            { id: 2, title: "RIELWWL", author: "OQWIKDS" },
+            { id: 3, title: "RWOIVV", author: "PIOPWERU" }
+          ],
+          views: [
+            {
+              id: 1000,
+              userId: 777,
+              bookId: 1,
+              date: moment.utc("20010101").valueOf()
+            },
+            {
+              id: 2000,
+              userId: 777,
+              bookId: 2,
+              date: moment.utc("20020202").valueOf()
+            }
+          ]
+        });
+        assertWrapper(x);
         setAppData(x);
 
         // Select user.
@@ -311,33 +392,49 @@ describe("UsersView", function() {
       });
 
       it("2 Users 2 Books 1 View Each (2 Total)", async function() {
-        let x = new AppData();
-        const userAlpha = x.generateUser(
-          "Tempest",
-          "Alpha",
-          "The One And Only Alpha!"
-        );
-        x = x.setUser(userAlpha);
-        const userBeta = x.generateUser("Tempest", "Beta", "Next Gen Stuff");
-        x = x.setUser(userBeta);
-        const bookForAlpha = x.generateBook("A Book For Alpha", "Secret Agent");
-        x = x.setBook(bookForAlpha);
-        const bookForBeta = x.generateBook("Beta: A Memoir", "Dev Group Gamma");
-        x = x.setBook(bookForBeta);
-        x = x.setView(
-          x.generateView(
-            userAlpha.id,
-            bookForAlpha.id,
-            moment.utc("20110101").valueOf()
-          )
-        );
-        x = x.setView(
-          x.generateView(
-            userBeta.id,
-            bookForBeta.id,
-            moment.utc("20170913").valueOf()
-          )
-        );
+        const x = createAppData({
+          users: [
+            {
+              id: 401,
+              lastName: "Tempest",
+              firstName: "Alpha",
+              note: "The One And Only Alpha!"
+            },
+            {
+              id: 402,
+              lastName: "Tempest",
+              firstName: "Beta",
+              note: "Next Gen Stuff"
+            }
+          ],
+          books: [
+            {
+              id: 201,
+              title: "A Book For Alpha",
+              author: "Secret Agent"
+            },
+            {
+              id: 202,
+              title: "Beta: A Memoir",
+              author: "Dev Group Gamma"
+            }
+          ],
+          views: [
+            {
+              id: 1001,
+              userId: 401,
+              bookId: 201,
+              date: moment.utc("20110101").valueOf()
+            },
+            {
+              id: 1002,
+              userId: 402,
+              bookId: 202,
+              date: moment.utc("20170913").valueOf()
+            }
+          ]
+        });
+        assertWrapper(x);
         setAppData(x);
 
         // Select alpha.
@@ -368,15 +465,19 @@ describe("UsersView", function() {
       });
 
       it("1 User 1 Book 0 View", async function() {
-        let x = new AppData();
-        x = x.setUser(
-          x.generateUser(
-            "The Great",
-            "Alexander",
-            "I don't know his last name."
-          )
-        );
-        x = x.setBook(x.generateBook("A Forbidden Script", "Elder God"));
+        const x = createAppData({
+          users: [
+            {
+              id: 8900,
+              lastName: "The Great",
+              firstName: "Alexander",
+              note: "I don't know his last name."
+            }
+          ],
+          books: [{ id: 39, title: "A Forbidden Script", author: "Elder God" }],
+          views: []
+        });
+        assertWrapper(x);
         setAppData(x);
 
         // Select Alexander the Great.
@@ -397,9 +498,19 @@ describe("UsersView", function() {
 
     describe("Adding Views", async function() {
       it("1 User 1 Book 0 View", async function() {
-        let x = new AppData();
-        x = x.setBook(x.generateBook("Diary", "You Know Who"));
-        x = x.setUser(x.generateUser("Last", "First", "Nothing in particular"));
+        const x = createAppData({
+          books: [{ id: 672, title: "Diary", author: "You Know Who" }],
+          users: [
+            {
+              id: 266,
+              lastName: "Last",
+              firstName: "First",
+              note: "Nothing in particular"
+            }
+          ],
+          views: []
+        });
+        assertWrapper(x);
         setAppData(x);
 
         // Select user.
@@ -438,8 +549,12 @@ describe("UsersView", function() {
       });
 
       it("History Add Button Should Be Disabled Before Selecting A Book", async function() {
-        let x = new AppData();
-        x = x.setUser(x.generateUser("Host", "Jack"));
+        const x = createAppData({
+          users: [{ id: 848, lastName: "Host", firstName: "Jack" }],
+          books: [],
+          views: []
+        });
+        assertWrapper(x);
         setAppData(x);
 
         // Select user.
@@ -456,9 +571,19 @@ describe("UsersView", function() {
       });
 
       it("Selecting A Book Should Display What Is Selected", async function() {
-        let x = new AppData();
-        x = x.setBook(x.generateBook("Github Guide", "Seasoned Dev"));
-        x = x.setUser(x.generateUser("Newbie", "Charlie", "Wannabe Hacker"));
+        const x = createAppData({
+          books: [{ id: 1010, title: "Github Guide", author: "Seasoned Dev" }],
+          users: [
+            {
+              id: 752,
+              lastName: "Newbie",
+              firstName: "Charlie",
+              note: "Wannabe Hacker"
+            }
+          ],
+          views: []
+        });
+        assertWrapper(x);
         setAppData(x);
 
         userEvent.click(
@@ -492,12 +617,22 @@ describe("UsersView", function() {
 
     describe("Fuzzy Search", function() {
       it("Query A With [ABC, XYZ]", async function() {
-        let x = new AppData();
-        x = x.setBook(x.generateBook("ABC", "No One"));
-        x = x.setBook(x.generateBook("XYZ", "No One"));
-        x = x.setUser(
-          x.generateUser("Drake", "Timothy", "Just finished reading ABC")
-        );
+        const x = createAppData({
+          books: [
+            { id: 5252, title: "ABC", author: "No One" },
+            { id: 2525, title: "XYZ", author: "No One" }
+          ],
+          users: [
+            {
+              id: 907,
+              lastName: "Drake",
+              firstName: "Timothy",
+              note: "Just finished reading ABC"
+            }
+          ],
+          views: []
+        });
+        assertWrapper(x);
         setAppData(x);
 
         userEvent.click(
@@ -531,9 +666,12 @@ describe("UsersView", function() {
       });
 
       it("Query Title And Author", async function() {
-        let x = new AppData();
-        x = x.setBook(x.generateBook("ABC", "DEF"));
-        x = x.setUser(x.generateUser("Bloodwing", "Dennis"));
+        const x = createAppData({
+          books: [{ id: 1375, title: "ABC", author: "DEF" }],
+          users: [{ id: 4911, lastName: "Bloodwing", firstName: "Dennis" }],
+          views: []
+        });
+        assertWrapper(x);
         setAppData(x);
 
         userEvent.click(

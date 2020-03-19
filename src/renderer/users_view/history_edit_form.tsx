@@ -17,6 +17,7 @@ import {
 import { Book } from "../../common/persistence/book";
 import { Filter } from "../../common/persistence/filter";
 import { BookFilter } from "../../common/persistence/book_filter";
+import { addView, deleteView } from "../../common/persistence/app_data";
 
 /**
  * Convert a book to be presented inside dropdown menu.
@@ -51,12 +52,13 @@ export function HistoryEditForm({
     assertWrapper(historyInputValue);
     const selectedBook = appData.books.get(historyInputValue);
     assertWrapper(selectedBook);
-    const view = appData.generateView(
+    const [nextAppData] = addView(
+      appData,
       user.id,
       selectedBook.id,
-      moment.utc().valueOf()
+      moment().valueOf()
     );
-    setAppData(appData.setView(view));
+    setAppData(nextAppData);
     setHistoryInputValue(null);
   }
 
@@ -136,7 +138,8 @@ export function HistoryEditForm({
                     link
                     color="red"
                     onClick={(): void => {
-                      setAppData(appData.deleteView(view)[0]);
+                      const [nextAppData] = deleteView(appData, view.id);
+                      setAppData(nextAppData);
                     }}
                   />
                   {book.title} by {book.author}

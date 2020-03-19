@@ -8,12 +8,13 @@ import {
 import { BooksView } from "../../src/renderer/books_view";
 import * as React from "react";
 import { AppDataContext } from "../../src/renderer/app_data_context";
-import { AppData } from "../../src/common/persistence/app_data";
+import { AppData, createAppData } from "../../src/common/persistence/app_data";
 import * as moment from "moment";
 import userEvent from "@testing-library/user-event";
 import * as sinon from "sinon";
 import * as assert from "assert";
 import { RequestContext } from "../../src/renderer/request_context";
+import { assertWrapper } from "../../src/common/assert_wrapper";
 
 const sandbox = sinon.createSandbox();
 
@@ -25,24 +26,37 @@ describe("BooksView", function() {
 
   describe("Delete Button", function() {
     it("Deleting A Book Should Cascade", async function() {
-      let x = new AppData();
-      const bookA = x.generateBook("ABC", "noname");
-      x = x.setBook(bookA);
-      const bookB = x.generateBook("DEF", "noname");
-      x = x.setBook(bookB);
-      const userDan = x.generateUser("Smith", "Dan");
-      x = x.setUser(userDan);
-      const userFrank = x.generateUser("Kennedy", "Frank");
-      x = x.setUser(userFrank);
-      x = x.setView(
-        x.generateView(userDan.id, bookA.id, moment.utc("20100517").valueOf())
-      );
-      x = x.setView(
-        x.generateView(userFrank.id, bookA.id, moment.utc("20111203").valueOf())
-      );
-      x = x.setView(
-        x.generateView(userFrank.id, bookB.id, moment.utc("20120109").valueOf())
-      );
+      const x: AppData | null = createAppData({
+        books: [
+          { id: 1, title: "ABC", author: "noname" },
+          { id: 2, title: "DEF", author: "noname" }
+        ],
+        users: [
+          { id: 3, lastName: "Smith", firstName: "Dan" },
+          { id: 4, lastName: "Kennedy", firstName: "Frank" }
+        ],
+        views: [
+          {
+            id: 5,
+            userId: 3,
+            bookId: 1,
+            date: moment.utc("20100517").valueOf()
+          },
+          {
+            id: 6,
+            userId: 4,
+            bookId: 1,
+            date: moment.utc("20111203").valueOf()
+          },
+          {
+            id: 7,
+            userId: 4,
+            bookId: 2,
+            date: moment.utc("20120109").valueOf()
+          }
+        ]
+      });
+      assertWrapper(x);
 
       const fakeSetAppData = sandbox.stub<[AppData], void>();
       const fakeRequest = sandbox.stub();
