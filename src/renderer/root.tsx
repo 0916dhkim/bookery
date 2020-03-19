@@ -15,7 +15,7 @@ import { Container, Segment } from "semantic-ui-react";
 import { Request } from "../common/request";
 import { RequestContext } from "./request_context";
 import { castDraft, produce } from "../common/persistence/immer-initialized";
-import { UseEventHandler } from "../common/event";
+import { UseEventHandler, EventOptions } from "../common/event";
 import { WelcomeView } from "./welcome_view";
 
 export interface RootProps {
@@ -98,6 +98,39 @@ const contentViews: ContentViewElementInterface[] = [
     viewType: QueryView
   }
 ];
+
+/**
+ * Deserialize a file into app data.
+ * @param path Path of a file to read app data from.
+ * @returns the deserialized app data. `null` if failed.
+ */
+function getAppDataFromFile(path: string): AppData | null {
+  try {
+    const fileContent = fs.readFileSync(path, { encoding: "utf8" });
+    return deserializeAppData(fileContent);
+  } catch {
+    return null;
+  }
+}
+
+async function initializeHandler(
+  dispatch: React.Dispatch<RootAction>,
+  { processArgs }: EventOptions<"ON-INITIALIZE">
+): Promise<void> {
+  if (processArgs.length < 2) {
+    // No process argument provided.
+    return;
+  }
+  // The first process argument is a path of an app data file.
+  // Deserialize the file to initialize this Root component.
+  const path = processArgs[1];
+  const deserializedData = getAppDataFromFile(path);
+  if (deserializedData === null) {
+    return;
+  }
+  dispatch({ type: "Open File", fileData: deserializedData, filePath: path });
+  return;
+}
 
 /**
  * @param state Root component state.
@@ -250,8 +283,7 @@ async function openFileMenuHandler(
     if (await ensureSafeToOverrideAppData(request, dispatch, state)) {
       const file = await request({ type: "SHOW-OPEN-DIALOG" });
       if (file !== null) {
-        const fileContent = fs.readFileSync(file, { encoding: "utf8" });
-        const appDataFromFile = deserializeAppData(fileContent);
+        const appDataFromFile = getAppDataFromFile(file);
         if (appDataFromFile === null) {
           throw "Failed to deserialize file.";
         }
@@ -277,6 +309,13 @@ export function Root({
     contentViewIndex: 0,
     currentFilePath: null
   });
+
+  // Request for initialization event from main process.
+  React.useEffect(() => {
+    request({ type: "INVOKE-INITIALIZATION" });
+  }, [request]);
+
+  useEventHandler("ON-INITIALIZE", initializeHandler.bind(null, dispatch));
   useEventHandler(
     "ON-CLOSE",
     closeHandler.bind(null, request, dispatch, state)

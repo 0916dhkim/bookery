@@ -10,12 +10,22 @@ import {
 } from "../common/request";
 import * as path from "path";
 import { format as formatUrl } from "url";
+import { EventEmitter } from "../common/event";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 
 // global reference to mainWindow (necessary to prevent window from being garbage collected)
 let mainWindow: BrowserWindow | null = null;
 let closeRequestReceived = false;
+
+async function invokeInitializationRequestHandler(
+  emit: EventEmitter
+): Promise<Response<"INVOKE-INITIALIZATION">> {
+  emit({
+    type: "ON-INITIALIZE",
+    processArgs: process.argv
+  });
+}
 
 async function getVersionRequestHandler(): Promise<Response<"GET-VERSION">> {
   return app.getVersion();
@@ -160,6 +170,10 @@ function createMainWindow(): BrowserWindow {
     });
   });
 
+  registerRequestHandler(
+    "INVOKE-INITIALIZATION",
+    invokeInitializationRequestHandler.bind(null, emit)
+  );
   registerRequestHandler("GET-VERSION", getVersionRequestHandler);
   registerRequestHandler("CLOSE-WINDOW", closeRequestHandler);
   registerRequestHandler("SHOW-OPEN-DIALOG", showOpenDialogRequestHandler);
