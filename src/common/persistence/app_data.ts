@@ -1,224 +1,182 @@
-import { Serializer } from "./serializable";
-import { Book, BookSerializer } from "./book";
-import { User, UserSerializer } from "./user";
-import { View, ViewSerializer } from "./view";
-import { immerable, produce } from "./immer-initialized";
+import { Book } from "./book";
+import { User } from "./user";
+import { View } from "./view";
+import { produce } from "./immer-initialized";
 
-export class AppData {
-  [immerable] = true;
-
-  readonly books: ReadonlyMap<number, Book>;
-  readonly users: ReadonlyMap<number, User>;
-  readonly views: ReadonlyMap<number, View>;
-
-  constructor() {
-    this.books = new Map();
-    this.users = new Map();
-    this.views = new Map();
-  }
-
-  /**
-   * Set given book into books map.
-   * @param book new book
-   * @returns new instance of this with set book.
-   */
-  setBook(book: Book): AppData {
-    return produce(this, (draft): void => {
-      draft.books.set(book.id, book);
-    });
-  }
-
-  /**
-   * Set given user into users map.
-   * @param user new user
-   * @returns new instance of this with set user.
-   */
-  setUser(user: User): AppData {
-    return produce(this, (draft): void => {
-      draft.users.set(user.id, user);
-    });
-  }
-
-  /**
-   * Set given view into views map.
-   * @param view new view
-   * @returns new instance of this with set view.
-   */
-  setView(view: View): AppData {
-    return produce(this, (draft): void => {
-      draft.views.set(view.id, view);
-    });
-  }
-
-  /**
-   * Delete a book from books map.
-   * @param book book to be deleted.
-   * @returns a tuple.
-   *
-   * First element: new instance of this without deleted book.
-   *
-   * Second element: `true` if the given book has been removed. `false` otherwise.
-   */
-  deleteBook(book: Book): [AppData, boolean] {
-    let ret = false;
-    const nextAppData = produce(this, (draft): void => {
-      ret = draft.books.delete(book.id);
-    });
-    return [nextAppData, ret];
-  }
-
-  /**
-   * Delete a user from users map.
-   * @param user user to be deleted.
-   * @returns a tuple.\
-   * First element: new instance of this without deleted user.\
-   * Second element: `true` if the given user has been removed. `false` otherwise.
-   */
-  deleteUser(user: User): [AppData, boolean] {
-    let ret = false;
-    const nextAppData = produce(this, (draft): void => {
-      ret = draft.users.delete(user.id);
-    });
-    return [nextAppData, ret];
-  }
-
-  /**
-   * Delete a view from views map.
-   * @param view view to be deleted.
-   * @returns a tuple.\
-   * First element: new instance of this without deleted view.\
-   * Second element: `true` if the given view has been removed. `false` otherwise.
-   */
-  deleteView(view: View): [AppData, boolean] {
-    let ret = false;
-    const nextAppData = produce(this, (draft): void => {
-      ret = draft.views.delete(view.id);
-    });
-    return [nextAppData, ret];
-  }
-
-  /**
-   * @param collection Iterable collection of objects with ID number.
-   * @returns next available unique ID for given collection.
-   */
-  private getNextId(collection: Iterable<{ id: number }>): number {
-    return Math.max(0, ...Array.from(collection).map(item => item.id)) + 1;
-  }
-
-  /**
-   * Generate a new user.
-   * This method does NOT alter any app data.
-   * @returns generated user.
-   */
-  generateUser(lastName: string, firstName: string, note?: string): User {
-    return new User(
-      this.getNextId(this.users.values()),
-      lastName,
-      firstName,
-      note
-    );
-  }
-
-  /**
-   * Generate a new book.
-   * This method does NOT alter any app data.
-   * @returns generated book.
-   */
-  generateBook(title: string, author: string, isbn?: string): Book {
-    return new Book(this.getNextId(this.books.values()), title, author, isbn);
-  }
-
-  /**
-   * Generate a new view.
-   * This method does NOT alter any app data.
-   * @returns generated view.
-   */
-  generateView(userId: number, bookId: number, date: number): View {
-    return new View(this.getNextId(this.views.values()), userId, bookId, date);
-  }
-
-  equals(other: AppData): boolean {
-    // Compare dimensions.
-    if (
-      this.books.size !== other.books.size ||
-      this.users.size !== other.users.size ||
-      this.views.size !== other.views.size
-    ) {
-      return false;
-    }
-    // Compare individual books.
-    for (const [bookId, book] of this.books) {
-      if (!other.books.get(bookId)?.equals(book)) {
-        return false;
-      }
-    }
-    // Compare individual users.
-    for (const [userId, user] of this.users) {
-      if (!other.users.get(userId)?.equals(user)) {
-        return false;
-      }
-    }
-    // Compare individual views.
-    for (const [viewId, view] of this.views) {
-      if (!other.views.get(viewId)?.equals(view)) {
-        return false;
-      }
-    }
-    // No difference found.
-    return true;
-  }
+export interface AppData {
+  books: Map<number, Book>;
+  users: Map<number, User>;
+  views: Map<number, View>;
 }
 
-export class AppDataSerializer implements Serializer<AppData> {
-  public serialize(target: AppData): string {
-    const bookSerializer = new BookSerializer();
-    const userSerializer = new UserSerializer();
-    const viewSerializer = new ViewSerializer();
+function getNextId(collection: Iterable<{ id: number }>): number {
+  return Math.max(0, ...Array.from(collection).map(e => e.id)) + 1;
+}
 
-    const books = Array.from(target.books.values()).map(book =>
-      JSON.parse(bookSerializer.serialize(book))
-    );
-    const users = Array.from(target.users.values()).map(user =>
-      JSON.parse(userSerializer.serialize(user))
-    );
-    const views = Array.from(target.views.values()).map(view =>
-      JSON.parse(viewSerializer.serialize(view))
-    );
+export function addBook(
+  appData: AppData,
+  title: string,
+  author: string,
+  isbn?: string
+): [AppData, Book] {
+  const book = {
+    id: getNextId(appData.books.values()),
+    title: title,
+    author: author,
+    isbn: isbn
+  };
+  const nextAppData = produce(appData, draft => {
+    draft.books.set(book.id, book);
+  });
+  return [nextAppData, book];
+}
 
-    return JSON.stringify({
-      books: books,
-      users: users,
-      views: views
-    });
+export function addUser(
+  appData: AppData,
+  lastName: string,
+  firstName: string,
+  note?: string
+): [AppData, User] {
+  const user = {
+    id: getNextId(appData.users.values()),
+    lastName: lastName,
+    firstName: firstName,
+    note: note
+  };
+  const nextAppData = produce(appData, draft => {
+    draft.users.set(user.id, user);
+  });
+  return [nextAppData, user];
+}
+
+export function addView(
+  appData: AppData,
+  userId: number,
+  bookId: number,
+  date: number
+): [AppData, View] {
+  const view = {
+    id: getNextId(appData.views.values()),
+    userId: userId,
+    bookId: bookId,
+    date: date
+  };
+  const nextAppData = produce(appData, draft => {
+    draft.views.set(view.id, view);
+  });
+  return [nextAppData, view];
+}
+
+export function updateBook(appData: AppData, book: Book): AppData {
+  return produce(appData, draft => {
+    draft.books.set(book.id, book);
+  });
+}
+
+export function updateUser(appData: AppData, user: User): AppData {
+  return produce(appData, draft => {
+    draft.users.set(user.id, user);
+  });
+}
+
+export function updateView(appData: AppData, view: View): AppData {
+  return produce(appData, draft => {
+    draft.views.set(view.id, view);
+  });
+}
+
+export function deleteBook(
+  appData: AppData,
+  bookId: number
+): [AppData, boolean] {
+  if (!appData.books.has(bookId)) {
+    return [appData, false];
+  }
+  return [
+    produce(appData, draft => {
+      draft.books.delete(bookId);
+      // Cascade views.
+      Array.from(draft.views.values())
+        .filter(view => view.bookId === bookId)
+        .forEach(view => draft.views.delete(view.id));
+    }),
+    true
+  ];
+}
+
+export function deleteUser(
+  appData: AppData,
+  userId: number
+): [AppData, boolean] {
+  if (!appData.users.has(userId)) {
+    return [appData, false];
+  }
+  return [
+    produce(appData, draft => {
+      draft.users.delete(userId);
+      // Cascade views.
+      Array.from(draft.views.values())
+        .filter(view => view.userId === userId)
+        .forEach(view => draft.views.delete(view.id));
+    }),
+    true
+  ];
+}
+
+export function deleteView(
+  appData: AppData,
+  viewId: number
+): [AppData, boolean] {
+  if (!appData.views.has(viewId)) {
+    return [appData, false];
+  }
+  return [
+    produce(appData, draft => {
+      draft.views.delete(viewId);
+    }),
+    true
+  ];
+}
+
+interface PlainAppData {
+  books: Array<Book>;
+  users: Array<User>;
+  views: Array<View>;
+}
+
+export function createAppData(): AppData;
+export function createAppData(plain: PlainAppData): AppData | null;
+export function createAppData(plain?: PlainAppData): AppData | null {
+  if (!plain) {
+    return {
+      books: new Map(),
+      users: new Map(),
+      views: new Map()
+    };
   }
 
-  public deserialize(serializedString: string): AppData {
-    const bookSerializer = new BookSerializer();
-    const userSerializer = new UserSerializer();
-    const viewSerializer = new ViewSerializer();
+  return {
+    books: new Map(plain.books.map(book => [book.id, book])),
+    users: new Map(plain.users.map(user => [user.id, user])),
+    views: new Map(plain.views.map(view => [view.id, view]))
+  };
+}
 
-    const parsedJson = JSON.parse(serializedString);
+export function serializeAppData(appData: AppData): string {
+  const plain: PlainAppData = {
+    books: Array.from(appData.books.values()),
+    users: Array.from(appData.users.values()),
+    views: Array.from(appData.views.values())
+  };
 
-    const parsedBooks = parsedJson.books as {}[];
-    const parsedUsers = parsedJson.users as {}[];
-    const parsedViews = parsedJson.views as {}[];
+  return JSON.stringify(plain);
+}
 
-    let ret = new AppData();
-    ret = produce(ret, draft => {
-      parsedBooks.forEach(x => {
-        const book = bookSerializer.deserialize(JSON.stringify(x));
-        draft.books.set(book.id, book);
-      });
-      parsedUsers.forEach(x => {
-        const user = userSerializer.deserialize(JSON.stringify(x));
-        draft.users.set(user.id, user);
-      });
-      parsedViews.forEach(x => {
-        const view = viewSerializer.deserialize(JSON.stringify(x));
-        draft.views.set(view.id, view);
-      });
-    });
-
-    return ret;
+export function deserializeAppData(s: string): AppData | null {
+  try {
+    const plain = JSON.parse(s) as PlainAppData;
+    return createAppData(plain);
+  } catch {
+    return null;
   }
 }

@@ -1,7 +1,12 @@
 import * as React from "react";
 import * as fs from "fs";
 import { SideMenu } from "./side_menu";
-import { AppData, AppDataSerializer } from "../common/persistence/app_data";
+import {
+  AppData,
+  createAppData,
+  serializeAppData,
+  deserializeAppData
+} from "../common/persistence/app_data";
 import { BooksView } from "./books_view/books_view";
 import { UsersView } from "./users_view";
 import { QueryView } from "./query_view";
@@ -42,7 +47,7 @@ function reducer(state: RootState, action: RootAction): RootState {
   switch (action.type) {
     case "New File":
       return produce(state, draft => {
-        draft.appData = castDraft(new AppData());
+        draft.appData = createAppData();
         draft.originalAppData = null;
         draft.currentFilePath = null;
       });
@@ -110,7 +115,9 @@ function hasUnsavedChanges(state: RootState): boolean {
     return true;
   }
 
-  return !state.appData.equals(state.originalAppData);
+  return (
+    serializeAppData(state.appData) !== serializeAppData(state.originalAppData)
+  );
 }
 
 async function saveAsFileMenuHandler(
@@ -121,8 +128,7 @@ async function saveAsFileMenuHandler(
   try {
     const file = await request({ type: "SHOW-SAVE-DIALOG" });
     if (file !== null && state.appData !== null) {
-      const appDataSerializer = new AppDataSerializer();
-      const serializedAppData = appDataSerializer.serialize(state.appData);
+      const serializedAppData = serializeAppData(state.appData);
       fs.writeFileSync(file, serializedAppData, { encoding: "utf8" });
       dispatch({ type: "Save As File", filePath: file });
     }
@@ -143,8 +149,7 @@ async function saveFileMenuHandler(
         // Equivalent to "save as".
         return saveAsFileMenuHandler(request, dispatch, state);
       }
-      const appDataSerializer = new AppDataSerializer();
-      const serializedAppData = appDataSerializer.serialize(state.appData);
+      const serializedAppData = serializeAppData(state.appData);
       fs.writeFileSync(state.currentFilePath, serializedAppData, {
         encoding: "utf8"
       });
@@ -246,8 +251,10 @@ async function openFileMenuHandler(
       const file = await request({ type: "SHOW-OPEN-DIALOG" });
       if (file !== null) {
         const fileContent = fs.readFileSync(file, { encoding: "utf8" });
-        const appSerializer = new AppDataSerializer();
-        const appDataFromFile = appSerializer.deserialize(fileContent);
+        const appDataFromFile = deserializeAppData(fileContent);
+        if (appDataFromFile === null) {
+          throw "Failed to deserialize file.";
+        }
         dispatch({
           type: "Open File",
           fileData: appDataFromFile,

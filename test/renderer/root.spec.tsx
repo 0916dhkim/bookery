@@ -8,8 +8,8 @@ import { assertWrapper } from "../../src/common/assert_wrapper";
 import * as assert from "assert";
 import * as fs from "fs";
 import {
-  AppDataSerializer,
-  AppData
+  serializeAppData,
+  createAppData
 } from "../../src/common/persistence/app_data";
 
 const sandbox = sinon.createSandbox();
@@ -31,10 +31,9 @@ describe("Root", function() {
         sinon.match.has("type", "SHOW-OPEN-DIALOG")
       );
       fakeOpenRequest.resolves("");
-      const appDataSerializer = new AppDataSerializer();
       sandbox
         .stub(fs, "readFileSync")
-        .returns(appDataSerializer.serialize(new AppData()));
+        .returns(serializeAppData(createAppData()));
       let eventHandlers: { [T in EventType]?: EventHandler<T> } = {};
       function useEventHandlerStub<T extends EventType>(
         eventType: T,
