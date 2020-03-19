@@ -1,4 +1,5 @@
 export type EventType =
+  | "ON-INITIALIZE"
   | "ON-CLOSE"
   | "ON-NEW-FILE-MENU"
   | "ON-OPEN-FILE-MENU"
@@ -6,6 +7,7 @@ export type EventType =
   | "ON-SAVE-AS-MENU";
 
 export type EventOptions<T extends EventType> = { type: T } & {
+  "ON-INITIALIZE": { processArgs: Array<string> };
   "ON-CLOSE": {};
   "ON-NEW-FILE-MENU": {};
   "ON-OPEN-FILE-MENU": {};
