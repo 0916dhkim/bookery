@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Segment, Header, Form } from "semantic-ui-react";
+import { Segment, Header, Form, Message } from "semantic-ui-react";
 
 export interface BookEditFormProps {
   title: string;
@@ -12,6 +12,7 @@ export interface BookEditFormProps {
   onIsbnChange: (isbn: string) => void;
   onCommit: () => void;
   onReset: () => void;
+  warnings: Array<string>;
 }
 
 export function BookEditForm({
@@ -24,7 +25,8 @@ export function BookEditForm({
   isbn,
   onIsbnChange,
   onCommit,
-  onReset
+  onReset,
+  warnings
 }: BookEditFormProps): React.ReactElement {
   return (
     <Segment.Group>
@@ -32,6 +34,11 @@ export function BookEditForm({
         <Header>Book Details</Header>
       </Segment>
       <Segment>
+        {warnings.map((warning, index) => (
+          <Message warning key={index.toString()}>
+            {warning}
+          </Message>
+        ))}
         <Form onSubmit={onCommit}>
           <Form.Input
             label="Title"

@@ -11,8 +11,7 @@ import {
   Grid,
   Segment,
   Icon,
-  Input,
-  Message
+  Input
 } from "semantic-ui-react";
 import { RequestContext } from "../request_context";
 import {
@@ -324,13 +323,6 @@ export function UsersView(): React.ReactElement<{}> {
         </Grid.Column>
         {(state.selectedUser || state.editingNewUser) && (
           <Grid.Column width={8}>
-            {/* Existing User Warning */}
-            {hasExistingUserWithSameName && (
-              <Message>
-                There is a user with the same name as the user that is being
-                edited.
-              </Message>
-            )}
             {/* User Edit Form */}
             <UserEditForm
               lastName={state.lastNameField}
@@ -349,6 +341,13 @@ export function UsersView(): React.ReactElement<{}> {
               }
               onCommit={commitStagedUser}
               onReset={handleResetButtonClick}
+              warnings={
+                hasExistingUserWithSameName
+                  ? [
+                      "There is a user with the same name as the user that is being edited."
+                    ]
+                  : []
+              }
             />
             {!state.editingNewUser && state.selectedUser && (
               <HistoryEditForm user={state.selectedUser} />

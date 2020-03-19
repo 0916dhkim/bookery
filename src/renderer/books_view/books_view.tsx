@@ -5,8 +5,7 @@ import {
   Input,
   Button,
   Icon,
-  Segment,
-  Message
+  Segment
 } from "semantic-ui-react";
 import { BooksList } from "./books_list";
 import { BookEditForm } from "./book_edit_form";
@@ -327,13 +326,6 @@ export function BooksView(): React.ReactElement<{}> {
         </Grid.Column>
         {(state.selectedBook || state.editingNewBook) && (
           <Grid.Column width={8}>
-            {/* Existing Book Warning */}
-            {hasExistingBookWithSameTitle && (
-              <Message warning>
-                There is a book with the same title as the book that is being
-                edited.
-              </Message>
-            )}
             {/* Book Edit Form */}
             <BookEditForm
               title={state.titleField}
@@ -355,6 +347,13 @@ export function BooksView(): React.ReactElement<{}> {
               }
               onCommit={commitStagedBook}
               onReset={handleResetButtonClick}
+              warnings={
+                hasExistingBookWithSameTitle
+                  ? [
+                      "There is a book with the same title as the book that is being edited."
+                    ]
+                  : []
+              }
             />
             <Segment basic>
               <Button

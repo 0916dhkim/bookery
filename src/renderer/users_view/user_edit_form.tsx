@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Form, Segment, Header } from "semantic-ui-react";
+import { Form, Segment, Header, Message } from "semantic-ui-react";
 
 export interface UserEditFormProps {
   lastName: string;
@@ -12,6 +12,7 @@ export interface UserEditFormProps {
   onNoteChange: (note: string) => void;
   onCommit: () => void;
   onReset: () => void;
+  warnings: Array<string>;
 }
 
 export function UserEditForm({
@@ -24,7 +25,8 @@ export function UserEditForm({
   note,
   onNoteChange,
   onCommit,
-  onReset
+  onReset,
+  warnings
 }: UserEditFormProps): React.ReactElement<UserEditFormProps> {
   return (
     <Segment.Group>
@@ -32,6 +34,11 @@ export function UserEditForm({
         <Header>Profile</Header>
       </Segment>
       <Segment>
+        {warnings.map((warning, index) => (
+          <Message warning key={index.toString()}>
+            {warning}
+          </Message>
+        ))}
         <Form data-testid="user-edit-form" onSubmit={onCommit}>
           <Form.Input
             label="Last Name"
