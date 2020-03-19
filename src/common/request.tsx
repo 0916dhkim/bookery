@@ -1,4 +1,5 @@
 export type RequestType =
+  | "INVOKE-INITIALIZATION"
   | "GET-VERSION"
   | "CLOSE-WINDOW"
   | "SHOW-OPEN-DIALOG"
@@ -8,6 +9,7 @@ export type RequestType =
   | "SHOW-ERROR-MESSAGE";
 
 export type RequestOptions<T extends RequestType> = { type: T } & {
+  "INVOKE-INITIALIZATION": {};
   "GET-VERSION": {};
   "CLOSE-WINDOW": {};
   "SHOW-OPEN-DIALOG": {};
@@ -28,6 +30,7 @@ export type WarningMessageOption = "OK" | "Cancel";
 export type OverrideWarningOption = "Save" | "Don't Save" | "Cancel";
 
 export type Response<T extends RequestType> = {
+  "INVOKE-INITIALIZATION": void;
   "GET-VERSION": string;
   "CLOSE-WINDOW": void;
   "SHOW-OPEN-DIALOG": string | null;
