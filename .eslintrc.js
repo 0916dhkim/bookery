@@ -24,6 +24,9 @@ module.exports = {
         ecmaVersion: 2018,
         sourceType: "module"
       },
+      rules: {
+        "no-dupe-class-members": "off"
+      },
       overrides: [
         {
           files: ["**/*.tsx"],
