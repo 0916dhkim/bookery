@@ -85,7 +85,7 @@ export function HistoryEditForm({
     options: Array<DropdownItemProps>,
     query: string
   ): Array<DropdownItemProps> {
-    const books = bookFilter.filter(query) as Array<Book>;
+    const books = Array.from(bookFilter.filter(query));
     return books.map(bookToDropDownItemProps);
   }
 
