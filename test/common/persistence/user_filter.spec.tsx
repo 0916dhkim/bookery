@@ -65,4 +65,43 @@ describe("UserFilter", function() {
     expect(result).to.have.length(1);
     expect(result[0]).equals(userA);
   });
+
+  describe("Queries", function() {
+    const user: User = {
+      id: 123219,
+      firstName: "Elizabeth",
+      lastName: "Davis",
+      note: "1995"
+    };
+    const filter = new UserFilter([user]);
+    describe("Matching", function() {
+      const queries = [
+        "elizabeth",
+        "Eli",
+        "davis",
+        "elida",
+        "bavis",
+        "ED",
+        "DE",
+        "95 liz",
+        "1"
+      ];
+      for (const query of queries) {
+        it(`${query}`, function() {
+          const result = Array.from(filter.filter(query));
+          expect(result).to.have.lengthOf(1);
+          expect(result[0]).deep.equals(user);
+        });
+      }
+    });
+    describe("Not Matching", function() {
+      const queries = ["c", "charles", "abigail", "Thompson", "1996", "96"];
+      for (const query of queries) {
+        it(`${query}`, function() {
+          const result = Array.from(filter.filter(query));
+          expect(result).to.have.lengthOf(0);
+        });
+      }
+    });
+  });
 });
