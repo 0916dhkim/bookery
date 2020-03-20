@@ -60,7 +60,7 @@ describe("BookFilter", function() {
     });
 
     describe("Not Matching", function() {
-      const queries = ["k", "Hames", "7", "000"];
+      const queries = ["k", "Hames", "77", "000"];
       for (const query of queries) {
         it(`${query}`, function() {
           const result = Array.from(filter.filter(query));
