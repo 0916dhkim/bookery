@@ -39,4 +39,34 @@ describe("BookFilter", function() {
     expect(result).to.have.lengthOf(1);
     expect(result[0]).equals(bookA);
   });
+
+  describe("Queries", function() {
+    const book: Book = {
+      id: 544212,
+      title: "Good",
+      author: "James",
+      isbn: "978-3-16-148410-0"
+    };
+    const filter = new BookFilter([book]);
+    describe("Matching", function() {
+      const queries = ["Good", "James", "978", "GoJam", "97jamesgood"];
+      for (const query of queries) {
+        it(`${query}`, function() {
+          const result = Array.from(filter.filter(query));
+          expect(result).to.have.lengthOf(1);
+          expect(result[0]).deep.equals(book);
+        });
+      }
+    });
+
+    describe("Not Matching", function() {
+      const queries = ["k", "Hames", "77", "000"];
+      for (const query of queries) {
+        it(`${query}`, function() {
+          const result = Array.from(filter.filter(query));
+          expect(result).to.have.lengthOf(0);
+        });
+      }
+    });
+  });
 });
