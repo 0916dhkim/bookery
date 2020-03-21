@@ -2,11 +2,33 @@ import { Book } from "./book";
 import { User } from "./user";
 import { View } from "./view";
 import { produce } from "./immer-initialized";
+import { Tag } from "./tag";
 
 export interface AppData {
+  /**
+   * Map book ID to a book
+   */
   books: Map<number, Book>;
+  /**
+   * Map user ID to a user
+   */
   users: Map<number, User>;
+  /**
+   * Map view ID to a view
+   */
   views: Map<number, View>;
+  /**
+   * Map tag ID to a tag
+   */
+  tags: Map<number, Tag>;
+  /**
+   * Map book ID to a set of tag IDs.
+   */
+  bookTags: Map<number, Set<number>>;
+  /**
+   * Map user ID to a set of tag IDs.
+   */
+  userTags: Map<number, Set<number>>;
 }
 
 function getNextId(collection: Iterable<{ id: number }>): number {
@@ -139,9 +161,12 @@ export function deleteView(
 }
 
 interface PlainAppData {
-  books: Array<Book>;
-  users: Array<User>;
-  views: Array<View>;
+  books?: Array<Book>;
+  users?: Array<User>;
+  views?: Array<View>;
+  tags?: Array<Tag>;
+  bookTags?: Array<[number, Array<number>]>;
+  userTags?: Array<[number, Array<number>]>;
 }
 
 export function createAppData(): AppData;
@@ -151,14 +176,24 @@ export function createAppData(plain?: PlainAppData): AppData | null {
     return {
       books: new Map(),
       users: new Map(),
-      views: new Map()
+      views: new Map(),
+      tags: new Map(),
+      bookTags: new Map(),
+      userTags: new Map()
     };
   }
 
   return {
-    books: new Map(plain.books.map(book => [book.id, book])),
-    users: new Map(plain.users.map(user => [user.id, user])),
-    views: new Map(plain.views.map(view => [view.id, view]))
+    books: new Map(plain.books?.map(book => [book.id, book])),
+    users: new Map(plain.users?.map(user => [user.id, user])),
+    views: new Map(plain.views?.map(view => [view.id, view])),
+    tags: new Map(plain.tags?.map(tag => [tag.id, tag])),
+    bookTags: new Map(
+      plain.bookTags?.map(([bookId, tagIds]) => [bookId, new Set(tagIds)])
+    ),
+    userTags: new Map(
+      plain.userTags?.map(([userId, tagIds]) => [userId, new Set(tagIds)])
+    )
   };
 }
 
@@ -166,7 +201,16 @@ export function serializeAppData(appData: AppData): string {
   const plain: PlainAppData = {
     books: Array.from(appData.books.values()),
     users: Array.from(appData.users.values()),
-    views: Array.from(appData.views.values())
+    views: Array.from(appData.views.values()),
+    tags: Array.from(appData.tags.values()),
+    bookTags: Array.from(appData.bookTags.entries()).map(([bookId, tagSet]) => [
+      bookId,
+      Array.from(tagSet)
+    ]),
+    userTags: Array.from(appData.userTags.entries()).map(([userId, tagSet]) => [
+      userId,
+      Array.from(tagSet)
+    ])
   };
 
   return JSON.stringify(plain);
