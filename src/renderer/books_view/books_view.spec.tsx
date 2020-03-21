@@ -5,16 +5,16 @@ import {
   within,
   waitForDomChange
 } from "@testing-library/react";
-import { BooksView } from "../../src/renderer/books_view";
+import { BooksView } from ".";
 import * as React from "react";
-import { AppDataContext } from "../../src/renderer/app_data_context";
-import { AppData, createAppData } from "../../src/common/persistence/app_data";
+import { AppDataContext } from "../app_data_context";
+import { AppData, createAppData } from "../../common/persistence/app_data";
 import * as moment from "moment";
 import userEvent from "@testing-library/user-event";
 import * as sinon from "sinon";
 import * as assert from "assert";
-import { RequestContext } from "../../src/renderer/request_context";
-import { assertWrapper } from "../../src/common/assert_wrapper";
+import { RequestContext } from "../request_context";
+import { assertWrapper } from "../../common/assert_wrapper";
 
 const sandbox = sinon.createSandbox();
 

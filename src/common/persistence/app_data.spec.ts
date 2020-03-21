@@ -5,8 +5,8 @@ import {
   serializeAppData,
   deserializeAppData,
   createAppData
-} from "../../../src/common/persistence/app_data";
-import { assertWrapper } from "../../../src/common/assert_wrapper";
+} from "./app_data";
+import { assertWrapper } from "../assert_wrapper";
 
 describe("AppData", function() {
   describe("AppData Serialization", function() {

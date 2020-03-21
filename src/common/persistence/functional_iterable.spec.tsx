@@ -1,6 +1,6 @@
 import { describe, it } from "mocha";
 import { expect } from "chai";
-import { FunctionalIterable } from "../../../src/common/persistence/functional_iterable";
+import { FunctionalIterable } from "./functional_iterable";
 
 describe("FunctionalIterable", function() {
   it("Composite", function() {

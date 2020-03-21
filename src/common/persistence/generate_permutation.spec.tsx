@@ -1,6 +1,6 @@
 import { describe, it } from "mocha";
 import { expect } from "chai";
-import { generatePermutation } from "../../../src/common/persistence/generate_permutation";
+import { generatePermutation } from "./generate_permutation";
 
 describe("generatePermutation", function() {
   const m: Array<{ input: Array<{}>; expected: Array<Array<{}>> }> = [

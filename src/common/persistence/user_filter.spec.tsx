@@ -1,7 +1,7 @@
 import { describe, it } from "mocha";
-import { UserFilter } from "../../../src/common/persistence/user_filter";
+import { UserFilter } from "./user_filter";
 import { expect } from "chai";
-import { User } from "../../../src/common/persistence/user";
+import { User } from "./user";
 
 describe("UserFilter", function() {
   it("Empty Query", function() {

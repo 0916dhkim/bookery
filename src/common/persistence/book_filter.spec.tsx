@@ -1,7 +1,7 @@
 import { describe, it } from "mocha";
-import { BookFilter } from "../../../src/common/persistence/book_filter";
+import { BookFilter } from "./book_filter";
 import { expect } from "chai";
-import { Book } from "../../../src/common/persistence/book";
+import { Book } from "./book";
 
 describe("BookFilter", function() {
   it("Empty Query", function() {

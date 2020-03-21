@@ -9,14 +9,14 @@ import {
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import * as React from "react";
-import { UsersView } from "../../src/renderer/users_view";
-import { AppData, createAppData } from "../../src/common/persistence/app_data";
+import { UsersView } from ".";
+import { AppData, createAppData } from "../../common/persistence/app_data";
 import * as assert from "assert";
-import { AppDataContext } from "../../src/renderer/app_data_context";
+import { AppDataContext } from "../app_data_context";
 import { act } from "react-dom/test-utils";
-import { assertWrapper } from "../../src/common/assert_wrapper";
+import { assertWrapper } from "../../common/assert_wrapper";
 import * as moment from "moment";
-import { RequestContext } from "../../src/renderer/request_context";
+import { RequestContext } from "../request_context";
 import * as sinon from "sinon";
 
 const fakeRequest = sinon.stub();
