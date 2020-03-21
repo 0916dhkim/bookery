@@ -1,10 +1,10 @@
+![Logo](build/icon.png)
 # Bookery
-
 Bookclub Managing Application
 
 ## Developers
 ### Requirements
-* `node`
+* `Node.js`
 * `npm`
 
 ### Install Dependencies
@@ -15,6 +15,10 @@ Bookclub Managing Application
 
     npm test
 
+### Run Linter
+
+    npm run lint
+
 ### Run Application
 
-    npm start
+    npm run dev
