@@ -89,6 +89,17 @@ export function addView(
   return [nextAppData, view];
 }
 
+export function addTag(appData: AppData, name: string): [AppData, Tag] {
+  const tag = {
+    id: getNextId(appData.tags.values()),
+    name: name
+  };
+  const nextAppData = produce(appData, draft => {
+    draft.tags.set(tag.id, tag);
+  });
+  return [nextAppData, tag];
+}
+
 export function updateBook(appData: AppData, book: Book): AppData {
   return produce(appData, draft => {
     draft.books.set(book.id, book);
@@ -104,6 +115,12 @@ export function updateUser(appData: AppData, user: User): AppData {
 export function updateView(appData: AppData, view: View): AppData {
   return produce(appData, draft => {
     draft.views.set(view.id, view);
+  });
+}
+
+export function updateTag(appData: AppData, tag: Tag): AppData {
+  return produce(appData, draft => {
+    draft.tags.set(tag.id, tag);
   });
 }
 
@@ -158,6 +175,50 @@ export function deleteView(
     }),
     true
   ];
+}
+
+export function deleteTag(appData: AppData, tagId: number): [AppData, boolean] {
+  if (!appData.tags.has(tagId)) {
+    return [appData, false];
+  }
+  return [
+    produce(appData, draft => {
+      draft.tags.delete(tagId);
+    }),
+    true
+  ];
+}
+
+export function applyTagToBook(
+  appData: AppData,
+  tagId: number,
+  bookId: number
+): AppData {
+  return appData;
+}
+
+export function applyTagToUser(
+  appData: AppData,
+  tagId: number,
+  userId: number
+): AppData {
+  return appData;
+}
+
+export function removeTagFromBook(
+  appData: AppData,
+  tagId: number,
+  bookId: number
+): [AppData, boolean] {
+  return [appData, false];
+}
+
+export function removeTagFromUser(
+  appData: AppData,
+  tagId: number,
+  userId: number
+): [AppData, boolean] {
+  return [appData, false];
 }
 
 interface PlainAppData {
