@@ -8,24 +8,52 @@ import {
   prettyDOM,
   within,
   RenderResult,
-  queries
+  queries,
+  waitFor
 } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { TagEditForm, TagEditFormProps } from "./tag_edit_form";
 import { AppData, createAppData } from "../common/persistence/app_data";
 import { AppDataContext } from "./app_data_context";
 import { assertWrapper } from "../common/assert_wrapper";
 
-function getTagInput(container: HTMLElement): HTMLInputElement {
-  const ret = within(container)
-    .getByTestId("tag-input")
-    .querySelector("input");
+/**
+ * Find the tag input element in the container element.
+ * Throw if search failed.
+ */
+export function getTagInput(container: HTMLElement): HTMLElement {
+  let ret: HTMLElement | null = within(container).getByTestId("tag-input");
+  if (!ret.matches("input")) {
+    ret = ret.querySelector("input");
+  }
   if (!ret) {
     throw new Error([`Missing tag input`, prettyDOM(container)].join("\n\n"));
   }
   return ret;
 }
 
-function getTagListElementByText(
+/**
+ * Find the add tag button in the container element.
+ * Throw if search failed.
+ */
+export function getAddTagButton(container: HTMLElement): HTMLElement {
+  let ret: HTMLElement | null = within(container).getByTestId("add-tag-button");
+  if (!ret.matches("button")) {
+    ret = ret.querySelector("button");
+  }
+  if (!ret) {
+    throw new Error(
+      ["Missing add tag button", prettyDOM(container)].join("\n\n")
+    );
+  }
+  return ret;
+}
+
+/**
+ * Find a tag list element by matching regex.
+ * Throw if search failed or more than one element matches.
+ */
+export function getTagListElementByText(
   container: HTMLElement,
   text: RegExp
 ): HTMLElement {
@@ -49,7 +77,10 @@ function getTagListElementByText(
   return ret[0];
 }
 
-function renderTagEditForm(
+/**
+ * Wrapper function for render.
+ */
+export function renderTagEditForm(
   appData: AppData,
   setAppData: (x: AppData) => void,
   props: TagEditFormProps
@@ -71,35 +102,117 @@ describe("TagEditForm", function() {
     cleanup();
   });
 
-  describe("Display", function() {
-    it("Tag List", function() {
-      const appData = createAppData({
-        books: [
-          {
-            id: 33,
-            title: "Tagged Book",
-            author: "James"
-          }
-        ],
-        tags: [
-          {
-            id: 13,
-            name: "fiction"
-          },
-          {
-            id: 15,
-            name: "english"
-          }
-        ],
-        bookTags: [[33, [13, 15]]]
-      });
-      assertWrapper(appData);
-      const { container } = renderTagEditForm(appData, sinon.fake(), {
-        type: "book",
-        bookId: 33
-      });
-      expect(getTagListElementByText(container, /fiction/)).not.to.throw;
-      expect(getTagListElementByText(container, /english/)).not.to.throw;
+  it("Display Book Tag List", async function() {
+    const appData = createAppData({
+      books: [
+        {
+          id: 33,
+          title: "Tagged Book",
+          author: "James"
+        }
+      ],
+      tags: [
+        {
+          id: 13,
+          name: "fiction"
+        },
+        {
+          id: 15,
+          name: "english"
+        }
+      ],
+      bookTags: [[33, [13, 15]]]
+    });
+    assertWrapper(appData);
+    const { container } = renderTagEditForm(appData, sinon.fake(), {
+      type: "book",
+      bookId: 33
+    });
+    return waitFor(() => {
+      getTagListElementByText(container, /fiction/);
+      getTagListElementByText(container, /english/);
+    });
+  });
+
+  it("Display User Tag List", async function() {
+    const appData = createAppData({
+      users: [
+        {
+          id: 606,
+          firstName: "George",
+          lastName: "Xi",
+          note: "-"
+        }
+      ],
+      tags: [
+        {
+          id: 13,
+          name: "1999"
+        },
+        {
+          id: 15,
+          name: "mandarin-speaker"
+        }
+      ],
+      userTags: [[606, [13, 15]]]
+    });
+    assertWrapper(appData);
+    const { container } = renderTagEditForm(appData, sinon.fake(), {
+      type: "user",
+      userId: 606
+    });
+    return waitFor(() => {
+      getTagListElementByText(container, /1999/);
+      getTagListElementByText(container, /mandarin-speaker/);
+    });
+  });
+
+  it("Add A New Tag", async function() {
+    const appData = createAppData({
+      books: [
+        {
+          id: 4444,
+          title: "Into the Darkness",
+          author: "Doctor Evil"
+        }
+      ],
+      tags: [
+        {
+          id: 50,
+          name: "fiction"
+        },
+        {
+          id: 60,
+          name: "nonfiction"
+        },
+        {
+          id: 70,
+          name: "bestseller"
+        },
+        {
+          id: 80,
+          name: "sci-fi"
+        }
+      ],
+      bookTags: [[4444, [50, 70]]]
+    });
+    assertWrapper(appData);
+    const fakeSetAppData = sinon.fake();
+    const { container } = renderTagEditForm(appData, fakeSetAppData, {
+      type: "book",
+      bookId: 4444
+    });
+    // Type "sci-fi" in the input element.
+    const input = await waitFor(getTagInput.bind(null, container));
+    await userEvent.type(input, "sci-fi");
+    // Click the add tag button.
+    const addTagButton = await waitFor(getAddTagButton.bind(null, container));
+    userEvent.click(addTagButton);
+    return waitFor(() => {
+      expect(fakeSetAppData.calledOnce).to.be.true;
+      expect(fakeSetAppData.firstCall.args[0]["bookTags"]).deep.equals(
+        new Set([50, 70, 80])
+      );
     });
   });
 });
