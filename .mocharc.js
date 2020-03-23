@@ -1,8 +1,5 @@
 module.exports = {
-  extension: [
-    "ts",
-    "tsx"
-  ],
+  spec: "src/**/*.spec.*",
   recursive: true,
   require: [
     "ts-node/register",

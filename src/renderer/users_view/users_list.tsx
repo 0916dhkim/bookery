@@ -2,8 +2,7 @@ import * as React from "react";
 import { User } from "../../common/persistence/user";
 import { AppDataContext } from "../app_data_context";
 import { Menu } from "semantic-ui-react";
-import { Filter } from "../../common/persistence/filter";
-import { UserFilter } from "../../common/persistence/user_filter";
+import { filterUser } from "../../common/persistence/filter_user";
 
 export interface UserListProps {
   filterQuery: string;
@@ -15,12 +14,9 @@ export function UsersList({
   onSelect
 }: UserListProps): React.ReactElement<UserListProps> {
   const { appData } = React.useContext(AppDataContext);
-  const userFilter = React.useMemo<Filter<User>>(() => {
-    return new UserFilter(appData.users.values());
-  }, [appData.users]);
   const filteredUsers = React.useMemo<Array<User>>(() => {
-    return Array.from(userFilter.filter(filterQuery));
-  }, [userFilter, filterQuery]);
+    return Array.from(filterUser(appData, filterQuery));
+  }, [appData, filterQuery]);
 
   return (
     <Menu data-testid="suggestions-list" fluid vertical>

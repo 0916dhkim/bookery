@@ -1,6 +1,6 @@
 import { describe, it } from "mocha";
 import { expect } from "chai";
-import { matchPattern } from "../../../src/common/persistence/match_pattern";
+import { matchPattern } from "./match_pattern";
 
 describe("matchPattern", function() {
   function test<K extends string, T extends { [key in K]?: string }>(

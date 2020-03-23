@@ -20,6 +20,7 @@ import {
   deleteUser
 } from "../../common/persistence/app_data";
 import { produce } from "../../common/persistence/immer-initialized";
+import { TagEditForm } from "../tag_edit_form";
 
 export interface UsersViewState {
   selectedUser: User | null;
@@ -349,9 +350,18 @@ export function UsersView(): React.ReactElement<{}> {
                   : []
               }
             />
-            {!state.editingNewUser && state.selectedUser && (
-              <HistoryEditForm user={state.selectedUser} />
-            )}
+            {!state.editingNewUser &&
+              state.selectedUser && [
+                <TagEditForm
+                  key="tag-edit-form"
+                  type="user"
+                  userId={state.selectedUser.id}
+                />,
+                <HistoryEditForm
+                  key="history-edit-form"
+                  user={state.selectedUser}
+                />
+              ]}
             <Segment basic>
               <Button
                 data-testid="user-delete-button"

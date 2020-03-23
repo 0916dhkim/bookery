@@ -14,17 +14,19 @@ export class FunctionalIterable<T> implements Iterable<T> {
     }
   }
 
-  private *mapImpl<R>(mapper: (v: T) => R): Generator<R> {
-    for (const e of this.iterable) {
-      yield mapper(e);
-    }
-  }
-
   /**
    * @returns a new iterable of mapped elements.
    */
   map<R>(mapper: (v: T) => R): FunctionalIterable<R> {
-    return new FunctionalIterable(this.mapImpl(mapper));
+    const iterable = this.iterable;
+    function* mapImpl(): Generator<R> {
+      for (const e of iterable) {
+        yield mapper(e);
+      }
+    }
+    return new FunctionalIterable({
+      [Symbol.iterator]: mapImpl
+    });
   }
 
   filter<S extends T>(predicate: (v: T) => v is S): FunctionalIterable<S>;
@@ -33,15 +35,17 @@ export class FunctionalIterable<T> implements Iterable<T> {
    * @returns a new iterable of filtered elements.
    */
   filter(predicate: (v: T) => boolean): FunctionalIterable<T> {
-    return new FunctionalIterable(
-      (function*(it: Iterable<T>): Generator<T> {
-        for (const e of it) {
-          if (predicate(e)) {
-            yield e;
-          }
+    const iterable = this.iterable;
+    function* filterImpl(): Generator<T> {
+      for (const e of iterable) {
+        if (predicate(e)) {
+          yield e;
         }
-      })(this.iterable)
-    );
+      }
+    }
+    return new FunctionalIterable({
+      [Symbol.iterator]: filterImpl
+    });
   }
 
   /**

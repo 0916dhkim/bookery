@@ -1,22 +1,22 @@
 import { describe, it, afterEach, beforeEach } from "mocha";
+import { expect } from "chai";
 import {
   render,
   within,
   cleanup,
   RenderResult,
-  waitForDomChange,
-  wait
+  waitFor
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import * as React from "react";
-import { UsersView } from "../../src/renderer/users_view";
-import { AppData, createAppData } from "../../src/common/persistence/app_data";
+import { UsersView } from ".";
+import { AppData, createAppData } from "../../common/persistence/app_data";
 import * as assert from "assert";
-import { AppDataContext } from "../../src/renderer/app_data_context";
+import { AppDataContext } from "../app_data_context";
 import { act } from "react-dom/test-utils";
-import { assertWrapper } from "../../src/common/assert_wrapper";
+import { assertWrapper } from "../../common/assert_wrapper";
 import * as moment from "moment";
-import { RequestContext } from "../../src/renderer/request_context";
+import { RequestContext } from "../request_context";
 import * as sinon from "sinon";
 
 const fakeRequest = sinon.stub();
@@ -126,9 +126,10 @@ describe("UsersView", function() {
       userEvent.click(
         within(renderResult.getByTestId("suggestions-list")).getByText(/King/)
       );
-      await waitForDomChange();
 
-      assert(renderResult.getByText(/Delete User/i));
+      return waitFor(() => {
+        assert(renderResult.getByText(/Delete User/i));
+      });
     });
 
     it("Warns When Deleting A User", async function() {
@@ -149,11 +150,18 @@ describe("UsersView", function() {
         .returns("Cancel");
 
       userEvent.click(
-        within(renderResult.getByTestId("suggestions-list")).getByText(/Sancho/)
+        await waitFor(() => {
+          return within(renderResult.getByTestId("suggestions-list")).getByText(
+            /Sancho/
+          );
+        })
       );
-      await waitForDomChange();
-      userEvent.click(renderResult.getByText(/Delete User/i));
-      await wait(() => {
+      userEvent.click(
+        await waitFor(() => {
+          return renderResult.getByText(/Delete User/i);
+        })
+      );
+      return waitFor(() => {
         assert(fakeRequest.calledOnce);
       });
     });
@@ -177,14 +185,19 @@ describe("UsersView", function() {
         .returns("Cancel");
 
       userEvent.click(
-        within(renderResult.getByTestId("suggestions-list")).getByText(/Raider/)
+        await waitFor(() => {
+          return within(renderResult.getByTestId("suggestions-list")).getByText(
+            /Raider/
+          );
+        })
       );
-      await waitForDomChange();
 
-      assert.strictEqual(getAppData().users.size, 2);
+      await waitFor(() => {
+        assert.strictEqual(getAppData().users.size, 2);
+      });
 
       userEvent.click(renderResult.getByText(/Delete User/i));
-      await wait(() => {
+      return waitFor(() => {
         // Number of users should be unchanged.
         assert.strictEqual(getAppData().users.size, 2);
       });
@@ -209,15 +222,23 @@ describe("UsersView", function() {
       assert.strictEqual(getAppData().users.size, 1);
 
       userEvent.click(
-        within(renderResult.getByTestId("suggestions-list")).getByText(/Solo/)
+        await waitFor(() => {
+          return within(renderResult.getByTestId("suggestions-list")).getByText(
+            /Solo/
+          );
+        })
       );
-      await waitForDomChange();
 
       // Click the delete button.
-      userEvent.click(renderResult.getByText(/Delete User/i));
-      await waitForDomChange();
+      userEvent.click(
+        await waitFor(() => {
+          return renderResult.getByText(/Delete User/i);
+        })
+      );
 
-      assert.strictEqual(getAppData().users.size, 0);
+      return waitFor(() => {
+        assert.strictEqual(getAppData().users.size, 0);
+      });
     });
 
     it("Deleting A User Hides The Edit Form", async function() {
@@ -237,16 +258,22 @@ describe("UsersView", function() {
       setAppData(x);
 
       userEvent.click(
-        within(renderResult.getByTestId("suggestions-list")).getByText(
-          /Jackson/
-        )
+        await waitFor(() => {
+          return within(renderResult.getByTestId("suggestions-list")).getByText(
+            /Jackson/
+          );
+        })
       );
-      await waitForDomChange();
 
-      userEvent.click(renderResult.getByText(/Delete User/i));
-      await waitForDomChange();
+      userEvent.click(
+        await waitFor(() => {
+          return renderResult.getByText(/Delete User/i);
+        })
+      );
 
-      assert.strictEqual(renderResult.queryByTestId("user-edit-form"), null);
+      return waitFor(() => {
+        expect(renderResult.queryByTestId("user-edit-form")).to.be.null;
+      });
     });
 
     it("Deleting A User Should Cascade", async function() {
@@ -284,31 +311,37 @@ describe("UsersView", function() {
       setAppData(x);
 
       userEvent.click(
-        within(renderResult.getByTestId("suggestions-list")).getByText(
-          /Kennedy/
-        )
+        await waitFor(() => {
+          return within(renderResult.getByTestId("suggestions-list")).getByText(
+            /Kennedy/
+          );
+        })
       );
-      await waitForDomChange();
 
       fakeRequest.reset();
       fakeRequest
         .withArgs(sinon.match.has("type", "SHOW-WARNING-MESSAGE"))
         .returns("OK");
 
-      userEvent.click(renderResult.getByTestId("user-delete-button"));
-      await waitForDomChange();
+      userEvent.click(
+        await waitFor(() => {
+          return renderResult.getByTestId("user-delete-button");
+        })
+      );
 
-      assert.strictEqual(
-        getAppData().books.size,
-        2,
-        "Number of books should remain the same"
-      );
-      assert.strictEqual(getAppData().users.size, 1, "Only Dan remains");
-      assert.strictEqual(
-        getAppData().views.size,
-        1,
-        "Frank's views should be deleted along with Frank"
-      );
+      return waitFor(() => {
+        assert.strictEqual(
+          getAppData().books.size,
+          2,
+          "Number of books should remain the same"
+        );
+        assert.strictEqual(getAppData().users.size, 1, "Only Dan remains");
+        assert.strictEqual(
+          getAppData().views.size,
+          1,
+          "Frank's views should be deleted along with Frank"
+        );
+      });
     });
   });
 
@@ -324,13 +357,16 @@ describe("UsersView", function() {
         setAppData(x);
 
         userEvent.click(
-          within(renderResult.getByTestId("suggestions-list")).getByText(
-            /Gerald/
-          )
+          await waitFor(() => {
+            return within(
+              renderResult.getByTestId("suggestions-list")
+            ).getByText(/Gerald/);
+          })
         );
-        await waitForDomChange();
 
-        assert(renderResult.getByTestId("history-edit-form"));
+        return waitFor(() => {
+          assert(renderResult.getByTestId("history-edit-form"));
+        });
       });
 
       it("No History View For New User", async function() {
@@ -342,11 +378,16 @@ describe("UsersView", function() {
         assertWrapper(x);
         setAppData(x);
 
-        userEvent.click(renderResult.getByText(/New User/i));
-        await waitForDomChange();
+        userEvent.click(
+          await waitFor(() => {
+            return renderResult.getByText(/New User/i);
+          })
+        );
 
-        assert(!renderResult.queryByTestId("history-edit-form"));
-        assert(!renderResult.queryByTestId("history-list"));
+        return waitFor(() => {
+          assert(!renderResult.queryByTestId("history-edit-form"));
+          assert(!renderResult.queryByTestId("history-list"));
+        });
       });
 
       it("1 User 3 Books 2 Views", async function() {
@@ -377,18 +418,25 @@ describe("UsersView", function() {
 
         // Select user.
         userEvent.click(
-          within(renderResult.getByTestId("suggestions-list")).getByText(/A/)
+          await waitFor(() => {
+            return within(
+              renderResult.getByTestId("suggestions-list")
+            ).getByText(/A/);
+          })
         );
-        await waitForDomChange();
 
-        assert(
-          within(renderResult.getByTestId("history-list")).queryByText(/LSDKFK/)
-        );
-        assert(
-          within(renderResult.getByTestId("history-list")).queryByText(
-            /RIELWWL/
-          )
-        );
+        return waitFor(() => {
+          assert(
+            within(renderResult.getByTestId("history-list")).queryByText(
+              /LSDKFK/
+            )
+          );
+          assert(
+            within(renderResult.getByTestId("history-list")).queryByText(
+              /RIELWWL/
+            )
+          );
+        });
       });
 
       it("2 Users 2 Books 1 View Each (2 Total)", async function() {
@@ -439,29 +487,37 @@ describe("UsersView", function() {
 
         // Select alpha.
         userEvent.click(
-          within(renderResult.getByTestId("suggestions-list")).getByText(
-            /Alpha/
-          )
+          await waitFor(() => {
+            return within(
+              renderResult.getByTestId("suggestions-list")
+            ).getByText(/Alpha/);
+          })
         );
-        await waitForDomChange();
 
-        assert(
-          within(renderResult.getByTestId("history-list")).queryByText(
-            /A Book For Alpha/
-          )
-        );
+        await waitFor(() => {
+          assert(
+            within(renderResult.getByTestId("history-list")).queryByText(
+              /A Book For Alpha/
+            )
+          );
+        });
 
         // Select beta.
         userEvent.click(
-          within(renderResult.getByTestId("suggestions-list")).getByText(/Beta/)
+          await waitFor(() => {
+            return within(
+              renderResult.getByTestId("suggestions-list")
+            ).getByText(/Beta/);
+          })
         );
-        await waitForDomChange();
 
-        assert(
-          within(renderResult.getByTestId("history-list")).queryByText(
-            /Beta: A Memoir/
-          )
-        );
+        return waitFor(() => {
+          assert(
+            within(renderResult.getByTestId("history-list")).queryByText(
+              /Beta: A Memoir/
+            )
+          );
+        });
       });
 
       it("1 User 1 Book 0 View", async function() {
@@ -482,17 +538,20 @@ describe("UsersView", function() {
 
         // Select Alexander the Great.
         userEvent.click(
-          within(renderResult.getByTestId("suggestions-list")).getByText(
-            /Alexander/
-          )
+          await waitFor(() => {
+            return within(
+              renderResult.getByTestId("suggestions-list")
+            ).getByText(/Alexander/);
+          })
         );
-        await waitForDomChange();
 
-        assert(
-          !within(renderResult.getByTestId("history-list")).queryByText(
-            /Forbidden Script/
-          )
-        );
+        return waitFor(() => {
+          assert(
+            !within(renderResult.getByTestId("history-list")).queryByText(
+              /Forbidden Script/
+            )
+          );
+        });
       });
     });
 
@@ -515,14 +574,19 @@ describe("UsersView", function() {
 
         // Select user.
         userEvent.click(
-          within(renderResult.getByTestId("suggestions-list")).getByText(/Last/)
+          await waitFor(() => {
+            return within(
+              renderResult.getByTestId("suggestions-list")
+            ).getByText(/Last/);
+          })
         );
-        await waitForDomChange();
 
         // Type search query.
-        const historySearchInput = renderResult
-          .getByTestId("history-edit-form")
-          .querySelector("input");
+        const historySearchInput = await waitFor(() => {
+          return renderResult
+            .getByTestId("history-edit-form")
+            .querySelector("input");
+        });
         assertWrapper(historySearchInput);
         historySearchInput.focus();
         assertWrapper(!!document.activeElement);
@@ -530,9 +594,11 @@ describe("UsersView", function() {
 
         // Select book suggestion.
         userEvent.click(
-          within(
-            renderResult.getByTestId("history-edit-form")
-          ).getByText(/Diary/, { selector: "[role=option] *" })
+          await waitFor(() => {
+            return within(
+              renderResult.getByTestId("history-edit-form")
+            ).getByText(/Diary/, { selector: "[role=option] *" });
+          })
         );
 
         // Click history add button.
@@ -559,15 +625,20 @@ describe("UsersView", function() {
 
         // Select user.
         userEvent.click(
-          within(renderResult.getByTestId("suggestions-list")).getByText(/Jack/)
+          await waitFor(() => {
+            return within(
+              renderResult.getByTestId("suggestions-list")
+            ).getByText(/Jack/);
+          })
         );
-        await waitForDomChange();
 
-        assert(
-          within(renderResult.getByTestId("history-edit-form"))
-            .getByText(/Add/i)
-            .hasAttribute("disabled")
-        );
+        return waitFor(() => {
+          assert(
+            within(renderResult.getByTestId("history-edit-form"))
+              .getByText(/Add/i)
+              .hasAttribute("disabled")
+          );
+        });
       });
 
       it("Selecting A Book Should Display What Is Selected", async function() {
@@ -587,25 +658,30 @@ describe("UsersView", function() {
         setAppData(x);
 
         userEvent.click(
-          within(renderResult.getByTestId("suggestions-list")).getByText(
-            /Charlie/
-          )
+          await waitFor(() => {
+            return within(
+              renderResult.getByTestId("suggestions-list")
+            ).getByText(/Charlie/);
+          })
         );
-        await waitForDomChange();
 
-        const historySearchInput = renderResult
-          .getByTestId("history-edit-form")
-          .querySelector("input");
+        const historySearchInput = await waitFor(() => {
+          return renderResult
+            .getByTestId("history-edit-form")
+            .querySelector("input");
+        });
         assertWrapper(historySearchInput);
         await userEvent.type(historySearchInput, "github");
 
         userEvent.click(
-          within(
-            renderResult.getByTestId("history-edit-form")
-          ).getByText(/Github/, { selector: "[role=option] *" })
+          await waitFor(() => {
+            return within(
+              renderResult.getByTestId("history-edit-form")
+            ).getByText(/Github/, { selector: "[role=option] *" });
+          })
         );
 
-        await wait(() => {
+        return waitFor(() => {
           assert(
             renderResult
               .getByTestId("history-edit-form")
@@ -636,33 +712,39 @@ describe("UsersView", function() {
         setAppData(x);
 
         userEvent.click(
-          within(renderResult.getByTestId("suggestions-list")).getByText(
-            /Timothy/
-          )
+          await waitFor(() => {
+            return within(
+              renderResult.getByTestId("suggestions-list")
+            ).getByText(/Timothy/);
+          })
         );
-        await waitForDomChange();
 
-        const historySearchInput = renderResult
-          .getByTestId("history-edit-form")
-          .querySelector("input");
+        const historySearchInput = await waitFor(() => {
+          return renderResult
+            .getByTestId("history-edit-form")
+            .querySelector("input");
+        });
         assertWrapper(historySearchInput);
         historySearchInput.focus();
         await userEvent.type(historySearchInput, "A");
 
-        assert(
-          within(renderResult.getByTestId("history-edit-form")).getByText(
-            /ABC/,
-            { selector: "[role=option] *" }
-          )
-        );
+        await waitFor(() => {
+          assert(
+            within(
+              renderResult.getByTestId("history-edit-form")
+            ).getByText(/ABC/, { selector: "[role=option] *" })
+          );
+        });
 
-        assert.strictEqual(
-          within(renderResult.getByTestId("history-edit-form")).queryAllByText(
-            /XYZ/
-          ).length,
-          0,
-          "XYZ should not be included in suggestion."
-        );
+        return waitFor(() => {
+          assert.strictEqual(
+            within(
+              renderResult.getByTestId("history-edit-form")
+            ).queryAllByText(/XYZ/).length,
+            0,
+            "XYZ should not be included in suggestion."
+          );
+        });
       });
 
       it("Query Title And Author", async function() {
@@ -675,25 +757,30 @@ describe("UsersView", function() {
         setAppData(x);
 
         userEvent.click(
-          within(renderResult.getByTestId("suggestions-list")).getByText(
-            /Bloodwing/
-          )
+          await waitFor(() => {
+            return within(
+              renderResult.getByTestId("suggestions-list")
+            ).getByText(/Bloodwing/);
+          })
         );
-        await waitForDomChange();
 
-        const historySearchInput = renderResult
-          .getByTestId("history-edit-form")
-          .querySelector("input");
+        const historySearchInput = await waitFor(() => {
+          return renderResult
+            .getByTestId("history-edit-form")
+            .querySelector("input");
+        });
         assertWrapper(historySearchInput);
         historySearchInput.focus();
         await userEvent.type(historySearchInput, "AF");
 
-        assert.strictEqual(
-          within(
-            renderResult.getByTestId("history-edit-form")
-          ).queryAllByText(/ABC/, { selector: "[role=option] *" }).length,
-          1
-        );
+        return waitFor(() => {
+          assert.strictEqual(
+            within(
+              renderResult.getByTestId("history-edit-form")
+            ).queryAllByText(/ABC/, { selector: "[role=option] *" }).length,
+            1
+          );
+        });
       });
     });
   });

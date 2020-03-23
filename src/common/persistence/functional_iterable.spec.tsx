@@ -1,6 +1,6 @@
 import { describe, it } from "mocha";
 import { expect } from "chai";
-import { FunctionalIterable } from "../../../src/common/persistence/functional_iterable";
+import { FunctionalIterable } from "./functional_iterable";
 
 describe("FunctionalIterable", function() {
   it("Composite", function() {
@@ -11,6 +11,14 @@ describe("FunctionalIterable", function() {
       .filter(e => e > 1) // [25, 25, 324]
       .reduce((a, b) => a + b, 25); // 399
     expect(res).equals(399);
+  });
+
+  it("Re-iterable", function() {
+    const x = [1, 2, 3];
+    const res = new FunctionalIterable(x).map(a => a * 2).filter(a => a > 2);
+    const first = Array.from(res);
+    const second = Array.from(res);
+    expect(first).deep.equals(second);
   });
 
   describe("map", function() {

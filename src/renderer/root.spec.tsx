@@ -2,15 +2,15 @@ import * as React from "react";
 import { describe, it, afterEach } from "mocha";
 import * as sinon from "sinon";
 import { render, cleanup } from "@testing-library/react";
-import { Root } from "../../src/renderer/root";
-import { EventType, EventHandler } from "../../src/common/event";
-import { assertWrapper } from "../../src/common/assert_wrapper";
+import { Root } from "./root";
+import { EventType, EventHandler } from "../common/event";
+import { assertWrapper } from "../common/assert_wrapper";
 import * as assert from "assert";
 import * as fs from "fs";
 import {
   serializeAppData,
   createAppData
-} from "../../src/common/persistence/app_data";
+} from "../common/persistence/app_data";
 
 const sandbox = sinon.createSandbox();
 

@@ -15,8 +15,7 @@ import {
   Header
 } from "semantic-ui-react";
 import { Book } from "../../common/persistence/book";
-import { Filter } from "../../common/persistence/filter";
-import { BookFilter } from "../../common/persistence/book_filter";
+import { filterBook } from "../../common/persistence/filter_book";
 import { addView, deleteView } from "../../common/persistence/app_data";
 
 /**
@@ -41,9 +40,6 @@ export function HistoryEditForm({
   const [historyInputValue, setHistoryInputValue] = React.useState<
     number | null
   >(null);
-  const bookFilter = React.useMemo<Filter<Book>>(() => {
-    return new BookFilter(appData.books.values());
-  }, [appData.books]);
 
   /**
    * Handle history add button click event.
@@ -85,7 +81,7 @@ export function HistoryEditForm({
     options: Array<DropdownItemProps>,
     query: string
   ): Array<DropdownItemProps> {
-    const books = Array.from(bookFilter.filter(query));
+    const books = Array.from(filterBook(appData, query));
     return books.map(bookToDropDownItemProps);
   }
 
