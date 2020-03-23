@@ -19,6 +19,7 @@ import {
   deleteBook
 } from "../../common/persistence/app_data";
 import { produce } from "../../common/persistence/immer-initialized";
+import { TagEditForm } from "../tag_edit_form";
 
 interface BooksViewState {
   /**
@@ -355,6 +356,9 @@ export function BooksView(): React.ReactElement<{}> {
                   : []
               }
             />
+            {!state.editingNewBook && state.selectedBook && (
+              <TagEditForm type="book" bookId={state.selectedBook.id} />
+            )}
             <Segment basic>
               <Button
                 data-testid="book-delete-button"
