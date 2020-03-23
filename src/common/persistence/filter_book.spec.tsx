@@ -94,4 +94,61 @@ describe("BookFilter", function() {
       }
     });
   });
+
+  describe("Tagged Queries", function() {
+    const bookA: Book = {
+      id: 899,
+      title: "A",
+      author: "Tom"
+    };
+    const bookB: Book = {
+      id: 900,
+      title: "B",
+      author: "Bill"
+    };
+    const bookC: Book = {
+      id: 901,
+      title: "C",
+      author: "Ken"
+    };
+    const appData = createAppData({
+      books: [bookA, bookB, bookC],
+      tags: [
+        {
+          id: 11,
+          name: "common"
+        },
+        {
+          id: 12,
+          name: "base/leaf-1"
+        },
+        {
+          id: 13,
+          name: "base/leaf-2"
+        }
+      ],
+      bookTags: [
+        [899, [11]],
+        [900, [11, 12]],
+        [901, [11, 13]]
+      ]
+    });
+    assertWrapper(appData);
+    const testCases: Map<string, Array<Book>> = new Map([
+      ["#common", [bookC, bookB, bookA]],
+      ["common", []],
+      ["A", [bookA]],
+      ["#base", [bookC, bookB]],
+      ["#base/leaf", []],
+      ["#base/leaf-1", [bookB]],
+      ["#common #base/leaf-2", [bookC]],
+      ["B #base", [bookB]]
+    ]);
+    for (const [query, expected] of testCases) {
+      it(`${query}`, function() {
+        const actual = filterBook(appData, query);
+        expect(actual).deep.equals(expected);
+      });
+    }
+  });
 });

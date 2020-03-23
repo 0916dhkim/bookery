@@ -121,4 +121,62 @@ describe("UserFilter", function() {
       }
     });
   });
+
+  describe("Tagged Queries", function() {
+    const userA: User = {
+      id: 788,
+      firstName: "Frank",
+      lastName: "Hudson"
+    };
+    const userB: User = {
+      id: 789,
+      firstName: "Ronald",
+      lastName: "Nilsen"
+    };
+    const userC: User = {
+      id: 790,
+      firstName: "Robert",
+      lastName: "Stalin"
+    };
+    const appData = createAppData({
+      users: [userA, userB, userC],
+      tags: [
+        {
+          id: 21,
+          name: "student"
+        },
+        {
+          id: 22,
+          name: "team/blue"
+        },
+        {
+          id: 23,
+          name: "team/red"
+        }
+      ],
+      userTags: [
+        [788, [21]],
+        [789, [21, 22]],
+        [790, [21, 23]]
+      ]
+    });
+    assertWrapper(appData);
+    const testCases: Map<string, Array<User>> = new Map([
+      ["#student", [userC, userB, userA]],
+      ["student", []],
+      ["Frank", [userA]],
+      ["#team", [userC, userB]],
+      ["#team/b", []],
+      ["#team/blue", [userB]],
+      ["#student #team/red", [userC]],
+      ["Nilsen #student", [userB]],
+      ["Ro #student Nil", [userB]]
+    ]);
+    for (const [query, expected] of testCases) {
+      it(`${query}`, function() {
+        const actual = filterUser(appData, query);
+        expect(actual).deep.equals(expected);
+      });
+    }
+  });
 });
