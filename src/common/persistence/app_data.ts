@@ -3,6 +3,7 @@ import { User } from "./user";
 import { View } from "./view";
 import { produce } from "./immer-initialized";
 import { Tag } from "./tag";
+import { assertWrapper } from "../assert_wrapper";
 
 export interface AppData {
   /**
@@ -184,6 +185,28 @@ export function deleteTag(appData: AppData, tagId: number): [AppData, boolean] {
   return [
     produce(appData, draft => {
       draft.tags.delete(tagId);
+      // Cascade.
+      const emptyBookIds: Array<number> = [];
+      for (const [bookId, tags] of draft.bookTags) {
+        tags.delete(tagId);
+        if (tags.size === 0) {
+          emptyBookIds.push(bookId);
+        }
+      }
+      const emptyUserIds: Array<number> = [];
+      for (const [userId, tags] of draft.userTags) {
+        tags.delete(tagId);
+        if (tags.size === 0) {
+          emptyUserIds.push(userId);
+        }
+      }
+      // Cleanup.
+      for (const bookId of emptyBookIds) {
+        draft.bookTags.delete(bookId);
+      }
+      for (const userId of emptyUserIds) {
+        draft.userTags.delete(userId);
+      }
     }),
     true
   ];
@@ -194,7 +217,15 @@ export function applyTagToBook(
   tagId: number,
   bookId: number
 ): AppData {
-  return appData;
+  return produce(appData, draft => {
+    if (draft.bookTags.has(bookId)) {
+      const tags = draft.bookTags.get(bookId);
+      assertWrapper(tags);
+      tags.add(tagId);
+    } else {
+      draft.bookTags.set(bookId, new Set([tagId]));
+    }
+  });
 }
 
 export function applyTagToUser(
@@ -202,7 +233,15 @@ export function applyTagToUser(
   tagId: number,
   userId: number
 ): AppData {
-  return appData;
+  return produce(appData, draft => {
+    if (draft.userTags.has(userId)) {
+      const tags = draft.userTags.get(userId);
+      assertWrapper(tags);
+      tags.add(tagId);
+    } else {
+      draft.userTags.set(userId, new Set([tagId]));
+    }
+  });
 }
 
 export function removeTagFromBook(
@@ -210,7 +249,19 @@ export function removeTagFromBook(
   tagId: number,
   bookId: number
 ): [AppData, boolean] {
-  return [appData, false];
+  let failed = false;
+  const nextAppData = produce(appData, draft => {
+    const tags = draft.bookTags.get(bookId);
+    if (!tags || !tags.has(tagId)) {
+      failed = true;
+      return;
+    }
+    tags.delete(tagId);
+    if (tags.size === 0) {
+      draft.bookTags.delete(bookId);
+    }
+  });
+  return [nextAppData, !failed];
 }
 
 export function removeTagFromUser(
@@ -218,7 +269,19 @@ export function removeTagFromUser(
   tagId: number,
   userId: number
 ): [AppData, boolean] {
-  return [appData, false];
+  let failed = false;
+  const nextAppData = produce(appData, draft => {
+    const tags = draft.userTags.get(userId);
+    if (!tags || !tags.has(tagId)) {
+      failed = true;
+      return;
+    }
+    tags.delete(tagId);
+    if (tags.size === 0) {
+      draft.userTags.delete(userId);
+    }
+  });
+  return [nextAppData, !failed];
 }
 
 interface PlainAppData {
