@@ -1,10 +1,5 @@
 import { describe, it, afterEach } from "mocha";
-import {
-  render,
-  cleanup,
-  within,
-  waitForDomChange
-} from "@testing-library/react";
+import { render, cleanup, within, waitFor } from "@testing-library/react";
 import { BooksView } from ".";
 import * as React from "react";
 import { AppDataContext } from "../app_data_context";
@@ -83,20 +78,28 @@ describe("BooksView", function() {
         </AppDataContext.Provider>
       );
 
-      userEvent.click(within(getByTestId("suggestions-list")).getByText(/DEF/));
-      await waitForDomChange();
-      userEvent.click(getByTestId("book-delete-button"));
-      await waitForDomChange();
-
-      assert(fakeSetAppData.calledOnce);
-      const nextAppData = fakeSetAppData.firstCall.args[0];
-      assert.strictEqual(nextAppData.books.size, 1, "One book deleted.");
-      assert.strictEqual(nextAppData.users.size, 2, "No user deleted.");
-      assert.strictEqual(
-        nextAppData.views.size,
-        2,
-        "One out of three views is deleted."
+      userEvent.click(
+        await waitFor(() => {
+          return within(getByTestId("suggestions-list")).getByText(/DEF/);
+        })
       );
+      userEvent.click(
+        await waitFor(() => {
+          return getByTestId("book-delete-button");
+        })
+      );
+
+      return waitFor(() => {
+        assert(fakeSetAppData.calledOnce);
+        const nextAppData = fakeSetAppData.firstCall.args[0];
+        assert.strictEqual(nextAppData.books.size, 1, "One book deleted.");
+        assert.strictEqual(nextAppData.users.size, 2, "No user deleted.");
+        assert.strictEqual(
+          nextAppData.views.size,
+          2,
+          "One out of three views is deleted."
+        );
+      });
     });
   });
 });
