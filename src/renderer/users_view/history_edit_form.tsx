@@ -17,6 +17,8 @@ import {
 import { Book } from "../../common/persistence/book";
 import { filterBook } from "../../common/persistence/filter_book";
 import { addView, deleteView } from "../../common/persistence/app_data";
+import { View } from "../../common/persistence/view";
+import { FunctionalIterable } from "../../common/persistence/functional_iterable";
 
 /**
  * Convert a book to be presented inside dropdown menu.
@@ -40,6 +42,12 @@ export function HistoryEditForm({
   const [historyInputValue, setHistoryInputValue] = React.useState<
     number | null
   >(null);
+  const views = React.useMemo<Iterable<View>>(() => {
+    const ret = new FunctionalIterable(appData.views.values()).filter(
+      view => view.userId === user.id
+    );
+    return Array.from(ret).reverse();
+  }, [appData.views, user]);
 
   /**
    * Handle history add button click event.
@@ -122,26 +130,29 @@ export function HistoryEditForm({
           />
         </Segment>
         <Segment.Group piled data-testid="history-list" size="small">
-          {Array.from(appData.views.values())
-            .filter(view => view.userId === user.id)
-            .map(view => {
-              const book = appData.books.get(view.bookId);
-              assertWrapper(!!book);
-              return (
-                <Segment secondary clearing key={view.id.toString()}>
-                  <Icon
-                    name="x"
-                    link
-                    color="red"
-                    onClick={(): void => {
-                      const [nextAppData] = deleteView(appData, view.id);
-                      setAppData(nextAppData);
-                    }}
-                  />
-                  {book.title} by {book.author}
-                </Segment>
-              );
-            })}
+          {Array.from(views).map(view => {
+            const book = appData.books.get(view.bookId);
+            assertWrapper(!!book);
+            return (
+              <Segment
+                data-testid="history-list-element"
+                secondary
+                clearing
+                key={view.id.toString()}
+              >
+                <Icon
+                  name="x"
+                  link
+                  color="red"
+                  onClick={(): void => {
+                    const [nextAppData] = deleteView(appData, view.id);
+                    setAppData(nextAppData);
+                  }}
+                />
+                {book.title} by {book.author}
+              </Segment>
+            );
+          })}
         </Segment.Group>
       </Segment.Group>
     </Container>
