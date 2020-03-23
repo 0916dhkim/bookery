@@ -13,6 +13,14 @@ describe("FunctionalIterable", function() {
     expect(res).equals(399);
   });
 
+  it("Re-iterable", function() {
+    const x = [1, 2, 3];
+    const res = new FunctionalIterable(x).map(a => a * 2).filter(a => a > 2);
+    const first = Array.from(res);
+    const second = Array.from(res);
+    expect(first).deep.equals(second);
+  });
+
   describe("map", function() {
     function test<P, Q>(
       iterable: Iterable<P>,
