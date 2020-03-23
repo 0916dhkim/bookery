@@ -208,11 +208,37 @@ describe("TagEditForm", function() {
     // Click the add tag button.
     const addTagButton = await waitFor(getAddTagButton.bind(null, container));
     userEvent.click(addTagButton);
+    const expected = createAppData({
+      books: [
+        {
+          id: 4444,
+          title: "Into the Darkness",
+          author: "Doctor Evil"
+        }
+      ],
+      tags: [
+        {
+          id: 50,
+          name: "fiction"
+        },
+        {
+          id: 60,
+          name: "nonfiction"
+        },
+        {
+          id: 70,
+          name: "bestseller"
+        },
+        {
+          id: 80,
+          name: "sci-fi"
+        }
+      ],
+      bookTags: [[4444, [50, 70, 80]]]
+    });
     return waitFor(() => {
       expect(fakeSetAppData.calledOnce).to.be.true;
-      expect(fakeSetAppData.firstCall.args[0]["bookTags"]).deep.equals(
-        new Set([50, 70, 80])
-      );
+      expect(fakeSetAppData.firstCall.args[0]).deep.equals(expected);
     });
   });
 });
