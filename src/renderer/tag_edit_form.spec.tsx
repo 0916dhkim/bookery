@@ -241,4 +241,55 @@ describe("TagEditForm", function() {
       expect(fakeSetAppData.firstCall.args[0]).deep.equals(expected);
     });
   });
+
+  describe("Validation", function() {
+    it("No Empty Tag Name", async function() {
+      const appData = createAppData({
+        books: [
+          {
+            id: 50,
+            title: "Taggable",
+            author: "Coder"
+          }
+        ]
+      });
+      assertWrapper(appData);
+      const fakeSetAppData = sinon.fake();
+      const { container } = renderTagEditForm(appData, fakeSetAppData, {
+        type: "book",
+        bookId: 50
+      });
+      // Click the add tag button.
+      const addTagButton = await waitFor(getAddTagButton.bind(null, container));
+      userEvent.click(addTagButton);
+      return waitFor(() => {
+        expect(addTagButton.hasAttribute("disabled")).is.true;
+      });
+    });
+    it("No Whitespace In Tag Name", async function() {
+      const appData = createAppData({
+        books: [
+          {
+            id: 50,
+            title: "Taggable",
+            author: "Coder"
+          }
+        ]
+      });
+      assertWrapper(appData);
+      const fakeSetAppData = sinon.fake();
+      const { container } = renderTagEditForm(appData, fakeSetAppData, {
+        type: "book",
+        bookId: 50
+      });
+      // Type a tag name with whitespaces.
+      const tagInput = await waitFor(getTagInput.bind(null, container));
+      await userEvent.type(tagInput, "academic article");
+      const addTagButton = await waitFor(getAddTagButton.bind(null, container));
+      return waitFor(() => {
+        expect(tagInput).to.have.property("value", "academic article");
+        expect(addTagButton.hasAttribute("disabled")).is.true;
+      });
+    });
+  });
 });
