@@ -1,15 +1,20 @@
 import { describe, it } from "mocha";
-import { UserFilter } from "./user_filter";
+import { filterUser } from "./filter_user";
 import { expect } from "chai";
 import { User } from "./user";
+import { createAppData } from "./app_data";
+import { assertWrapper } from "../assert_wrapper";
 
 describe("UserFilter", function() {
   it("Empty Query", function() {
     const user: User = { id: 1, lastName: "ABC", firstName: "DEF" };
-    const filter = new UserFilter([user]);
-    const result = Array.from(filter.filter(""));
-    expect(result).to.have.lengthOf(1);
-    expect(result[0]).equals(user);
+    const appData = createAppData({
+      users: [user]
+    });
+    assertWrapper(appData);
+    const actual = Array.from(filterUser(appData, ""));
+    const expected = [user];
+    expect(actual).deep.equals(expected);
   });
   it("Match Last Name", function() {
     const userA: User = {
@@ -24,10 +29,13 @@ describe("UserFilter", function() {
       firstName: "MNO",
       note: "PQR"
     };
-    const filter = new UserFilter([userA, userB]);
-    const result = Array.from(filter.filter("ABC"));
-    expect(result).to.have.length(1);
-    expect(result[0]).equals(userA);
+    const appData = createAppData({
+      users: [userA, userB]
+    });
+    assertWrapper(appData);
+    const actual = Array.from(filterUser(appData, "ABC"));
+    const expected = [userA];
+    expect(actual).deep.equals(expected);
   });
   it("Match First Name", function() {
     const userA: User = {
@@ -42,10 +50,13 @@ describe("UserFilter", function() {
       firstName: "MNO",
       note: "PQR"
     };
-    const filter = new UserFilter([userA, userB]);
-    const result = Array.from(filter.filter("DEF"));
-    expect(result).to.have.length(1);
-    expect(result[0]).equals(userA);
+    const appData = createAppData({
+      users: [userA, userB]
+    });
+    assertWrapper(appData);
+    const actual = Array.from(filterUser(appData, "DEF"));
+    const expected = [userA];
+    expect(actual).deep.equals(expected);
   });
   it("Match Note", function() {
     const userA: User = {
@@ -60,10 +71,13 @@ describe("UserFilter", function() {
       firstName: "MNO",
       note: "PQR"
     };
-    const filter = new UserFilter([userA, userB]);
-    const result = Array.from(filter.filter("GHI"));
-    expect(result).to.have.length(1);
-    expect(result[0]).equals(userA);
+    const appData = createAppData({
+      users: [userA, userB]
+    });
+    assertWrapper(appData);
+    const actual = Array.from(filterUser(appData, "GHI"));
+    const expected = [userA];
+    expect(actual).deep.equals(expected);
   });
 
   describe("Queries", function() {
@@ -73,7 +87,10 @@ describe("UserFilter", function() {
       lastName: "Davis",
       note: "1995"
     };
-    const filter = new UserFilter([user]);
+    const appData = createAppData({
+      users: [user]
+    });
+    assertWrapper(appData);
     describe("Matching", function() {
       const queries = [
         "elizabeth",
@@ -88,9 +105,9 @@ describe("UserFilter", function() {
       ];
       for (const query of queries) {
         it(`${query}`, function() {
-          const result = Array.from(filter.filter(query));
-          expect(result).to.have.lengthOf(1);
-          expect(result[0]).deep.equals(user);
+          const actual = Array.from(filterUser(appData, query));
+          const expected = [user];
+          expect(actual).deep.equals(expected);
         });
       }
     });
@@ -98,8 +115,8 @@ describe("UserFilter", function() {
       const queries = ["c", "charles", "abigail", "Thompson", "1996", "96"];
       for (const query of queries) {
         it(`${query}`, function() {
-          const result = Array.from(filter.filter(query));
-          expect(result).to.have.lengthOf(0);
+          const actual = Array.from(filterUser(appData, query));
+          expect(actual).deep.equals([]);
         });
       }
     });

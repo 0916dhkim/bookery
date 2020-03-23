@@ -8,13 +8,12 @@ import {
   Message
 } from "semantic-ui-react";
 import { User } from "../common/persistence/user";
-import { Filter } from "../common/persistence/filter";
 import { AppDataContext } from "./app_data_context";
 import { Book } from "../common/persistence/book";
 import { assertWrapper } from "../common/assert_wrapper";
 import { AppData } from "../common/persistence/app_data";
-import { UserFilter } from "../common/persistence/user_filter";
-import { BookFilter } from "../common/persistence/book_filter";
+import { filterUser } from "../common/persistence/filter_user";
+import { filterBook } from "../common/persistence/filter_book";
 
 /**
  * Convert a book to be presented inside dropdown menu.
@@ -83,12 +82,6 @@ export function QueryView(): React.ReactElement<{}> {
   const [bookInputValue, setBookInputValue] = React.useState<number | null>(
     null
   );
-  const userFilter = React.useMemo<Filter<User>>(() => {
-    return new UserFilter(appData.users.values());
-  }, [appData.users]);
-  const bookFilter = React.useMemo<Filter<Book>>(() => {
-    return new BookFilter(appData.books.values());
-  }, [appData.books]);
 
   /**
    * Handle user change.
@@ -129,7 +122,7 @@ export function QueryView(): React.ReactElement<{}> {
     options: Array<DropdownItemProps>,
     query: string
   ): Array<DropdownItemProps> {
-    const users = userFilter.filter(query) as Array<User>;
+    const users = Array.from(filterUser(appData, query));
     return users.map(userToDropDownItemProps);
   }
 
@@ -140,7 +133,7 @@ export function QueryView(): React.ReactElement<{}> {
     options: Array<DropdownItemProps>,
     query: string
   ): Array<DropdownItemProps> {
-    const books = bookFilter.filter(query) as Array<Book>;
+    const books = Array.from(filterBook(appData, query));
     return books.map(bookToDropDownItemProps);
   }
 

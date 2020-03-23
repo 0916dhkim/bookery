@@ -2,8 +2,7 @@ import * as React from "react";
 import { AppDataContext } from "../app_data_context";
 import { Menu } from "semantic-ui-react";
 import { Book } from "../../common/persistence/book";
-import { Filter } from "../../common/persistence/filter";
-import { BookFilter } from "../../common/persistence/book_filter";
+import { filterBook } from "../../common/persistence/filter_book";
 
 export interface BooksListProps {
   filterQuery: string;
@@ -15,12 +14,9 @@ export function BooksList({
   onSelect
 }: BooksListProps): React.ReactElement {
   const { appData } = React.useContext(AppDataContext);
-  const bookFilter = React.useMemo<Filter<Book>>(() => {
-    return new BookFilter(appData.books.values());
-  }, [appData.books]);
   const filteredBooks = React.useMemo<Array<Book>>(() => {
-    return Array.from(bookFilter.filter(filterQuery));
-  }, [bookFilter, filterQuery]);
+    return Array.from(filterBook(appData, filterQuery));
+  }, [appData, filterQuery]);
 
   return (
     <Menu data-testid="suggestions-list" fluid vertical>
