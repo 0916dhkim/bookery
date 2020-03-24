@@ -12,11 +12,39 @@ import * as path from "path";
 import { format as formatUrl } from "url";
 import { EventEmitter } from "../common/event";
 
+/**
+ * Path of the static resources.
+ * Set by electron-webpack.
+ */
+declare const __static: string;
+
 const isDevelopment = process.env.NODE_ENV !== "production";
 
 // global reference to mainWindow (necessary to prevent window from being garbage collected)
 let mainWindow: BrowserWindow | null = null;
 let closeRequestReceived = false;
+let splashWindow: BrowserWindow | null = null;
+
+function createSplashWindow(): BrowserWindow {
+  const window = new BrowserWindow({
+    width: 450,
+    height: 350,
+    frame: false
+  });
+  window.loadURL(
+    formatUrl({
+      pathname: path.join(__static, "splash.html"),
+      protocol: "file",
+      slashes: true
+    })
+  );
+
+  window.on("closed", () => {
+    splashWindow = null;
+  });
+
+  return window;
+}
 
 async function invokeInitializationRequestHandler(
   emit: EventEmitter
@@ -123,6 +151,9 @@ async function showErrorMessageRequestHandler(
 
 function createMainWindow(): BrowserWindow {
   const window = new BrowserWindow({
+    show: false,
+    width: 1024,
+    height: 768,
     webPreferences: {
       nodeIntegration: true
     }
@@ -148,6 +179,12 @@ function createMainWindow(): BrowserWindow {
 
   // Create application menu bar.
   initializeApplicationMenu(emit);
+
+  // Only show main window when ready to show.
+  window.on("ready-to-show", () => {
+    splashWindow?.close();
+    window.show();
+  });
 
   // Pass window close event to renderer.
   window.on("close", e => {
@@ -208,6 +245,7 @@ app.on("activate", () => {
 
 // Auto-update then create main window.
 app.on("ready", () => {
+  splashWindow = createSplashWindow();
   autoUpdater.checkForUpdatesAndNotify();
   mainWindow = createMainWindow();
 });
