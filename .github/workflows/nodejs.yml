@@ -15,11 +15,10 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         node-version: [12.x, 13.x]
-        mode: [production, development]
 
     runs-on: ${{ matrix.os }}
     env:
-      NODE_ENV: ${{ matrix.mode }}
+      NODE_ENV: development
 
     steps:
     - uses: actions/checkout@v2
@@ -27,9 +26,7 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: npm ci --no-optional
-      env:
-        NODE_ENV: development
+    - run: npm ci
     - run: npm run lint
     - run: npm run compile
     - run: npm test
@@ -41,14 +38,17 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
+    env:
+      NODE_ENV: production
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js
       uses: actions/setup-node@v1
       with:
         node-version: 12
-    - run: npm ci --no-optional
+    - run: npm ci
+      env:
+        NODE_ENV: development
     - run: npm run dist
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        NODE_ENV: production
