@@ -8,15 +8,9 @@ import {
   RequestOptions,
   OverrideWarningOption
 } from "../common/request";
-import * as path from "path";
 import { format as formatUrl } from "url";
 import { EventEmitter } from "../common/event";
-
-/**
- * Path of the static resources.
- * Set by electron-webpack.
- */
-declare const __static: string;
+import * as path from "path";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 
@@ -31,13 +25,20 @@ function createSplashWindow(): BrowserWindow {
     height: 350,
     frame: false
   });
-  window.loadURL(
-    formatUrl({
-      pathname: path.join(__static, "splash.html"),
-      protocol: "file",
-      slashes: true
-    })
-  );
+
+  if (isDevelopment) {
+    window.loadURL(
+      `http://localhost:${process.env.WEBPACK_WDS_PORT}/static/splash.html`
+    );
+  } else {
+    window.loadURL(
+      formatUrl({
+        pathname: path.join(app.getAppPath(), "static/splash.html"),
+        protocol: "file",
+        slashes: true
+      })
+    );
+  }
 
   window.on("closed", () => {
     splashWindow = null;
@@ -166,11 +167,13 @@ function createMainWindow(): BrowserWindow {
   }
 
   if (isDevelopment) {
-    window.loadURL(`http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}`);
+    window.loadURL(
+      `http://localhost:${process.env.WEBPACK_WDS_PORT}/dist/renderer/index.html`
+    );
   } else {
     window.loadURL(
       formatUrl({
-        pathname: path.join(__dirname, "index.html"),
+        pathname: path.join(app.getAppPath(), "dist/renderer/index.html"),
         protocol: "file",
         slashes: true
       })

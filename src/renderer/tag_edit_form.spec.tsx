@@ -1,5 +1,4 @@
 import * as React from "react";
-import { describe, it, afterEach } from "mocha";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import {

@@ -1,10 +1,7 @@
 module.exports = {
-  spec: "src/**/*.spec.*",
-  recursive: true,
+  spec: "dist/test/test.js",
   require: [
-    "ts-node/register",
     "jsdom-global/register"
   ],
-  colors: true,
-  ui: "tdd"
+  colors: true
 }
