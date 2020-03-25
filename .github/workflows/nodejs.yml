@@ -31,6 +31,7 @@ jobs:
       env:
         NODE_ENV: development
     - run: npm run lint
+    - run: npm run compile
     - run: npm test
   release:
     if: github.ref == 'refs/heads/master'
