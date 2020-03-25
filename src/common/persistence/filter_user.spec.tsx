@@ -1,4 +1,3 @@
-import { describe, it } from "mocha";
 import { filterUser } from "./filter_user";
 import { expect } from "chai";
 import { User } from "./user";

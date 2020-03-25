@@ -1,5 +1,4 @@
 import * as React from "react";
-import { describe, it, afterEach } from "mocha";
 import * as sinon from "sinon";
 import { render, cleanup } from "@testing-library/react";
 import { Root } from "./root";
