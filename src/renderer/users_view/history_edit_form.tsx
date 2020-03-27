@@ -12,7 +12,8 @@ import {
   Container,
   Input,
   Icon,
-  Header
+  Header,
+  Label
 } from "semantic-ui-react";
 import { Book } from "../../common/persistence/book";
 import { filterBook } from "../../common/persistence/filter_book";
@@ -150,6 +151,7 @@ export function HistoryEditForm({
                   }}
                 />
                 {book.title} by {book.author}
+                <Label>{moment(view.date).format("YYYY/MM/DD")}</Label>
               </Segment>
             );
           })}
