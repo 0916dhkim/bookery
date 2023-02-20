@@ -1,0 +1,6 @@
+{
+  "exec": "node scripts/build.js && node dist/index.js",
+  "watch": ["src", "node_modules"],
+  "ext": "ts,mjs,js,json",
+  "ignore": ["dist"]
+}

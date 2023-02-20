@@ -1,89 +1,12 @@
 {
   "name": "bookery",
-  "version": "1.3.2",
-  "description": "======= Bookery =======",
-  "main": "dist/main/main.js",
-  "scripts": {
-    "test": "mocha",
-    "lint": "eslint --ext=js,jsx,ts,tsx .",
-    "dev": "webpack-dev-server --config-name renderer",
-    "compile": "webpack",
-    "dist": "npm run compile && electron-builder --publish onTagOrDraft"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/0916dhkim/bookery.git"
-  },
-  "author": "",
+  "version": "2.0.0",
+  "description": "Web application for managing book clubs",
+  "author": "Danny Kim",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/0916dhkim/bookery/issues"
-  },
-  "homepage": "https://github.com/0916dhkim/bookery#readme",
-  "dependencies": {
-    "electron-updater": "^4.2.5",
-    "extract-loader": "^5.0.1",
-    "fuse.js": "^3.6.1",
-    "html-loader": "^1.0.0",
-    "immer": "^6.0.0",
-    "jquery": "^3.4.1",
-    "moment": "^2.24.0",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1",
-    "semantic-ui-css": "^2.4.1",
-    "semantic-ui-react": "^0.88.2",
-    "source-map-support": "^0.5.16"
-  },
+  "private": true,
   "devDependencies": {
-    "@babel/preset-react": "^7.9.1",
-    "@testing-library/react": "^10.0.1",
-    "@testing-library/user-event": "^10.0.0",
-    "@types/chai": "^4.2.11",
-    "@types/jquery": "^3.3.33",
-    "@types/mocha": "^7.0.2",
-    "@types/react": "^16.9.25",
-    "@types/react-dom": "^16.9.5",
-    "@types/sinon": "^7.5.2",
-    "@types/webpack-merge": "^4.1.5",
-    "@typescript-eslint/eslint-plugin": "^2.24.0",
-    "@typescript-eslint/parser": "^2.24.0",
-    "chai": "^4.2.0",
-    "css-loader": "^3.4.2",
-    "electron": "^9.4.0",
-    "electron-builder": "^22.4.1",
-    "eslint": "^6.8.0",
-    "eslint-config-prettier": "^6.10.0",
-    "eslint-plugin-prettier": "^3.1.2",
-    "eslint-plugin-react": "^7.19.0",
-    "eslint-plugin-react-hooks": "^2.5.1",
-    "file-loader": "^6.0.0",
-    "html-webpack-plugin": "^4.0.1",
-    "jsdom": "^16.2.1",
-    "jsdom-global": "^3.0.2",
-    "mocha": "^7.1.1",
-    "prettier": "^1.19.1",
-    "sinon": "^9.0.1",
-    "style-loader": "^1.1.3",
-    "ts-loader": "^6.2.2",
-    "ts-node": "^8.7.0",
-    "typescript": "^3.8.3",
-    "url-loader": "^4.0.0",
-    "webpack": "^4.42.0",
-    "webpack-cli": "^3.3.11",
-    "webpack-dev-server": "^3.10.3",
-    "webpack-merge": "^4.2.2",
-    "webpack-node-externals": "^1.7.2"
-  },
-  "build": {
-    "fileAssociations": {
-      "ext": "bookery",
-      "name": "Bookery Data"
-    },
-    "files": [
-      "dist/common/**/*",
-      "dist/main/**/*",
-      "dist/renderer/**/*",
-      "static/**/*"
-    ]
+    "prettier": "^2.8.4",
+    "turbo": "^1.8.1"
   }
 }
