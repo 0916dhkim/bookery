@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "cockroachdb"
+  url      = env("DATABASE_URL")
+}
+
+model Coach {
+  id           String   @id @default(cuid())
+  displayName  String
+  email        String
+  passwordHash String
+  books        Book[]
+  members      Member[]
+  tags         Tag[]
+}
+
+model Book {
+  id      String  @id @default(cuid())
+  coachId String
+  coach   Coach   @relation(fields: [coachId], references: [id])
+  title   String
+  author  String
+  isbn    String?
+  tags    Tag[]
+  views   View[]
+}
+
+model Member {
+  id        String  @id @default(cuid())
+  coachId   String
+  coach     Coach   @relation(fields: [coachId], references: [id])
+  lastName  String
+  firstName String
+  notes     String?
+  tags      Tag[]
+  views     View[]
+}
+
+model Tag {
+  id      String   @id @default(cuid())
+  coachId String
+  coach   Coach    @relation(fields: [coachId], references: [id])
+  name    String
+  books   Book[]
+  members Member[]
+}
+
+// Stores which member read which book on which date
+model View {
+  memberId String
+  bookId   String
+  member   Member   @relation(fields: [memberId], references: [id])
+  book     Book     @relation(fields: [bookId], references: [id])
+  date     DateTime
+
+  @@unique([memberId, bookId])
+}
