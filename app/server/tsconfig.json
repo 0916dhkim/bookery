@@ -8,6 +8,6 @@
     "skipLibCheck": true,
     "noUncheckedIndexedAccess": true,
     "noFallthroughCasesInSwitch": true,
-    "outDir": "dist"
+    "noEmit": true
   }
 }
