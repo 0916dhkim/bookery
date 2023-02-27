@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "main": "src/index.ts",
   "scripts": {
-    "db:generate": "prisma generate",
-    "db:push": "prisma db push --skip-generate"
+    "db:generate": "dotenv -e ../../.env -- prisma generate",
+    "db:push": "dotenv -e ../../.env -- prisma db push --skip-generate"
   },
   "dependencies": {
     "@prisma/client": "^4.10.1",

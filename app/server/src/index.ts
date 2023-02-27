@@ -1,13 +1,21 @@
+import { EnvService } from "./service/env-service";
 import { HELLO_WORLD } from "@bookery/shared";
 import express from "express";
+import session from "express-session";
 
-const PORT = process.env.PORT ?? 5000;
+const env = EnvService();
 const app = express();
+
+app.use(
+  session({
+    secret: env.SESSION_SECRET,
+  })
+);
 
 app.get("/", (req, res) => {
   res.send(HELLO_WORLD);
 });
 
-app.listen(PORT, () => {
-  console.log(`Listening to ${PORT}...`);
+app.listen(env.PORT, () => {
+  console.log(`Listening to ${env.PORT}...`);
 });

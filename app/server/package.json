@@ -10,11 +10,14 @@
     "@bookery/database": "workspace:^0.0.0",
     "@bookery/shared": "workspace:^0.0.0",
     "@types/express": "^4.17.17",
+    "@types/express-session": "^1.17.6",
+    "dotenv": "^16.0.3",
     "esbuild": "^0.17.9",
     "esbuild-plugin-copy": "^2.0.2",
     "express": "^4.18.2",
     "express-session": "^1.17.3",
     "nodemon": "^2.0.20",
-    "typescript": "^4.9.5"
+    "typescript": "^4.9.5",
+    "zod": "^3.20.6"
   }
 }
