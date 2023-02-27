@@ -1,24 +1,34 @@
-![Logo](build/icon.png)
 # Bookery
-Bookclub Managing Application
 
-## Developers
-### Requirements
-* `Node.js`
-* `npm`
+Web application for managing book clubs.
 
-### Install Dependencies
+## Contribution Guide
 
-    npm install
+### How to Run
 
-### Run Tests
+1. Fork & clone the repo.
+1. Install dependencies.
 
-    npm test
+   ```
+   pnpm i
+   ```
 
-### Run Linter
+1. Run CockroachDB.
 
-    npm run lint
+   There are three options:
 
-### Run Application
+   - Use docker to start a local cluster.
 
-    npm run dev
+     ```
+     docker run -it --rm -p 26257:26257 -p 8080:8080 --env COCKROACH_DATABASE=<database_name> --env COCKROACH_USER=<user_name> --env COCKROACH_PASSWORD=<password> cockroachdb/cockroach:latest start-single-node
+     ```
+
+   - Install CockroachDB locally and start a local cluster. ([docs](https://www.cockroachlabs.com/docs/stable/start-a-local-cluster.html))
+   - Start a cloud cluster. ([docs](https://www.cockroachlabs.com/docs/cockroachcloud/quickstart))
+
+1. Create `.env` file in the project root directory. See `.env.sample` file to see which variables are needed.
+
+1. Run
+   ```
+   pnpm dev
+   ```

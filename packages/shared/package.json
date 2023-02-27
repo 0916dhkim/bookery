@@ -1,0 +1,9 @@
+{
+  "name": "@bookery/shared",
+  "private": true,
+  "version": "0.0.0",
+  "main": "src/index.ts",
+  "dependencies": {
+    "typescript": "^4.9.5"
+  }
+}

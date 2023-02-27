@@ -1,0 +1,14 @@
+{
+  "name": "@bookery/database",
+  "private": true,
+  "version": "0.0.0",
+  "main": "src/index.ts",
+  "scripts": {
+    "db:generate": "dotenv -e ../../.env -- prisma generate",
+    "db:push": "dotenv -e ../../.env -- prisma db push --skip-generate"
+  },
+  "dependencies": {
+    "@prisma/client": "^4.10.1",
+    "prisma": "^4.10.1"
+  }
+}
