@@ -5,6 +5,9 @@
   "author": "Danny Kim",
   "license": "MIT",
   "private": true,
+  "scripts": {
+    "dev": "turbo run dev"
+  },
   "devDependencies": {
     "prettier": "^2.8.4",
     "turbo": "^1.8.1"
