@@ -7,6 +7,7 @@ ESBuild.build({
   platform: "node",
   outfile: "dist/index.js",
   sourcemap: true,
+  external: ["bcrypt"],
   plugins: [
     copy({
       assets: {
