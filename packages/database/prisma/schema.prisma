@@ -11,7 +11,7 @@ datasource db {
 model Coach {
   id           String   @id @default(cuid())
   displayName  String
-  email        String
+  email        String   @unique
   passwordHash String
   books        Book[]
   members      Member[]
