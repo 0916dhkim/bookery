@@ -6,7 +6,11 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "dev": "turbo run dev"
+    "dev": "turbo run dev",
+    "db:generate": "turbo run db:generate",
+    "db:push": "turbo run db:push",
+    "migrate:dev": "turbo run migrate:dev",
+    "migrate:deploy": "turbo run migrate:deploy"
   },
   "devDependencies": {
     "prettier": "^2.8.4",

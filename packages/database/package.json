@@ -5,7 +5,10 @@
   "main": "src/index.ts",
   "scripts": {
     "db:generate": "dotenv -e ../../.env -- prisma generate",
-    "db:push": "dotenv -e ../../.env -- prisma db push --skip-generate"
+    "db:push": "dotenv -e ../../.env -- prisma db push --skip-generate",
+    "migrate:dev": "dotenv -e ../../.env -- prisma migrate dev",
+    "migrate:deploy": "dotenv -e ../../.env -- prisma migrate deploy",
+    "dev": "dotenv -e ../../.env -- prisma studio --browser None"
   },
   "dependencies": {
     "@prisma/client": "^4.10.1",
