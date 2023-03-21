@@ -15,8 +15,8 @@ export function buildApp(service: Service) {
   );
   app.use(express.json());
 
-  app.post("/auth/signup", signupHandler(service.auth));
-  app.post("/auth/signin", signinHandler(service.auth));
+  app.post("/api/auth/signup", signupHandler(service.auth));
+  app.post("/api/auth/signin", signinHandler(service.auth));
 
   app.get("/", (req, res) => {
     res.send(HELLO_WORLD);
