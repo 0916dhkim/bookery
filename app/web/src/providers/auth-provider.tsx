@@ -8,7 +8,7 @@ export type Auth = {
   signUp: (input: SignUpInput) => Promise<void>;
 };
 
-const Context = createContext<Auth | null>(null);
+export const AuthContext = createContext<Auth | null>(null);
 
 type AuthProviderProps = {
   children: ReactNode;
@@ -44,12 +44,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   return (
-    <Context.Provider value={{ signIn, signUp }}>{children}</Context.Provider>
+    <AuthContext.Provider value={{ signIn, signUp }}>
+      {children}
+    </AuthContext.Provider>
   );
 }
 
 export function useAuth() {
-  const context = useContext(Context);
+  const context = useContext(AuthContext);
   invariant(context, "Missing Auth context");
   return context;
 }
