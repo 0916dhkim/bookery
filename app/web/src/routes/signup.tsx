@@ -1,8 +1,10 @@
 import classes from "./signup.module.css";
+import { useAuth } from "../providers/auth-provider";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 export function Signup() {
+  const auth = useAuth();
   const [displayNameInput, setDisplayNameInput] = useState("");
   const [emailInput, setEmailInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
@@ -18,22 +20,15 @@ export function Signup() {
       return;
     }
 
-    const response = await fetch("/api/auth/signup", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+    try {
+      auth.signUp({
         displayName: displayNameInput,
         email: emailInput,
         password: passwordInput,
-      }),
-    });
-
-    if (!response.ok) {
-      setErrorMessage("Registration Failed.");
-    } else {
+      });
       navigate("/");
+    } catch {
+      setErrorMessage("Registration Failed.");
     }
   };
 

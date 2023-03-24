@@ -1,8 +1,10 @@
 import classes from "./signin.module.css";
+import { useAuth } from "../providers/auth-provider";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 export function Signin() {
+  const auth = useAuth();
   const [emailInput, setEmailInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -11,21 +13,14 @@ export function Signin() {
   const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
 
-    const response = await fetch("/api/auth/signin", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+    try {
+      await auth.signIn({
         email: emailInput,
         password: passwordInput,
-      }),
-    });
-
-    if (!response.ok) {
-      setErrorMessage("Login Failed.");
-    } else {
+      });
       navigate("/");
+    } catch {
+      setErrorMessage("Login Failed.");
     }
   };
 

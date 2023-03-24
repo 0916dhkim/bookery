@@ -1,9 +1,7 @@
-import {
-  AuthService,
-  signInInputSchema,
-  signUpInputSchema,
-} from "../service/auth-service";
 import { NextFunction, Request, Response } from "express";
+import { signInInputSchema, signUpInputSchema } from "@bookery/shared";
+
+import { AuthService } from "../service/auth-service";
 
 export const signupHandler =
   (auth: AuthService) =>
