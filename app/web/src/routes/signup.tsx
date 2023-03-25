@@ -19,6 +19,10 @@ export function Signup() {
       setErrorMessage("Passwords do not match.");
       return;
     }
+    if (passwordInput.length < 8) {
+      setErrorMessage("Password needs to be at least 8 characters long.");
+      return;
+    }
 
     try {
       auth.signUp({
