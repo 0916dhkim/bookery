@@ -1,20 +1,6 @@
-import { ReactNode, createContext, useContext } from "react";
 import { SignInInput, SignUpInput } from "@bookery/shared";
 
-import invariant from "tiny-invariant";
-
-export type Auth = {
-  signIn: (input: SignInInput) => Promise<void>;
-  signUp: (input: SignUpInput) => Promise<void>;
-};
-
-export const AuthContext = createContext<Auth | null>(null);
-
-type AuthProviderProps = {
-  children: ReactNode;
-};
-
-export function AuthProvider({ children }: AuthProviderProps) {
+export function AuthService() {
   async function signIn(input: SignInInput) {
     const response = await fetch("/api/auth/signin", {
       method: "POST",
@@ -43,15 +29,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }
 
-  return (
-    <AuthContext.Provider value={{ signIn, signUp }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return {signIn, signUp};
 }
 
-export function useAuth() {
-  const context = useContext(AuthContext);
-  invariant(context, "Missing Auth context");
-  return context;
-}
+export type AuthService = ReturnType<typeof AuthService>;
