@@ -11,7 +11,7 @@
     "dev": "dotenv -e ../../.env -- prisma studio --browser None"
   },
   "dependencies": {
-    "@prisma/client": "^4.10.1",
-    "prisma": "^4.10.1"
+    "@prisma/client": "^4.13.0",
+    "prisma": "^4.13.0"
   }
 }
