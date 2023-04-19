@@ -1,11 +1,13 @@
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import { Signin, action as signinAction } from "./routes/signin";
+import { Signup, action as signupAction } from "./routes/signup";
 
-import { AuthProvider } from "./providers/auth-provider";
+import { AuthService } from "./service/auth-service";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { Root } from "./routes/root";
-import { Signin } from "./routes/signin";
-import { Signup } from "./routes/signup";
+
+const auth = AuthService();
 
 const router = createBrowserRouter([
   {
@@ -15,17 +17,17 @@ const router = createBrowserRouter([
   {
     path: "/auth/signin",
     element: <Signin />,
+    action: signinAction(auth),
   },
   {
     path: "/auth/signup",
     element: <Signup />,
+    action: signupAction(auth),
   },
 ]);
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <AuthProvider>
-      <RouterProvider router={router} />
-    </AuthProvider>
+    <RouterProvider router={router} />
   </React.StrictMode>
 );

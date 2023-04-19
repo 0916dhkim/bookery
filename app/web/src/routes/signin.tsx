@@ -1,35 +1,32 @@
+import { ActionFunction, Form, redirect } from "react-router-dom";
+
+import { AuthService } from "../service/auth-service";
 import classes from "./signin.module.css";
-import { useAuth } from "../providers/auth-provider";
-import { useNavigate } from "react-router-dom";
+import { signInInputSchema } from "@bookery/shared";
 import { useState } from "react";
 
+export const action = (auth: AuthService): ActionFunction =>
+  async ({ request }) => {
+    const formData = await request.formData();
+    const input = signInInputSchema.parse({
+      email: formData.get("email"),
+      password: formData.get("password"),
+    });
+    await auth.signIn(input);
+    return redirect("/");
+  }
+
 export function Signin() {
-  const auth = useAuth();
   const [emailInput, setEmailInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const navigate = useNavigate();
-
-  const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
-    e.preventDefault();
-
-    try {
-      await auth.signIn({
-        email: emailInput,
-        password: passwordInput,
-      });
-      navigate("/");
-    } catch {
-      setErrorMessage("Login Failed.");
-    }
-  };
 
   return (
     <div className={classes.formWrapper}>
-      <form onSubmit={handleSubmit} className={classes.form}>
+      <Form method="post" className={classes.form}>
         <label className={classes.inputLabel}>Email</label>
         <input
           type="email"
+          name="email"
           value={emailInput}
           onChange={(e) => setEmailInput(e.target.value)}
         />
@@ -38,14 +35,12 @@ export function Signin() {
         </label>
         <input
           type="password"
+          name="password"
           value={passwordInput}
           onChange={(e) => setPasswordInput(e.target.value)}
         />
         <input className={classes.submitButton} type="submit" value="Log In" />
-        {errorMessage && (
-          <span className={classes.errorMessage}>{errorMessage}</span>
-        )}
-      </form>
+      </Form>
     </div>
   );
 }
