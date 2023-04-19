@@ -7,7 +7,7 @@
     "dev": {
       "cache": false,
       "persistent": true,
-      "dependsOn": ["^db:push"]
+      "dependsOn": ["^db:push", "db:push"]
     },
     "db:generate": {
       "cache": false
