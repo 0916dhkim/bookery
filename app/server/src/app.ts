@@ -3,6 +3,7 @@ import { signinHandler, signupHandler } from "./handlers/auth-handlers";
 import { HELLO_WORLD } from "@bookery/shared";
 import { Service } from "./service/services";
 import express from "express";
+import { getCoachHandler } from "./handlers/coach-handler";
 import session from "express-session";
 
 export function buildApp(service: Service) {
@@ -17,6 +18,7 @@ export function buildApp(service: Service) {
 
   app.post("/api/auth/signup", signupHandler(service.auth));
   app.post("/api/auth/signin", signinHandler(service.auth));
+  app.get("/api/coach/:id", getCoachHandler(service.coach));
 
   app.get("/", (req, res) => {
     res.send(HELLO_WORLD);
