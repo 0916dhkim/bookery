@@ -14,3 +14,9 @@ export const signInInputSchema = z.object({
   password: z.string(),
 });
 export type SignInInput = z.infer<typeof signInInputSchema>;
+
+export type CoachDto = {
+  id: string;
+  displayName: string;
+  email: string;
+};
