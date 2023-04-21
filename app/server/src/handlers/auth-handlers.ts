@@ -1,51 +1,31 @@
-import { NextFunction, Request, Response } from "express";
-import { signInInputSchema, signUpInputSchema } from "@bookery/shared";
+import { SignInInput, SignUpInput } from "@bookery/shared";
 
 import { AuthService } from "../service/auth-service";
+import { Context } from "./handler";
 
 export const signupHandler =
   (auth: AuthService) =>
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const inputParseResult = signUpInputSchema.safeParse(req.body);
-      if (!inputParseResult.success) {
-        return res.sendStatus(400);
-      }
-      const coach = await auth.signUp(inputParseResult.data);
-      req.session.coach = coach;
-      return res.send({ success: true });
-    } catch (e) {
-      next(e);
-    }
-  };
+  async (context: Context<SignUpInput>) => {
+    const coach = await auth.signUp(context.body);
+    context.setSession(coach);
+    return {
+      status: 200,
+      body: { success: true },
+    };
+  }
 
 export const signinHandler =
   (auth: AuthService) =>
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (context: Context<SignInInput>) => {
     try {
-      const inputParseResult = signInInputSchema.safeParse(req.body);
-      if (!inputParseResult.success) {
-        return res.sendStatus(400);
-      }
-      await auth
-        .signIn(inputParseResult.data)
-        .then((coach) => (req.session.coach = coach))
-        .then(() => res.send({ success: true }))
-        .catch(() => handleFailedSignIn(req, res));
-    } catch (e) {
-      next(e);
+      const coach = await auth.signIn(context.body);
+      context.setSession(coach);
+      return {
+        status: 200,
+        body: { success: true },
+      };
+    } catch {
+      await context.destroySession();
+      return { status: 401, body: { success: false } };
     }
-  };
-
-async function handleFailedSignIn(req: Request, res: Response) {
-  await new Promise((resolve, reject) => {
-    req.session.destroy((err) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(undefined);
-      }
-    });
-  });
-  res.sendStatus(401);
-}
+  }
