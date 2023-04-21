@@ -1,21 +1,18 @@
-import { NextFunction, Request, Response } from "express";
-
 import { CoachService } from "../service/coach-service";
+import { Context } from "./handler";
 
 export const getCoachHandler =
   (coachService: CoachService) =>
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const {id} = req.params;
-      if (id == null) {
-        throw new Error("id is missing in URL params.");
-      }
-      if (id != req.session.coach?.id) {
-        return res.sendStatus(403);
-      }
-      const coach = await coachService.getCoach(id);
-      return res.send({ coach });
-    } catch (e) {
-      next(e);
+  async (context: Context<unknown, {id: string}>) => {
+    if (context.params.id !== context.session?.id) {
+      return {
+        status: 403,
+        body: "Forbidden",
+      };
     }
-  }
+    const coach = await coachService.getCoach(context.params.id);
+    return {
+      status: 200,
+      body: { coach },
+    };
+  };
